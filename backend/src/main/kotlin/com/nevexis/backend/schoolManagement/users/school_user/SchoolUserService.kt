@@ -4,9 +4,12 @@ import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.requests.RequestStatus
 import com.nevexis.backend.schoolManagement.school.SchoolService
 import com.nevexis.backend.schoolManagement.users.UserService
+import com.nevexis.`demo-project`.jooq.tables.records.SchoolUserPeriodRecord
 import com.nevexis.`demo-project`.jooq.tables.records.SchoolUserRecord
 import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_USER
+import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_USER_PERIOD
 import org.jooq.DSLContext
+import org.jooq.Record
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
@@ -22,17 +25,27 @@ class SchoolUserService : BaseService() {
 
 
     fun getSchoolUserById(schoolUserId: BigDecimal, dsl: DSLContext): SchoolUser {
-        return dsl.selectFrom(SCHOOL_USER).where(SCHOOL_USER.ID.eq(schoolUserId))
+        return recordSelectOnConditionStep(dsl)
+            .where(SCHOOL_USER.ID.eq(schoolUserId))
             .fetchAny()?.mapIntoModel(dsl) ?: error("There is no record in SCHOOL_USER with id: $schoolUserId")
     }
 
-    fun SchoolUserRecord.mapIntoModel(dsl: DSLContext) =
-        SchoolUser(
-            id = this.id!!,
-            periodId = this.periodId!!,
-            user = userService.getUserByIdWithoutRoles(this.userId!!, dsl) ?: error("User do not exist"),
-            status = RequestStatus.valueOf(this.status!!),
-            school = schoolService.getSchoolById(this.schoolId!!, dsl)
-        )
+    private fun recordSelectOnConditionStep(dsl: DSLContext) =
+        dsl.select(SCHOOL_USER.asterisk(), SCHOOL_USER_PERIOD.asterisk())
+            .from(SCHOOL_USER)
+            .leftJoin(SCHOOL_USER_PERIOD)
+            .on(SCHOOL_USER.ID.eq(SCHOOL_USER_PERIOD.SCHOOL_USER_ID))
 
+    fun Record.mapIntoModel(dsl: DSLContext): SchoolUser {
+        this.into(SchoolUserRecord::class.java).let {
+            val approvedSchoolUserPeriodRecord = this.into(SchoolUserPeriodRecord::class.java)
+            return SchoolUser(
+                id = it.id!!,
+                periodId = approvedSchoolUserPeriodRecord.periodId!!,
+                user = userService.getUserByIdWithoutRoles(it.userId!!, dsl) ?: error("User do not exist"),
+                status = RequestStatus.valueOf(approvedSchoolUserPeriodRecord.status!!),
+                school = schoolService.getSchoolById(it.schoolId!!, dsl)
+            )
+        }
+    }
 }

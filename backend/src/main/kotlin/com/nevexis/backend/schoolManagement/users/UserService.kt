@@ -6,6 +6,7 @@ import com.nevexis.backend.schoolManagement.users.roles.SchoolRolesService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
 import com.nevexis.`demo-project`.jooq.tables.records.UserRecord
 import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_USER
+import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_USER_PERIOD
 import com.nevexis.`demo-project`.jooq.tables.references.STUDENT_SCHOOL_CLASS
 import com.nevexis.`demo-project`.jooq.tables.references.USER
 import org.jooq.DSLContext
@@ -22,10 +23,10 @@ class UserService : BaseService() {
     @Autowired
     private lateinit var schoolUserRolesService: SchoolRolesService
 
-    fun getAllUserViewsBySchool(schoolId: BigDecimal, dsl: DSLContext = db) {
-        val rolesForSchoolGroupedByUserId = schoolUserRolesService.getAllRolesFromSchool(schoolId)
+    fun getAllUserViewsBySchool(schoolId: BigDecimal, periodId: BigDecimal, dsl: DSLContext = db) {
+        val rolesForSchoolGroupedByUserId = schoolUserRolesService.getAllRolesFromSchoolForPeriod(schoolId, periodId)
         recordSelectOnConditionStep(dsl).where(
-            SCHOOL_USER.SCHOOL_ID.eq(schoolId).and(SCHOOL_USER.STATUS.eq(UserStatus.ACTIVE.name))
+            SCHOOL_USER.SCHOOL_ID.eq(schoolId).and(SCHOOL_USER_PERIOD.STATUS.eq(UserStatus.ACTIVE.name))
         ).map {
             val userRecord = it.into(UserRecord::class.java)
             mapToUserView(userRecord, rolesForSchoolGroupedByUserId[userRecord.id] ?: emptyList())
@@ -99,9 +100,11 @@ class UserService : BaseService() {
         )
     }
 
-    private fun recordSelectOnConditionStep(dsl: DSLContext) =
-        dsl.select(USER.asterisk(), SCHOOL_USER.asterisk()).from(USER).leftJoin(SCHOOL_USER).on(
-            SCHOOL_USER.USER_ID.eq(USER.ID)
-        )
+    private fun recordSelectOnConditionStep(dsl: DSLContext = db) =
+        dsl.select(USER.asterisk(), SCHOOL_USER.asterisk(), SCHOOL_USER_PERIOD.asterisk()).from(USER)
+            .leftJoin(SCHOOL_USER).on(
+                SCHOOL_USER.USER_ID.eq(USER.ID)
+            ).leftJoin(SCHOOL_USER_PERIOD).on(SCHOOL_USER_PERIOD.ID.eq(SCHOOL_USER.ID))
+
 
 }

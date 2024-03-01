@@ -7,6 +7,7 @@ import com.nevexis.backend.schoolManagement.users.UserStatus
 import com.nevexis.backend.schoolManagement.users.roles.SchoolRolesService
 import com.nevexis.`demo-project`.jooq.tables.records.UserRecord
 import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_USER
+import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_USER_PERIOD
 import com.nevexis.`demo-project`.jooq.tables.references.USER
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -27,12 +28,16 @@ class UserSecurityService : BaseService() {
     private lateinit var schoolUserRolesService: SchoolRolesService
 
 
-    fun findUserByUsername(username: String, roleId: BigDecimal? = null) =
+    fun findActiveUserByUsername(
+        username: String,
+        periodId: BigDecimal? = null,
+        roleId: BigDecimal? = null
+    ): SMSUserDetails? =
         recordSelectOnConditionStep().where(USER.USERNAME.eq(username))
-            .and(SCHOOL_USER.STATUS.eq(UserStatus.ACTIVE.name))
+            .and(SCHOOL_USER_PERIOD.STATUS.eq(UserStatus.ACTIVE.name))
             .fetchAny()
             ?.into(UserRecord::class.java)
-            ?.mapToModel(roleId)
+            ?.mapToModel(roleId, periodId)
             ?.let { SMSUserDetails(it) }
 
     fun createUser(user: UserRegistrationInformation, dsl: DSLContext = db): UserRecord {
@@ -45,8 +50,6 @@ class UserSecurityService : BaseService() {
                 dsl.newRecord(SCHOOL_USER).apply {
                     this.id = getSchoolUserSeqNextVal()
                     this.userId = userId
-                    this.status = UserStatus.CREATED.name
-                    this.periodId = periodId
                     this.schoolId = school.id
                 }
             }.apply {
@@ -67,9 +70,13 @@ class UserSecurityService : BaseService() {
 //    }
 
 
-    fun UserRecord.mapToModel(roleId: BigDecimal? = null, dsl: DSLContext = db): UserSecurity {
-        val userRole = if (roleId != null) {
-            schoolUserRolesService.getApprovedUserSchoolRoleById(roleId, dsl)
+    fun UserRecord.mapToModel(
+        roleId: BigDecimal? = null,
+        periodId: BigDecimal? = null,
+        dsl: DSLContext = db
+    ): UserSecurity {
+        val userRole = if (roleId != null && periodId != null) {
+            schoolUserRolesService.getUserSchoolRoleByIdAndPeriodId(roleId, periodId, dsl)
         } else {
             null
         }
@@ -94,8 +101,9 @@ class UserSecurityService : BaseService() {
             .fetchOne()!!.map { it.into(BigDecimal::class.java) }
 
     private fun recordSelectOnConditionStep(dsl: DSLContext = db) =
-        dsl.select(USER.asterisk(), SCHOOL_USER.asterisk()).from(USER).leftJoin(SCHOOL_USER).on(
-            SCHOOL_USER.USER_ID.eq(USER.ID)
-        )
+        dsl.select(USER.asterisk(), SCHOOL_USER.asterisk(), SCHOOL_USER_PERIOD.asterisk()).from(USER)
+            .leftJoin(SCHOOL_USER).on(
+                SCHOOL_USER.USER_ID.eq(USER.ID)
+            ).leftJoin(SCHOOL_USER_PERIOD).on(SCHOOL_USER_PERIOD.ID.eq(SCHOOL_USER.ID))
 
 }

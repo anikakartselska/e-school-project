@@ -6,6 +6,7 @@ import {translationOfRoles} from "../utils";
 export interface SchoolUserRole {
     id: number,
     userId: number,
+    periodId: number,
     school: School,
     role: SchoolRole,
     status: RequestStatus

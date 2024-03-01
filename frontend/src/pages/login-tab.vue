@@ -33,13 +33,16 @@
               icon="vpn_key"
               :done="step > 2"
       >
-        <q-select v-model="selectedRole" :options="userRoles"
-                  :option-label="option => constructSchoolUserRoleMessage(option)"
-                  label="Роля"/>
+          <q-select v-model="selectedPeriod" :option-label="(option:SchoolPeriod) => `${option.startYear.substring(0,4)}/${option.endYear.substring(0,4)}`"
+                    :options="schoolPeriods"
+                    label="Учебна година"/>
+          <q-select v-model="selectedRole" :disable="selectedPeriod==null" :option-label="option => constructSchoolUserRoleMessage(option)"
+                    :options="userRoles"
+                    label="Роля"/>
 
-        <q-stepper-navigation>
-          <q-btn @click="loginAfterSelectingRole" color="primary" :disable="!selectedRole" label="Напред"/>
-        </q-stepper-navigation>
+          <q-stepper-navigation>
+              <q-btn :disable="!selectedRole" color="primary" label="Напред" @click="loginAfterSelectingRole"/>
+          </q-stepper-navigation>
       </q-step>
     </q-stepper>
   </q-card-section>
@@ -47,27 +50,30 @@
 
 <script lang="ts" setup>
 import {$ref} from "vue/macros";
-import {getAllUserRoles, login, loginAfterSelectedRole} from "../services/RequestService";
+import {getAllSchoolPeriods, getAllUserRoles, login, loginAfterSelectedRole} from "../services/RequestService";
 import {constructSchoolUserRoleMessage, SchoolUserRole} from "../model/SchoolUserRole";
 import {router} from "../router";
 import {storeUser, updateUserInLocalStorage} from "../services/LocalStorageService";
 import {AuthenticationResponse, Success} from "../model/AuthenticationResponse";
+import {SchoolPeriod} from "../model/SchoolPeriod";
 
 let step = $ref(1)
 const username = $ref(null);
 const password = $ref(null);
 let userRoles = $ref<SchoolUserRole[]>([])
 const selectedRole = $ref<SchoolUserRole | null>(null)
+let schoolPeriods = $ref<SchoolPeriod[]>([])
+const selectedPeriod = $ref<SchoolPeriod | null>(null)
 const loginClick = async () => {
-  await login(username, password)
-          .then(async r => {
-            const authResponse: AuthenticationResponse = <Success>r.data
-            storeUser(authResponse.user)
-            // applicationInReadOnlyMode.value = authResponse.user.role == RvmRole.VIEWER;
-            // loading = false
-            step = 2
-            userRoles = await getAllUserRoles()
-            console.log(userRoles)
+    await login(username, password)
+            .then(async r => {
+                const authResponse: AuthenticationResponse = <Success>r.data
+                storeUser(authResponse.user)
+                // applicationInReadOnlyMode.value = authResponse.user.role == RvmRole.VIEWER;
+                // loading = false
+                step = 2
+                userRoles = await getAllUserRoles()
+                schoolPeriods = await getAllSchoolPeriods()
           }).catch(e => {
             Promise.reject("Unauthenticated");
           })

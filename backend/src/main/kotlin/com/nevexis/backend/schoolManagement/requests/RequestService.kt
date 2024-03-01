@@ -1,7 +1,8 @@
 package com.nevexis.backend.schoolManagement.requests
 
 import com.nevexis.backend.schoolManagement.BaseService
-import com.nevexis.backend.schoolManagement.users.UserService
+import com.nevexis.backend.schoolManagement.security.user_security.UserSecurityService
+import com.nevexis.backend.schoolManagement.users.UserRegistrationInformation
 import com.nevexis.backend.schoolManagement.users.roles.SchoolRolesService
 import com.nevexis.backend.schoolManagement.users.school_user.SchoolUserService
 import org.jooq.DSLContext
@@ -13,7 +14,7 @@ import java.math.BigDecimal
 @Service
 class RequestService : BaseService() {
     @Autowired
-    private lateinit var userService: UserService
+    private lateinit var userService: UserSecurityService
 
     @Autowired
     private lateinit var schoolRolesService: SchoolRolesService
@@ -21,6 +22,9 @@ class RequestService : BaseService() {
     @Autowired
     private lateinit var schoolUserService: SchoolUserService
 
+    fun createRequestsFromUserRegistrationInformation(userRegistrationInformation: UserRegistrationInformation) {
+
+    }
 
     fun RequestValueJson.mapRequestValueJsonToRequestValue(dsl: DSLContext): RequestValue {
         return when (this) {

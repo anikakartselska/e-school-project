@@ -13,8 +13,9 @@ class UsersController {
 
     @GetMapping("/get-all-users-by-school-id")
     suspend fun getAllUsersBySchoolId(
-        @RequestParam schoolId: BigDecimal
-    ) = userService.getAllUserViewsBySchool(schoolId)
+        @RequestParam schoolId: BigDecimal,
+        @RequestParam periodId: BigDecimal
+    ) = userService.getAllUserViewsBySchool(schoolId, periodId)
 
 //    @GetMapping("/get-user-by-id")
 //    fun getUserDetailsById(

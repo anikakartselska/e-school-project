@@ -6,6 +6,7 @@ import axios, {AxiosResponse} from "axios";
 import {SchoolClass} from "../model/SchoolClass";
 import {School} from "../model/School";
 import {SchoolUserRole} from "../model/SchoolUserRole";
+import {SchoolPeriod} from "../model/SchoolPeriod";
 
 export const login = async (email: string, password: string): Promise<AxiosResponse> =>
         await axios.post<string>(`/authenticate`, {username: email, password}, {
@@ -89,3 +90,6 @@ export const getAllSchools = async (): Promise<School[]> =>
 
 export const getAllUserRoles = async (): Promise<SchoolUserRole[]> =>
         await auth.get<SchoolUserRole[]>('/get-all-user-roles').then(p => p.data)
+
+export const getAllSchoolPeriods = async (): Promise<SchoolPeriod[]> =>
+        await auth.get<SchoolPeriod[]>('/get-all-periods').then(p => p.data)

@@ -4,10 +4,11 @@ import com.nevexis.backend.schoolManagement.school.School
 import com.nevexis.backend.schoolManagement.school.SchoolService
 import com.nevexis.backend.schoolManagement.schoolClass.SchoolClass
 import com.nevexis.backend.schoolManagement.schoolClass.SchoolClassService
+import com.nevexis.backend.schoolManagement.school_period.SchoolPeriod
+import com.nevexis.backend.schoolManagement.school_period.SchoolPeriodService
 import com.nevexis.backend.schoolManagement.security.JwtService
 import com.nevexis.backend.schoolManagement.security.user_security.UserSecurity
 import com.nevexis.backend.schoolManagement.security.user_security.UserSecurityService
-import com.nevexis.backend.schoolManagement.users.UserService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolRolesService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
 import org.springframework.beans.factory.annotation.Autowired
@@ -29,7 +30,7 @@ class AuthenticationController {
     private lateinit var userSecurityService: UserSecurityService
 
     @Autowired
-    private lateinit var userService: UserService
+    private lateinit var schoolPeriodService: SchoolPeriodService
 
     @Autowired
     private lateinit var schoolClassService: SchoolClassService
@@ -54,7 +55,7 @@ class AuthenticationController {
         exchange.response.addCookie(generateCookie("", "token"))// reset cookie
         exchange.response.addCookie(generateCookie("", "refreshToken"))// reset cookie
 
-        return userSecurityService.findUserByUsername(request.username)
+        return userSecurityService.findActiveUserByUsername(request.username)
             ?.takeIf { userDetails -> passwordEncoder.matches(request.password, userDetails.password) }
             ?.let { userDetails ->
                 val token = jwtService.generateToken(userDetails)
@@ -80,7 +81,7 @@ class AuthenticationController {
         exchange.response.addCookie(generateCookie("", "token"))// reset cookie
         exchange.response.addCookie(generateCookie("", "refreshToken"))// reset cookie
 
-        return userSecurityService.findUserByUsername(principal.name, roleId)
+        return userSecurityService.findActiveUserByUsername(principal.name, roleId)
             ?.let { userDetails ->
                 val token = jwtService.generateToken(userDetails)
                 val refreshToken = jwtService.generateRefreshToken(userDetails)
@@ -98,7 +99,7 @@ class AuthenticationController {
 
     @GetMapping("/get-all-user-roles")
     suspend fun getAllUserRoles(principal: Principal): List<SchoolUserRole> {
-        val userId = userSecurityService.findUserByUsername(principal.name)?.user?.id
+        val userId = userSecurityService.findActiveUserByUsername(principal.name)?.user?.id
             ?: error("User with username ${principal.name} does not exist")
         return schoolUserRolesService.getAllUserRoles(userId)
     }
@@ -106,6 +107,11 @@ class AuthenticationController {
     @GetMapping("/get-all-school-classes")
     suspend fun getSchoolClassesFromSchool(): List<SchoolClass> {
         return schoolClassService.getSchoolClasses()
+    }
+
+    @GetMapping("/get-all-periods")
+    suspend fun getAllSchoolPeriods(): List<SchoolPeriod> {
+        return schoolPeriodService.fetchAllSchoolPeriods()
     }
 
     @GetMapping("/get-all-schools")

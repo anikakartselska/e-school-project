@@ -185,3 +185,4 @@ ALTER TABLE PARENT_STUDENT
 --changeset anika:13
 alter table "USER"
 drop column SCHOOL_ID;
+
