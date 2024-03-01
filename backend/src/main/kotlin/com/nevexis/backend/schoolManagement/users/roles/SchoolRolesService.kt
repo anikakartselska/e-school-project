@@ -4,7 +4,7 @@ import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.requests.RequestStatus
 import com.nevexis.backend.schoolManagement.school.SchoolService
 import com.nevexis.backend.schoolManagement.users.SchoolRole
-import com.nevexis.backend.schoolManagement.users.UserService
+import com.nevexis.backend.schoolManagement.users.UserDetailsService
 import com.nevexis.`demo-project`.jooq.tables.records.SchoolUserRoleRecord
 import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_USER_ROLE
 import org.jooq.DSLContext
@@ -19,7 +19,7 @@ class SchoolRolesService : BaseService() {
     private lateinit var schoolService: SchoolService
 
     @Autowired
-    private lateinit var userService: UserService
+    private lateinit var userDetailsService: UserDetailsService
 
     fun getAllUserRolesBySchoolId(userId: BigDecimal, schoolId: BigDecimal) =
         db.select(SCHOOL_USER_ROLE.ROLE).from(SCHOOL_USER_ROLE).where(
@@ -30,12 +30,17 @@ class SchoolRolesService : BaseService() {
             )
         ).fetchInto(String::class.java).map { role -> SchoolRole.valueOf(role) }
 
-    fun getUserSchoolRoleById(id: BigDecimal) = db.select(SCHOOL_USER_ROLE.ROLE).from(SCHOOL_USER_ROLE).where(
+    fun getApprovedUserSchoolRoleById(id: BigDecimal, dsl: DSLContext) = dsl.selectFrom(SCHOOL_USER_ROLE).where(
         SCHOOL_USER_ROLE.ID.eq(id).and(
             SCHOOL_USER_ROLE.STATUS.eq("APPROVED")
         )
     ).fetchAnyInto(SchoolUserRoleRecord::class.java)?.mapToModel()
         ?: error("User role with id: $id does not exist or is not APPROVED")
+
+    fun getUserSchoolRoleById(id: BigDecimal, dsl: DSLContext) = dsl.selectFrom(SCHOOL_USER_ROLE).where(
+        SCHOOL_USER_ROLE.ID.eq(id)
+    ).fetchAnyInto(SchoolUserRoleRecord::class.java)?.mapToModel()
+        ?: error("User role with id: $id does not exist")
 
     fun getUserRole(
         userId: BigDecimal,
@@ -52,12 +57,29 @@ class SchoolRolesService : BaseService() {
         }
     }
 
-    fun getAllUserRoles(userId: BigDecimal) =
+    fun getAllUserRoles(userId: BigDecimal): List<SchoolUserRole> =
         db.selectFrom(SCHOOL_USER_ROLE).where(
             SCHOOL_USER_ROLE.USER_ID.eq(userId).and(
                 SCHOOL_USER_ROLE.STATUS.eq("APPROVED")
             )
-        ).fetchInto(String::class.java).map { role -> SchoolRole.valueOf(role) }
+        ).fetch().map { it.mapToModel() }
+
+    fun getAllRolesFromSchool(schoolId: BigDecimal) =
+        db.selectFrom(SCHOOL_USER_ROLE)
+            .where(
+                SCHOOL_USER_ROLE.SCHOOL_ID.eq(schoolId).and(
+                    SCHOOL_USER_ROLE.STATUS.eq("APPROVED")
+                )
+            )
+            .fetch()
+            .map { record ->
+                val userId = record.get(SCHOOL_USER_ROLE.USER_ID)!!
+                val role = SchoolRole.valueOf(record.get(SCHOOL_USER_ROLE.ROLE)!!)
+                Pair(userId, role)
+            }
+            .groupBy { it.first }
+            .mapValues { (_, userIdToRoles) -> userIdToRoles.map { it.second } }
+
 
     fun createSchoolRoles(
         schoolUserRoles: List<SchoolUserRole>,
@@ -106,6 +128,6 @@ class SchoolRolesService : BaseService() {
             role = SchoolRole.valueOf(this.role!!),
             status = RequestStatus.valueOf(this.status!!)
         )
-        return schoolUserRole.copy(detailsForUser = userService.getUserDetails(schoolUserRole))
+        return schoolUserRole.copy(detailsForUser = userDetailsService.getUserDetailsPerSchoolUserRole(schoolUserRole))
     }
 }

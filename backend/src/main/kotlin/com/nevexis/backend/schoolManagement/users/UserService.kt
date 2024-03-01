@@ -5,10 +5,10 @@ import com.nevexis.backend.schoolManagement.schoolClass.SchoolClassService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolRolesService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
 import com.nevexis.`demo-project`.jooq.tables.records.UserRecord
-import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_USER_ROLE
+import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_USER
 import com.nevexis.`demo-project`.jooq.tables.references.STUDENT_SCHOOL_CLASS
 import com.nevexis.`demo-project`.jooq.tables.references.USER
-import org.jooq.Record
+import org.jooq.DSLContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
@@ -22,11 +22,22 @@ class UserService : BaseService() {
     @Autowired
     private lateinit var schoolUserRolesService: SchoolRolesService
 
-    fun getAllUserViewsBySchool(schoolId: BigDecimal): List<UserView> =
-        db.select(USER.asterisk(), SCHOOL_USER_ROLE.SCHOOL_ID).from(USER).leftJoin(SCHOOL_USER_ROLE).on(
-            SCHOOL_USER_ROLE.USER_ID.eq(USER.ID)
-        ).where(SCHOOL_USER_ROLE.SCHOOL_ID.eq(schoolId).and(USER.DELETED.eq("N"))).distinct()
-            .map { mapToUserView(it) }
+    fun getAllUserViewsBySchool(schoolId: BigDecimal, dsl: DSLContext = db) {
+        val rolesForSchoolGroupedByUserId = schoolUserRolesService.getAllRolesFromSchool(schoolId)
+        recordSelectOnConditionStep(dsl).where(
+            SCHOOL_USER.SCHOOL_ID.eq(schoolId).and(SCHOOL_USER.STATUS.eq(UserStatus.ACTIVE.name))
+        ).map {
+            val userRecord = it.into(UserRecord::class.java)
+            mapToUserView(userRecord, rolesForSchoolGroupedByUserId[userRecord.id] ?: emptyList())
+        }
+    }
+
+
+    fun getUserByIdWithoutRoles(userId: BigDecimal, dsl: DSLContext): User? {
+        return dsl.selectFrom(USER).where(USER.ID.eq(userId)).fetchAny()?.map {
+            mapUserRecordToUserModel(it.into(UserRecord::class.java), emptyList())
+        }
+    }
 
     fun getAllStudentsInSchoolClass(
         schoolClassId: BigDecimal,
@@ -42,26 +53,28 @@ class UserService : BaseService() {
             .fetchInto(StudentView::class.java)
 
 
-    fun mapToUserView(record: Record): UserView {
-        record.into(UserRecord::class.java).let { userRecord ->
-            return UserView(
-                id = userRecord.id!!,
-                email = userRecord.email!!,
-                firstName = userRecord.firstName!!,
-                middleName = userRecord.middleName!!,
-                lastName = userRecord.lastName!!,
-                username = userRecord.username!!
-            )
-        }
+    fun mapToUserView(
+        userRecord: UserRecord,
+        rolesForSchool: List<SchoolRole>
+    ): UserView {
+        return UserView(
+            id = userRecord.id!!,
+            email = userRecord.email!!,
+            firstName = userRecord.firstName!!,
+            middleName = userRecord.middleName!!,
+            lastName = userRecord.lastName!!,
+            username = userRecord.username!!,
+            roles = rolesForSchool
+        )
 
     }
 
-    fun mapUserRecordToModel(userRecord: UserRecord,schoolUserRole: SchoolUserRole): User {
-        return User(
+    fun mapUserRecordToOneRoleModel(userRecord: UserRecord, schoolUserRole: SchoolUserRole): OneRoleUser {
+        return OneRoleUser(
             id = userRecord.id!!,
             personalNumber = userRecord.personalNumber!!,
             email = userRecord.email!!,
-            phoneNumber = userRecord.phoneNumber,
+            phoneNumber = userRecord.phoneNumber!!,
             firstName = userRecord.firstName!!,
             middleName = userRecord.middleName!!,
             lastName = userRecord.lastName!!,
@@ -70,5 +83,25 @@ class UserService : BaseService() {
             role = schoolUserRole
         )
     }
+
+    fun mapUserRecordToUserModel(userRecord: UserRecord, schoolUserRoles: List<SchoolUserRole>): User {
+        return User(
+            id = userRecord.id!!,
+            personalNumber = userRecord.personalNumber!!,
+            email = userRecord.email!!,
+            phoneNumber = userRecord.phoneNumber!!,
+            firstName = userRecord.firstName!!,
+            middleName = userRecord.middleName!!,
+            lastName = userRecord.lastName!!,
+            username = userRecord.username!!,
+            address = userRecord.address!!,
+            roles = schoolUserRoles
+        )
+    }
+
+    private fun recordSelectOnConditionStep(dsl: DSLContext) =
+        dsl.select(USER.asterisk(), SCHOOL_USER.asterisk()).from(USER).leftJoin(SCHOOL_USER).on(
+            SCHOOL_USER.USER_ID.eq(USER.ID)
+        )
 
 }

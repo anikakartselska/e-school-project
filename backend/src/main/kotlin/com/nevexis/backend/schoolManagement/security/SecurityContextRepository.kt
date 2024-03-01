@@ -1,5 +1,6 @@
 package com.nevexis.backend.schoolManagement.security
 
+import com.nevexis.backend.schoolManagement.security.user_security.UserSecurityService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseCookie
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken

@@ -29,10 +29,10 @@
             </q-select>
           </div>
           <div v-if="isDetailsForParent(schoolUserRole.detailsForUser)">
-            <q-input filled v-model="schoolUserRole.detailsForUser.children.firstName" label="Име" class="q-pa-sm"/>
-            <q-input filled v-model="schoolUserRole.detailsForUser.children.lastName" label="Фамилия" class="q-pa-sm"/>
-            <q-input filled v-model="schoolUserRole.detailsForUser.children.phoneNumber" label="Адрес" class="q-pa-sm"/>
-            <q-select v-model="schoolUserRole.detailsForUser.children.details.schoolClass"
+            <q-input v-model="schoolUserRole.detailsForUser.child.firstName" class="q-pa-sm" filled label="Име"/>
+            <q-input v-model="schoolUserRole.detailsForUser.child.lastName" class="q-pa-sm" filled label="Фамилия"/>
+            <q-input v-model="schoolUserRole.detailsForUser.child.phoneNumber" class="q-pa-sm" filled label="Адрес"/>
+            <q-select v-model="schoolUserRole.detailsForUser.child.details.schoolClass"
                       :options="schoolClassesOptions"
                       :option-label="option => option.name" label="Клас">
               <template v-slot:prepend>
@@ -54,12 +54,12 @@
 <script lang="ts" setup>
 import {useDialogPluginComponent, useQuasar} from "quasar";
 import {
-  DetailsForParent,
-  DetailsForStudent,
-  isDetailsForParent,
-  isDetailsForStudent,
-  SchoolRole,
-  User
+    DetailsForParent,
+    DetailsForStudent,
+    isDetailsForParent,
+    isDetailsForStudent,
+    OneRoleUser,
+    SchoolRole
 } from "../model/User";
 import {$ref} from "vue/macros";
 import {translationOfRoles} from "../utils";
@@ -93,7 +93,7 @@ watch(() => schoolUserRole.role, () => {
       break
     }
     case SchoolRole.PARENT: {
-      schoolUserRole.detailsForUser = new DetailsForParent(<User><unknown>{details: new DetailsForStudent(<SchoolClass>{}, null)})
+      schoolUserRole.detailsForUser = new DetailsForParent(<OneRoleUser><unknown>{details: new DetailsForStudent(<SchoolClass>{}, null)})
       break
     }
     case SchoolRole.TEACHER:

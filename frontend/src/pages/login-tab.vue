@@ -9,6 +9,7 @@
       <q-step
               :name="1"
               icon="login"
+              title="Въвеждане на парола и имейл"
               :done="step > 1"
       >
         <q-form class="q-gutter-md">
@@ -28,11 +29,12 @@
 
       <q-step
               :name="2"
+              title="Избиране на роля"
               icon="vpn_key"
               :done="step > 2"
       >
         <q-select v-model="selectedRole" :options="userRoles"
-                  :option-label="option => option.schoolName"
+                  :option-label="option => constructSchoolUserRoleMessage(option)"
                   label="Роля"/>
 
         <q-stepper-navigation>
@@ -46,8 +48,10 @@
 <script lang="ts" setup>
 import {$ref} from "vue/macros";
 import {getAllUserRoles, login, loginAfterSelectedRole} from "../services/RequestService";
-import {SchoolUserRole} from "../model/SchoolUserRole";
+import {constructSchoolUserRoleMessage, SchoolUserRole} from "../model/SchoolUserRole";
 import {router} from "../router";
+import {storeUser, updateUserInLocalStorage} from "../services/LocalStorageService";
+import {AuthenticationResponse, Success} from "../model/AuthenticationResponse";
 
 let step = $ref(1)
 const username = $ref(null);
@@ -57,21 +61,23 @@ const selectedRole = $ref<SchoolUserRole | null>(null)
 const loginClick = async () => {
   await login(username, password)
           .then(async r => {
-            // const authResponse: AuthenticationResponse = <Success>r.data
-            // storeUser(authResponse.user)
+            const authResponse: AuthenticationResponse = <Success>r.data
+            storeUser(authResponse.user)
             // applicationInReadOnlyMode.value = authResponse.user.role == RvmRole.VIEWER;
             // loading = false
-            //
             step = 2
             userRoles = await getAllUserRoles()
+            console.log(userRoles)
           }).catch(e => {
             Promise.reject("Unauthenticated");
           })
 }
 const loginAfterSelectingRole = async () => {
-    console.log(selectedRole)
-  await loginAfterSelectedRole(selectedRole?.id!!).then(r =>
-          router.push({path: '/'})
+  await loginAfterSelectedRole(selectedRole?.id!!).then(r => {
+            const authResponse: AuthenticationResponse = <Success>r.data
+            updateUserInLocalStorage(authResponse.user)
+            router.push({path: '/'})
+          }
   )
 
 }

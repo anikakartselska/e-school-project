@@ -9,9 +9,22 @@ data class User(
     val middleName: String,
     val lastName: String,
     val username: String,
-    val personalNumber: String?,
+    val personalNumber: String,
     val email: String,
-    val phoneNumber: String?,
+    val phoneNumber: String,
+    val address: String,
+    val roles: List<SchoolUserRole>
+)
+
+data class OneRoleUser(
+    val id: BigDecimal?,
+    val firstName: String,
+    val middleName: String,
+    val lastName: String,
+    val username: String,
+    val personalNumber: String,
+    val email: String,
+    val phoneNumber: String,
     val address: String,
     val role: SchoolUserRole
 )
@@ -22,7 +35,8 @@ data class UserView(
     val firstName: String,
     val middleName: String,
     val lastName: String,
-    val username: String
+    val username: String,
+    val roles: List<SchoolRole>
 )
 
 data class StudentView(

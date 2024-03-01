@@ -27,7 +27,7 @@
                 round
                 dense
                 icon="logout"
-                to="/"
+                @click="onLogoutClick()"
         />
       </q-toolbar>
     </q-header>
@@ -95,6 +95,16 @@
 
 <script lang="ts" setup>
 import {$ref} from "vue/macros";
+import {router} from "../router";
+import {clearUserStorage} from "../services/LocalStorageService";
+import {logout} from "../services/RequestService";
+
+const onLogoutClick = async () => {
+  await logout().then(r => {
+    clearUserStorage()
+    router.push('/login')
+  })
+}
 
 const left = $ref(true)
 const pages = [{to: "/users", label: "Потребители", show: true},

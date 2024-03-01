@@ -46,7 +46,8 @@ class SecurityConfiguration {
             .securityContextRepository(securityContextRepository)
             .authorizeExchange()
             .pathMatchers(HttpMethod.OPTIONS).permitAll()
-            .pathMatchers("/auth/authenticate","/auth/get-all-school-classes","/auth/get-all-schools").permitAll()
+            .pathMatchers("/auth/authenticate", "/auth/get-all-school-classes", "/auth/get-all-schools", "/auth/logout")
+            .permitAll()
             .anyExchange().authenticated()
             .and().build()
     }

@@ -17,6 +17,6 @@ sealed class DetailsForUser {
     ) : DetailsForUser()
 
     data class DetailsForParent(
-        val child: User
+        val child: OneRoleUser
     ) : DetailsForUser()
 }

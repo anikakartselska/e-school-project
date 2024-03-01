@@ -1,4 +1,4 @@
-import {User} from "./User";
+import {OneRoleUser} from "./User";
 import {RequestStatus} from "./RequestStatus";
 import {SchoolUserRole} from "./SchoolUserRole";
 
@@ -6,10 +6,10 @@ export type Request = RoleRequest | RegistrationRequest
 
 export class RegistrationRequest {
     id: number
-    requestedByUser: User
+    requestedByUser: OneRoleUser
     requestDate: Date
     requestStatus: RequestStatus
-    resolvedByUser: User | null
+    resolvedByUser: OneRoleUser | null
     resolvedDate: Date | null
 
     constructor(id, requestedByUser, requestDate, requestStatus, resolvedByUser, resolvedDate) {
@@ -25,10 +25,10 @@ export class RegistrationRequest {
 
 export class RoleRequest {
     id: number
-    requestedByUser: User
+    requestedByUser: OneRoleUser
     requestDate: Date
     requestStatus: RequestStatus
-    resolvedByUser: User | null
+    resolvedByUser: OneRoleUser | null
     resolvedDate: Date | null
     schoolUserRole: SchoolUserRole
 

@@ -5,9 +5,11 @@ import com.nevexis.backend.schoolManagement.school.SchoolService
 import com.nevexis.backend.schoolManagement.schoolClass.SchoolClass
 import com.nevexis.backend.schoolManagement.schoolClass.SchoolClassService
 import com.nevexis.backend.schoolManagement.security.JwtService
-import com.nevexis.backend.schoolManagement.security.UserSecurityService
-import com.nevexis.backend.schoolManagement.users.SchoolRole
+import com.nevexis.backend.schoolManagement.security.user_security.UserSecurity
+import com.nevexis.backend.schoolManagement.security.user_security.UserSecurityService
+import com.nevexis.backend.schoolManagement.users.UserService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolRolesService
+import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseCookie
@@ -25,6 +27,9 @@ class AuthenticationController {
 
     @Autowired
     private lateinit var userSecurityService: UserSecurityService
+
+    @Autowired
+    private lateinit var userService: UserService
 
     @Autowired
     private lateinit var schoolClassService: SchoolClassService
@@ -56,20 +61,14 @@ class AuthenticationController {
                 val refreshToken = jwtService.generateRefreshToken(userDetails)
                 exchange.response.addCookie(generateCookie(token, "token"))
                 exchange.response.addCookie(generateCookie(refreshToken, "refreshToken"))
+                val frontendUser = userDetails.user.copy(password = null)
                 ResponseEntity.ok(
-                    AuthenticationResponse(
-                        jwtService.generateToken(userDetails),
-                        jwtService.generateRefreshToken(userDetails)
+                    AuthenticationResponse.Success(
+                        frontendUser
                     )
                 )
             } ?: ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(AuthenticationResponse(null, "Error while logging in"))
-    }
-
-    @PostMapping("/get-all-school-user-roles-for-user")
-    fun getAllSchoolUserRolesForUser(principal: Principal): List<SchoolRole> {
-        val userId = userSecurityService.findUserByUsername(principal.name)?.user?.id ?: error("User not existing")
-        return schoolUserRolesService.getAllUserRoles(userId)
+            .body(AuthenticationResponse.Error(AuthenticationResult.ERROR))
     }
 
     @PostMapping("/authenticate-after-selected-school")
@@ -87,18 +86,18 @@ class AuthenticationController {
                 val refreshToken = jwtService.generateRefreshToken(userDetails)
                 exchange.response.addCookie(generateCookie(token, "token"))
                 exchange.response.addCookie(generateCookie(refreshToken, "refreshToken"))
+                val frontendUser = userDetails.user.copy(password = null)
                 ResponseEntity.ok(
-                    AuthenticationResponse(
-                        jwtService.generateToken(userDetails),
-                        jwtService.generateRefreshToken(userDetails)
+                    AuthenticationResponse.Success(
+                        frontendUser
                     )
                 )
             } ?: ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(AuthenticationResponse(null, "Error while logging in"))
+            .body(AuthenticationResponse.Error(AuthenticationResult.ERROR))
     }
 
     @GetMapping("/get-all-user-roles")
-    suspend fun getAllUserRoles(principal: Principal): List<SchoolRole> {
+    suspend fun getAllUserRoles(principal: Principal): List<SchoolUserRole> {
         val userId = userSecurityService.findUserByUsername(principal.name)?.user?.id
             ?: error("User with username ${principal.name} does not exist")
         return schoolUserRolesService.getAllUserRoles(userId)
@@ -127,4 +126,13 @@ class AuthenticationController {
         .secure(true)
         .sameSite("strict")
         .build()
+
+    sealed class AuthenticationResponse {
+        data class Success(val user: UserSecurity) : AuthenticationResponse()
+        data class Error(val result: AuthenticationResult) : AuthenticationResponse()
+    }
+
+    enum class AuthenticationResult {
+        ERROR
+    }
 }

@@ -15,6 +15,7 @@ import AbsenceTabPerSubject from "./pages/per-school-class-evaluations/absence-t
 import LoginSingIn from "./pages/login-signin.vue";
 import LoginTab from "./pages/login-tab.vue";
 import SignInTab from "./pages/sign-in-tab.vue";
+import {userIsLoggedIn} from "./services/LocalStorageService";
 
 const routes = [
     {
@@ -28,6 +29,10 @@ const routes = [
         path: '/',
         component: MainPage,
         redirect: to => ({path: `/home`}),
+        beforeEnter: (to, from, next) => {
+            if (!userIsLoggedIn()) return next('/login')
+            return next()
+        },
         children: [
             {path: '/home', component: Home},
             {path: '/component/:year(\\d+)/:month(\\d+)', component: Component, props: true},

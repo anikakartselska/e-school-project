@@ -16,16 +16,16 @@ class UsersController {
         @RequestParam schoolId: BigDecimal
     ) = userService.getAllUserViewsBySchool(schoolId)
 
-    @GetMapping("/get-user-by-id")
-    fun getUserDetailsById(
-        @RequestParam userId: BigDecimal,
-        @RequestParam periodId: BigDecimal,
-        @RequestParam schoolId: BigDecimal
-    ) = userService.getUserWithDetailsByUserIdAndSchoolId(userId, periodId, schoolId)
+//    @GetMapping("/get-user-by-id")
+//    fun getUserDetailsById(
+//        @RequestParam userId: BigDecimal,
+//        @RequestParam periodId: BigDecimal,
+//        @RequestParam schoolId: BigDecimal
+//    ) = userService.getUserWithDetailsByUserIdAndSchoolId(userId, periodId, schoolId)
 
-    @GetMapping("/get-all-students-from-class")
-    fun fetchUsersFromClass(
-        @RequestParam schoolClassId: BigDecimal,
-        @RequestParam periodId: BigDecimal
-    ) = userService.getAllStudentsInSchoolClass(schoolClassId, periodId)
+//    @GetMapping("/get-all-students-from-class")
+//    fun fetchUsersFromClass(
+//        @RequestParam schoolClassId: BigDecimal,
+//        @RequestParam periodId: BigDecimal
+//    ) = userService.getAllStudentsInSchoolClass(schoolClassId, periodId)
 }

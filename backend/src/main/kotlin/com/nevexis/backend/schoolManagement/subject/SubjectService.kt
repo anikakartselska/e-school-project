@@ -4,8 +4,10 @@ import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.evaluation.EvaluationService
 import com.nevexis.backend.schoolManagement.evaluation.EvaluationType
 import com.nevexis.backend.schoolManagement.evaluation.StudentWithEvaluationDTO
+import com.nevexis.backend.schoolManagement.users.SchoolRole
 import com.nevexis.backend.schoolManagement.users.UserService
 import com.nevexis.`demo-project`.jooq.tables.records.SubjectRecord
+import com.nevexis.`demo-project`.jooq.tables.records.UserRecord
 import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_CLASS
 import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_CLASS_SUBJECT
 import com.nevexis.`demo-project`.jooq.tables.references.SUBJECT
@@ -109,9 +111,7 @@ class SubjectService : BaseService() {
             }
 
 
-    fun mapToInternalModel(record: Record) = record.into(SubjectRecord::class.java).let {
-        it.into(Subject::class.java).copy(
-            teacher = userService.mapToUserView(record, it.schoolId!!)
-        )
-    }
+    fun mapToInternalModel(record: Record) = record.into(SubjectRecord::class.java).into(Subject::class.java).copy(
+        teacher = userService.mapToUserView(record.into(UserRecord::class.java), listOf(SchoolRole.TEACHER))
+    )
 }

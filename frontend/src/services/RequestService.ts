@@ -1,5 +1,5 @@
 import {api, auth} from "../boot/axios";
-import {StudentView, User, UserView} from "../model/User";
+import {OneRoleUser, StudentView, UserView} from "../model/User";
 import {SubjectWithEvaluationDTO} from "../model/SubjectWithEvaluationDTO";
 import {Subject, SubjectWithSchoolClassInformation} from "../model/Subject";
 import axios, {AxiosResponse} from "axios";
@@ -11,6 +11,10 @@ export const login = async (email: string, password: string): Promise<AxiosRespo
         await axios.post<string>(`/authenticate`, {username: email, password}, {
             baseURL: "/auth",
         })
+export const logout = async () =>
+        await axios.post(`/logout`, null, {
+            baseURL: "/auth",
+        })
 
 
 export const loginAfterSelectedRole = async (roleId: number): Promise<AxiosResponse> =>
@@ -18,11 +22,12 @@ export const loginAfterSelectedRole = async (roleId: number): Promise<AxiosRespo
             params: {roleId: roleId},
             baseURL: "/auth",
         })
+
 export const getAllUsersBySchoolId = async (schoolId): Promise<UserView[]> =>
         await api.get<UserView[]>('/get-all-users-by-school-id', {params: {schoolId: schoolId}}).then(p => p.data)
 
-export const getUserWithDetailsByUserId = async (userId, periodId, schoolId): Promise<User> =>
-        await api.get<User>('/get-user-by-id', {
+export const getUserWithDetailsByUserId = async (userId, periodId, schoolId): Promise<OneRoleUser> =>
+        await api.get<OneRoleUser>('/get-user-by-id', {
             params: {
                 userId: userId,
                 periodId: periodId,

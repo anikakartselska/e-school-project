@@ -39,14 +39,7 @@
         <table>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>REGISTRATION_REQUEST</table_name>
-            <table_type>BASE TABLE</table_type>
-            <comment></comment>
-        </table>
-        <table>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>ROLE_REQUEST</table_name>
+            <table_name>REQUEST</table_name>
             <table_type>BASE TABLE</table_type>
             <comment></comment>
         </table>
@@ -82,6 +75,13 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>SCHOOL_PERIOD</table_name>
+            <table_type>BASE TABLE</table_type>
+            <comment></comment>
+        </table>
+        <table>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_USER</table_name>
             <table_type>BASE TABLE</table_type>
             <comment></comment>
         </table>
@@ -508,7 +508,7 @@
         <column>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>REGISTRATION_REQUEST</table_name>
+            <table_name>REQUEST</table_name>
             <column_name>ID</column_name>
             <data_type>numeric</data_type>
             <character_maximum_length>0</character_maximum_length>
@@ -521,7 +521,7 @@
         <column>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>REGISTRATION_REQUEST</table_name>
+            <table_name>REQUEST</table_name>
             <column_name>VERIFICATION_STATUS</column_name>
             <data_type>varchar</data_type>
             <character_maximum_length>0</character_maximum_length>
@@ -534,7 +534,7 @@
         <column>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>REGISTRATION_REQUEST</table_name>
+            <table_name>REQUEST</table_name>
             <column_name>REQUESTED_BY_USER_ID</column_name>
             <data_type>numeric</data_type>
             <character_maximum_length>0</character_maximum_length>
@@ -547,90 +547,12 @@
         <column>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>REGISTRATION_REQUEST</table_name>
-            <column_name>REQUEST_DATE</column_name>
-            <data_type>timestamp</data_type>
-            <character_maximum_length>0</character_maximum_length>
-            <numeric_precision>6</numeric_precision>
-            <numeric_scale>0</numeric_scale>
-            <ordinal_position>4</ordinal_position>
-            <is_nullable>false</is_nullable>
-            <comment></comment>
-        </column>
-        <column>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>REGISTRATION_REQUEST</table_name>
-            <column_name>RESOLVED_BY_USER_ID</column_name>
-            <data_type>numeric</data_type>
-            <character_maximum_length>0</character_maximum_length>
-            <numeric_precision>0</numeric_precision>
-            <numeric_scale>0</numeric_scale>
-            <ordinal_position>5</ordinal_position>
-            <is_nullable>true</is_nullable>
-            <comment></comment>
-        </column>
-        <column>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>REGISTRATION_REQUEST</table_name>
-            <column_name>RESOLVED_DATE</column_name>
-            <data_type>timestamp</data_type>
-            <character_maximum_length>0</character_maximum_length>
-            <numeric_precision>6</numeric_precision>
-            <numeric_scale>0</numeric_scale>
-            <ordinal_position>6</ordinal_position>
-            <is_nullable>true</is_nullable>
-            <comment></comment>
-        </column>
-        <column>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>ROLE_REQUEST</table_name>
-            <column_name>ID</column_name>
-            <data_type>numeric</data_type>
-            <character_maximum_length>0</character_maximum_length>
-            <numeric_precision>0</numeric_precision>
-            <numeric_scale>0</numeric_scale>
-            <ordinal_position>1</ordinal_position>
-            <is_nullable>true</is_nullable>
-            <comment></comment>
-        </column>
-        <column>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>ROLE_REQUEST</table_name>
-            <column_name>VERIFICATION_STATUS</column_name>
+            <table_name>REQUEST</table_name>
+            <column_name>REQUEST_VALUE</column_name>
             <data_type>varchar</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
-            <ordinal_position>2</ordinal_position>
-            <is_nullable>true</is_nullable>
-            <comment></comment>
-        </column>
-        <column>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>ROLE_REQUEST</table_name>
-            <column_name>REQUESTED_BY_USER_ID</column_name>
-            <data_type>numeric</data_type>
-            <character_maximum_length>0</character_maximum_length>
-            <numeric_precision>0</numeric_precision>
-            <numeric_scale>0</numeric_scale>
-            <ordinal_position>3</ordinal_position>
-            <is_nullable>true</is_nullable>
-            <comment></comment>
-        </column>
-        <column>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>ROLE_REQUEST</table_name>
-            <column_name>SCHOOL_USER_ROLE_ID</column_name>
-            <data_type>numeric</data_type>
-            <character_maximum_length>0</character_maximum_length>
-            <numeric_precision>0</numeric_precision>
-            <numeric_scale>0</numeric_scale>
             <ordinal_position>4</ordinal_position>
             <is_nullable>true</is_nullable>
             <comment></comment>
@@ -638,7 +560,7 @@
         <column>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>ROLE_REQUEST</table_name>
+            <table_name>REQUEST</table_name>
             <column_name>REQUEST_DATE</column_name>
             <data_type>timestamp</data_type>
             <character_maximum_length>0</character_maximum_length>
@@ -651,7 +573,7 @@
         <column>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>ROLE_REQUEST</table_name>
+            <table_name>REQUEST</table_name>
             <column_name>RESOLVED_BY_USER_ID</column_name>
             <data_type>numeric</data_type>
             <character_maximum_length>0</character_maximum_length>
@@ -664,7 +586,7 @@
         <column>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>ROLE_REQUEST</table_name>
+            <table_name>REQUEST</table_name>
             <column_name>RESOLVED_DATE</column_name>
             <data_type>timestamp</data_type>
             <character_maximum_length>0</character_maximum_length>
@@ -966,7 +888,7 @@
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>SCHOOL_PERIOD</table_name>
             <column_name>START_YEAR</column_name>
-            <data_type>numeric</data_type>
+            <data_type>date</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
@@ -979,7 +901,7 @@
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>SCHOOL_PERIOD</table_name>
             <column_name>END_YEAR</column_name>
-            <data_type>numeric</data_type>
+            <data_type>date</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
@@ -997,6 +919,71 @@
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
             <ordinal_position>4</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_USER</table_name>
+            <column_name>SCHOOL_ID</column_name>
+            <data_type>numeric</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>1</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_USER</table_name>
+            <column_name>USER_ID</column_name>
+            <data_type>numeric</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>2</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_USER</table_name>
+            <column_name>ID</column_name>
+            <data_type>numeric</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>3</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_USER</table_name>
+            <column_name>STATUS</column_name>
+            <data_type>varchar</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>4</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_USER</table_name>
+            <column_name>PERIOD_ID</column_name>
+            <data_type>numeric</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>5</ordinal_position>
             <is_nullable>true</is_nullable>
             <comment></comment>
         </column>
@@ -1352,19 +1339,6 @@
             <is_nullable>true</is_nullable>
             <comment></comment>
         </column>
-        <column>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>USER</table_name>
-            <column_name>STATUS</column_name>
-            <data_type>varchar</data_type>
-            <character_maximum_length>0</character_maximum_length>
-            <numeric_precision>0</numeric_precision>
-            <numeric_scale>0</numeric_scale>
-            <ordinal_position>12</ordinal_position>
-            <is_nullable>true</is_nullable>
-            <comment></comment>
-        </column>
     </columns>
     <table_constraints>
         <table_constraint>
@@ -1400,21 +1374,11 @@
         <table_constraint>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
-            <constraint_name>PK_REGISTRATION_REQUEST</constraint_name>
+            <constraint_name>PK_REQUEST</constraint_name>
             <constraint_type>PRIMARY KEY</constraint_type>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>REGISTRATION_REQUEST</table_name>
-            <enforced>true</enforced>
-        </table_constraint>
-        <table_constraint>
-            <constraint_catalog></constraint_catalog>
-            <constraint_schema>DEMO_PROJECT</constraint_schema>
-            <constraint_name>PK_ROLE_REQUEST</constraint_name>
-            <constraint_type>PRIMARY KEY</constraint_type>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>ROLE_REQUEST</table_name>
+            <table_name>REQUEST</table_name>
             <enforced>true</enforced>
         </table_constraint>
         <table_constraint>
@@ -1470,6 +1434,16 @@
         <table_constraint>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>PK_SCHOOL_USER</constraint_name>
+            <constraint_type>PRIMARY KEY</constraint_type>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_USER</table_name>
+            <enforced>true</enforced>
+        </table_constraint>
+        <table_constraint>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
             <constraint_name>PK_SCHOOL_USER_ROLE</constraint_name>
             <constraint_type>PRIMARY KEY</constraint_type>
             <table_catalog></table_catalog>
@@ -1515,16 +1489,6 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>PARENT_STUDENT</table_name>
-            <enforced>true</enforced>
-        </table_constraint>
-        <table_constraint>
-            <constraint_catalog></constraint_catalog>
-            <constraint_schema>DEMO_PROJECT</constraint_schema>
-            <constraint_name>FK_ROLE_REQUEST</constraint_name>
-            <constraint_type>FOREIGN KEY</constraint_type>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>ROLE_REQUEST</table_name>
             <enforced>true</enforced>
         </table_constraint>
         <table_constraint>
@@ -1583,21 +1547,11 @@
             <column_name>ID</column_name>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
-            <constraint_name>PK_REGISTRATION_REQUEST</constraint_name>
+            <constraint_name>PK_REQUEST</constraint_name>
             <ordinal_position>1</ordinal_position>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>REGISTRATION_REQUEST</table_name>
-        </key_column_usage>
-        <key_column_usage>
-            <column_name>ID</column_name>
-            <constraint_catalog></constraint_catalog>
-            <constraint_schema>DEMO_PROJECT</constraint_schema>
-            <constraint_name>PK_ROLE_REQUEST</constraint_name>
-            <ordinal_position>1</ordinal_position>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>ROLE_REQUEST</table_name>
+            <table_name>REQUEST</table_name>
         </key_column_usage>
         <key_column_usage>
             <column_name>ID</column_name>
@@ -1663,6 +1617,16 @@
             <column_name>ID</column_name>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>PK_SCHOOL_USER</constraint_name>
+            <ordinal_position>1</ordinal_position>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_USER</table_name>
+        </key_column_usage>
+        <key_column_usage>
+            <column_name>ID</column_name>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
             <constraint_name>PK_SCHOOL_USER_ROLE</constraint_name>
             <ordinal_position>1</ordinal_position>
             <table_catalog></table_catalog>
@@ -1723,16 +1687,6 @@
             <column_name>SCHOOL_USER_ROLE_ID</column_name>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
-            <constraint_name>FK_ROLE_REQUEST</constraint_name>
-            <ordinal_position>1</ordinal_position>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>ROLE_REQUEST</table_name>
-        </key_column_usage>
-        <key_column_usage>
-            <column_name>SCHOOL_USER_ROLE_ID</column_name>
-            <constraint_catalog></constraint_catalog>
-            <constraint_schema>DEMO_PROJECT</constraint_schema>
             <constraint_name>SYS_C0012097</constraint_name>
             <ordinal_position>1</ordinal_position>
             <table_catalog></table_catalog>
@@ -1745,14 +1699,6 @@
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
             <constraint_name>SYS_C0012095</constraint_name>
-            <unique_constraint_catalog></unique_constraint_catalog>
-            <unique_constraint_schema>DEMO_PROJECT</unique_constraint_schema>
-            <unique_constraint_name>PK_SCHOOL_USER_ROLE</unique_constraint_name>
-        </referential_constraint>
-        <referential_constraint>
-            <constraint_catalog></constraint_catalog>
-            <constraint_schema>DEMO_PROJECT</constraint_schema>
-            <constraint_name>FK_ROLE_REQUEST</constraint_name>
             <unique_constraint_catalog></unique_constraint_catalog>
             <unique_constraint_schema>DEMO_PROJECT</unique_constraint_schema>
             <unique_constraint_name>PK_SCHOOL_USER_ROLE</unique_constraint_name>

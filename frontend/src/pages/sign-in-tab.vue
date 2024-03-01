@@ -69,14 +69,14 @@
 <script lang="ts" setup>
 
 import {$computed, $ref} from "vue/macros";
-import {User} from "../model/User";
+import {OneRoleUser} from "../model/User";
 import {useQuasar} from "quasar";
 import AddRoleDialog from "./add-role-dialog.vue";
 import {getAllSchoolClasses, getAllSchools} from "../services/RequestService";
 import {SchoolUserRole} from "../model/SchoolUserRole";
 
 const quasar = useQuasar()
-const newUser = $ref(<User>{})
+const newUser = $ref(<OneRoleUser>{})
 const enableGoingToSchoolInformationStep = $computed(() =>
         newUser.firstName &&
         newUser.middleName &&

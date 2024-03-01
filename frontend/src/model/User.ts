@@ -1,28 +1,27 @@
 import {SchoolClass} from "./SchoolClass";
+import {SchoolUserRole} from "./SchoolUserRole";
 
-export interface User {
-    id: number | null
-    personalNumber: string | null
-    email: string | null
-    phoneNumber: string | null
-    firstName: string | null
-    middleName: string | null
-    lastName: string | null
-    username: string | null
-    address: string | null
-    role: SchoolRole[] | null
-    details: DetailsForUser[] | null
-    password: string | null
-}
-
-export interface UserView {
-    id: number
+export interface OneRoleUser {
+    id: number,
     firstName: string,
     middleName: string,
     lastName: string,
     username: string,
+    personalNumber: string,
     email: string,
-    role: SchoolRole[]
+    phoneNumber: string,
+    address: string,
+    role: SchoolUserRole
+}
+
+export interface UserView {
+    id: number,
+    email: string,
+    firstName: string,
+    middleName: string,
+    lastName: string,
+    username: string,
+    roles: SchoolRole[]
 }
 
 export interface StudentView {
@@ -32,7 +31,31 @@ export interface StudentView {
     middleName: string,
     lastName: string,
     username: string,
-    numberInClass: string,
+    numberInCass: string,
+}
+
+export interface UserWithAllRolesOrAllRolesFromSchool {
+    id: number | null,
+    firstName: string,
+    middleName: string,
+    lastName: string,
+    username: string,
+    personalNumber: string,
+    email: string,
+    phoneNumber: string,
+    address: string,
+    role: SchoolUserRole[]
+}
+
+export interface UserSecurity {
+    id: number,
+    email: string,
+    firstName: string,
+    middleName: string,
+    lastName: string,
+    password: string,
+    username: string,
+    role: SchoolUserRole
 }
 
 export enum SchoolRole {
@@ -59,10 +82,10 @@ export class DetailsForStudent {
 }
 
 export class DetailsForParent {
-    children: User | null
+    child: OneRoleUser | null
 
-    constructor(children: User | null) {
-        this.children = children
+    constructor(child: OneRoleUser | null) {
+        this.child = child
     }
 }
 
@@ -71,5 +94,3 @@ export const isDetailsForParent = (detailsForUser: DetailsForUser): detailsForUs
 
 export const isDetailsForStudent = (detailsForUser: DetailsForUser): detailsForUser is DetailsForStudent =>
         detailsForUser instanceof DetailsForStudent || (detailsForUser && 'numberInClass' in detailsForUser)
-
-

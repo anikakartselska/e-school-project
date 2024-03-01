@@ -1,29 +1,63 @@
+@file:UseSerializers(
+    BigDecimalSerializer::class
+)
+
 package com.nevexis.backend.schoolManagement.requests
 
-import com.nevexis.backend.schoolManagement.users.User
+
+import com.nevexis.backend.schoolManagement.users.UserView
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
+import com.nevexis.backend.schoolManagement.users.school_user.SchoolUser
+import com.nevexis.backend.serializers.BigDecimalSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.json.JsonContentPolymorphicSerializer
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.jsonObject
+import java.math.BigDecimal
 import java.time.LocalDateTime
 
-interface Request
-
-data class RegistrationRequest(
+data class Request(
     val id: Int,
-    val requestedByUser: User,
+    val requestedByUser: UserView,
+    val requestValue: RequestValue,
     val requestDate: LocalDateTime,
     val requestStatus: RequestStatus = RequestStatus.PENDING,
-    val resolvedByUser: User? = null,
+    val resolvedByUser: UserView? = null,
     val resolvedDate: LocalDateTime? = null
-) : Request
+)
 
-data class RoleRequest(
-    val id: Int,
-    val requestedByUser: User,
-    val schoolUserRole: SchoolUserRole,
-    val requestDate: LocalDateTime,
-    val requestStatus: RequestStatus = RequestStatus.PENDING,
-    val resolvedByUser: User? = null,
-    val resolvedDate: LocalDateTime? = null
-) : Request
+sealed class RequestValue {
+    data class UserRegistration(
+        val schoolUser: SchoolUser,
+    ) : RequestValue()
+
+    data class Role(
+        val schoolUserRole: SchoolUserRole
+    ) : RequestValue()
+}
+
+@Serializable(with = RequestValueSerializer::class)
+sealed class RequestValueJson {
+    @Serializable
+    data class UserRegistration(
+        val schoolUserId: BigDecimal,
+    ) : RequestValueJson()
+
+    @Serializable
+    data class Role(
+        val schoolUserRoleId: BigDecimal
+    ) : RequestValueJson()
+}
+
+object RequestValueSerializer :
+    JsonContentPolymorphicSerializer<RequestValueJson>(RequestValueJson::class) {
+    override fun selectDeserializer(element: JsonElement) = when {
+        "schoolUserId" in element.jsonObject -> RequestValueJson.UserRegistration.serializer()
+        "schoolUserRoleId" in element.jsonObject -> RequestValueJson.Role.serializer()
+        else -> error("There are no other types of requests")
+    }
+}
 
 enum class RequestStatus {
     PENDING,

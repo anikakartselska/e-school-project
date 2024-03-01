@@ -36,7 +36,9 @@ class JwtService {
 
     private fun buildToken(userDetails: SMSUserDetails, expiration: Long): String {
         return Jwts.builder().apply {
-            val extraClaims = mutableMapOf("roles" to userDetails.user.roles.map { it.name })
+            val extraClaims = userDetails.user.role?.role?.name?.let {
+                mutableMapOf("role" to it)
+            } ?: emptyMap()
             setClaims(extraClaims)
         }
             .setSubject(userDetails.username)
