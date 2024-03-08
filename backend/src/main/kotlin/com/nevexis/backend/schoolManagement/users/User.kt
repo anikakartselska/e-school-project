@@ -10,10 +10,11 @@ data class User(
     val lastName: String,
     val username: String,
     val personalNumber: String,
+    val gender: Gender,
     val email: String,
     val phoneNumber: String,
     val address: String,
-    val roles: List<SchoolUserRole>
+    val roles: List<SchoolUserRole>? = null
 )
 
 data class OneRoleUser(
@@ -23,6 +24,7 @@ data class OneRoleUser(
     val lastName: String,
     val username: String,
     val personalNumber: String,
+    val gender: Gender,
     val email: String,
     val phoneNumber: String,
     val address: String,
@@ -58,4 +60,8 @@ enum class UserStatus {
     ACTIVE,
     INACTIVE,
     DELETED
+}
+
+enum class Gender {
+    MALE, FEMALE
 }

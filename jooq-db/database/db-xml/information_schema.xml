@@ -81,6 +81,13 @@
         <table>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_PERIOD_SCHOOL</table_name>
+            <table_type>BASE TABLE</table_type>
+            <comment></comment>
+        </table>
+        <table>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
             <table_name>SCHOOL_ROLE_PERIOD</table_name>
             <table_type>BASE TABLE</table_type>
             <comment></comment>
@@ -387,25 +394,12 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>EVALUATION</table_name>
-            <column_name>STUDENT_ID</column_name>
-            <data_type>numeric</data_type>
-            <character_maximum_length>0</character_maximum_length>
-            <numeric_precision>0</numeric_precision>
-            <numeric_scale>0</numeric_scale>
-            <ordinal_position>2</ordinal_position>
-            <is_nullable>true</is_nullable>
-            <comment></comment>
-        </column>
-        <column>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>EVALUATION</table_name>
             <column_name>SUBJECT_ID</column_name>
             <data_type>numeric</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
-            <ordinal_position>3</ordinal_position>
+            <ordinal_position>2</ordinal_position>
             <is_nullable>true</is_nullable>
             <comment></comment>
         </column>
@@ -418,7 +412,7 @@
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
-            <ordinal_position>4</ordinal_position>
+            <ordinal_position>3</ordinal_position>
             <is_nullable>true</is_nullable>
             <comment></comment>
         </column>
@@ -431,7 +425,7 @@
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
-            <ordinal_position>5</ordinal_position>
+            <ordinal_position>4</ordinal_position>
             <is_nullable>true</is_nullable>
             <comment></comment>
         </column>
@@ -444,7 +438,7 @@
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
-            <ordinal_position>6</ordinal_position>
+            <ordinal_position>5</ordinal_position>
             <is_nullable>true</is_nullable>
             <comment></comment>
         </column>
@@ -457,7 +451,7 @@
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
-            <ordinal_position>7</ordinal_position>
+            <ordinal_position>6</ordinal_position>
             <is_nullable>true</is_nullable>
             <comment></comment>
         </column>
@@ -470,7 +464,7 @@
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
-            <ordinal_position>8</ordinal_position>
+            <ordinal_position>7</ordinal_position>
             <is_nullable>true</is_nullable>
             <comment></comment>
         </column>
@@ -483,6 +477,19 @@
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
+            <ordinal_position>8</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>EVALUATION</table_name>
+            <column_name>STUDENT_ROLE_ID</column_name>
+            <data_type>numeric</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
             <ordinal_position>9</ordinal_position>
             <is_nullable>true</is_nullable>
             <comment></comment>
@@ -491,7 +498,7 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>PARENT_STUDENT</table_name>
-            <column_name>STUDENT_ID</column_name>
+            <column_name>PARENT_SCHOOL_USER_ROLE_ID</column_name>
             <data_type>numeric</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
@@ -504,25 +511,12 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>PARENT_STUDENT</table_name>
-            <column_name>PARENT_ID</column_name>
+            <column_name>STUDENT_SCHOOL_USER_ROLE_ID</column_name>
             <data_type>numeric</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
             <ordinal_position>2</ordinal_position>
-            <is_nullable>true</is_nullable>
-            <comment></comment>
-        </column>
-        <column>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>PARENT_STUDENT</table_name>
-            <column_name>SCHOOL_USER_ROLE_ID</column_name>
-            <data_type>numeric</data_type>
-            <character_maximum_length>0</character_maximum_length>
-            <numeric_precision>0</numeric_precision>
-            <numeric_scale>0</numeric_scale>
-            <ordinal_position>3</ordinal_position>
             <is_nullable>true</is_nullable>
             <comment></comment>
         </column>
@@ -959,6 +953,45 @@
         <column>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_PERIOD_SCHOOL</table_name>
+            <column_name>SCHOOL_ID</column_name>
+            <data_type>numeric</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>1</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_PERIOD_SCHOOL</table_name>
+            <column_name>SCHOOL_PERIOD_ID</column_name>
+            <data_type>numeric</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>2</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_PERIOD_SCHOOL</table_name>
+            <column_name>ID</column_name>
+            <data_type>numeric</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>3</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
             <table_name>SCHOOL_ROLE_PERIOD</table_name>
             <column_name>SCHOOL_USER_ROLE_ID</column_name>
             <data_type>numeric</data_type>
@@ -1168,7 +1201,7 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>STUDENT_SCHOOL_CLASS</table_name>
-            <column_name>STUDENT_ID</column_name>
+            <column_name>SCHOOL_CLASS_ID</column_name>
             <data_type>numeric</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
@@ -1181,7 +1214,7 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>STUDENT_SCHOOL_CLASS</table_name>
-            <column_name>SCHOOL_CLASS_ID</column_name>
+            <column_name>NUMBER_IN_CLASS</column_name>
             <data_type>numeric</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
@@ -1194,38 +1227,12 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>STUDENT_SCHOOL_CLASS</table_name>
-            <column_name>PERIOD_ID</column_name>
+            <column_name>STUDENT_SCHOOL_USER_ROLE_ID</column_name>
             <data_type>numeric</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
             <ordinal_position>3</ordinal_position>
-            <is_nullable>true</is_nullable>
-            <comment></comment>
-        </column>
-        <column>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>STUDENT_SCHOOL_CLASS</table_name>
-            <column_name>NUMBER_IN_CLASS</column_name>
-            <data_type>numeric</data_type>
-            <character_maximum_length>0</character_maximum_length>
-            <numeric_precision>0</numeric_precision>
-            <numeric_scale>0</numeric_scale>
-            <ordinal_position>4</ordinal_position>
-            <is_nullable>true</is_nullable>
-            <comment></comment>
-        </column>
-        <column>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>STUDENT_SCHOOL_CLASS</table_name>
-            <column_name>SCHOOL_USER_ROLE_ID</column_name>
-            <data_type>numeric</data_type>
-            <character_maximum_length>0</character_maximum_length>
-            <numeric_precision>0</numeric_precision>
-            <numeric_scale>0</numeric_scale>
-            <ordinal_position>5</ordinal_position>
             <is_nullable>true</is_nullable>
             <comment></comment>
         </column>
@@ -1415,21 +1422,20 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>USER</table_name>
-            <column_name>DELETED</column_name>
-            <data_type>char</data_type>
-            <character_maximum_length>1</character_maximum_length>
+            <column_name>PASSWORD</column_name>
+            <data_type>varchar</data_type>
+            <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
             <ordinal_position>10</ordinal_position>
-            <is_nullable>false</is_nullable>
-            <column_default>'''N'' '</column_default>
+            <is_nullable>true</is_nullable>
             <comment></comment>
         </column>
         <column>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>USER</table_name>
-            <column_name>PASSWORD</column_name>
+            <column_name>GENDER</column_name>
             <data_type>varchar</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
@@ -1533,6 +1539,16 @@
         <table_constraint>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>PK_SCHOOL_PERIOD_SCHOOL</constraint_name>
+            <constraint_type>PRIMARY KEY</constraint_type>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_PERIOD_SCHOOL</table_name>
+            <enforced>true</enforced>
+        </table_constraint>
+        <table_constraint>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
             <constraint_name>PK_SCHOOL_ROLE_PERIOD</constraint_name>
             <constraint_type>PRIMARY KEY</constraint_type>
             <table_catalog></table_catalog>
@@ -1613,7 +1629,27 @@
         <table_constraint>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
-            <constraint_name>SYS_C0012095</constraint_name>
+            <constraint_name>FK_EVALUATION_STUDENT_ROLE</constraint_name>
+            <constraint_type>FOREIGN KEY</constraint_type>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>EVALUATION</table_name>
+            <enforced>true</enforced>
+        </table_constraint>
+        <table_constraint>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>SYS_C0012430</constraint_name>
+            <constraint_type>FOREIGN KEY</constraint_type>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>PARENT_STUDENT</table_name>
+            <enforced>true</enforced>
+        </table_constraint>
+        <table_constraint>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>SYS_C0012431</constraint_name>
             <constraint_type>FOREIGN KEY</constraint_type>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
@@ -1633,17 +1669,7 @@
         <table_constraint>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
-            <constraint_name>SYS_C0012388</constraint_name>
-            <constraint_type>FOREIGN KEY</constraint_type>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>SCHOOL_USER_PERIOD</table_name>
-            <enforced>true</enforced>
-        </table_constraint>
-        <table_constraint>
-            <constraint_catalog></constraint_catalog>
-            <constraint_schema>DEMO_PROJECT</constraint_schema>
-            <constraint_name>SYS_C0012097</constraint_name>
+            <constraint_name>SYS_C0012441</constraint_name>
             <constraint_type>FOREIGN KEY</constraint_type>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
@@ -1673,7 +1699,7 @@
             <table_name>EVALUATION</table_name>
         </key_column_usage>
         <key_column_usage>
-            <column_name>STUDENT_ID</column_name>
+            <column_name>PARENT_SCHOOL_USER_ROLE_ID</column_name>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
             <constraint_name>PK_PARENT_STUDENT</constraint_name>
@@ -1683,7 +1709,7 @@
             <table_name>PARENT_STUDENT</table_name>
         </key_column_usage>
         <key_column_usage>
-            <column_name>PARENT_ID</column_name>
+            <column_name>STUDENT_SCHOOL_USER_ROLE_ID</column_name>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
             <constraint_name>PK_PARENT_STUDENT</constraint_name>
@@ -1763,6 +1789,16 @@
             <table_name>SCHOOL_PERIOD</table_name>
         </key_column_usage>
         <key_column_usage>
+            <column_name>ID</column_name>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>PK_SCHOOL_PERIOD_SCHOOL</constraint_name>
+            <ordinal_position>1</ordinal_position>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_PERIOD_SCHOOL</table_name>
+        </key_column_usage>
+        <key_column_usage>
             <column_name>SCHOOL_USER_ROLE_ID</column_name>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
@@ -1853,21 +1889,11 @@
             <table_name>SEMESTER</table_name>
         </key_column_usage>
         <key_column_usage>
-            <column_name>STUDENT_ID</column_name>
-            <constraint_catalog></constraint_catalog>
-            <constraint_schema>DEMO_PROJECT</constraint_schema>
-            <constraint_name>PK_STUDENT_SCHOOL_CLASS</constraint_name>
-            <ordinal_position>1</ordinal_position>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>STUDENT_SCHOOL_CLASS</table_name>
-        </key_column_usage>
-        <key_column_usage>
             <column_name>SCHOOL_CLASS_ID</column_name>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
             <constraint_name>PK_STUDENT_SCHOOL_CLASS</constraint_name>
-            <ordinal_position>2</ordinal_position>
+            <ordinal_position>1</ordinal_position>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>STUDENT_SCHOOL_CLASS</table_name>
@@ -1893,10 +1919,30 @@
             <table_name>USER</table_name>
         </key_column_usage>
         <key_column_usage>
-            <column_name>SCHOOL_USER_ROLE_ID</column_name>
+            <column_name>STUDENT_ROLE_ID</column_name>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
-            <constraint_name>SYS_C0012095</constraint_name>
+            <constraint_name>FK_EVALUATION_STUDENT_ROLE</constraint_name>
+            <ordinal_position>1</ordinal_position>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>EVALUATION</table_name>
+        </key_column_usage>
+        <key_column_usage>
+            <column_name>PARENT_SCHOOL_USER_ROLE_ID</column_name>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>SYS_C0012430</constraint_name>
+            <ordinal_position>1</ordinal_position>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>PARENT_STUDENT</table_name>
+        </key_column_usage>
+        <key_column_usage>
+            <column_name>STUDENT_SCHOOL_USER_ROLE_ID</column_name>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>SYS_C0012431</constraint_name>
             <ordinal_position>1</ordinal_position>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
@@ -1913,20 +1959,10 @@
             <table_name>SCHOOL_ROLE_PERIOD</table_name>
         </key_column_usage>
         <key_column_usage>
-            <column_name>SCHOOL_USER_ID</column_name>
+            <column_name>STUDENT_SCHOOL_USER_ROLE_ID</column_name>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
-            <constraint_name>SYS_C0012388</constraint_name>
-            <ordinal_position>1</ordinal_position>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>SCHOOL_USER_PERIOD</table_name>
-        </key_column_usage>
-        <key_column_usage>
-            <column_name>SCHOOL_USER_ROLE_ID</column_name>
-            <constraint_catalog></constraint_catalog>
-            <constraint_schema>DEMO_PROJECT</constraint_schema>
-            <constraint_name>SYS_C0012097</constraint_name>
+            <constraint_name>SYS_C0012441</constraint_name>
             <ordinal_position>1</ordinal_position>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
@@ -1937,7 +1973,23 @@
         <referential_constraint>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
-            <constraint_name>SYS_C0012095</constraint_name>
+            <constraint_name>FK_EVALUATION_STUDENT_ROLE</constraint_name>
+            <unique_constraint_catalog></unique_constraint_catalog>
+            <unique_constraint_schema>DEMO_PROJECT</unique_constraint_schema>
+            <unique_constraint_name>PK_SCHOOL_USER_ROLE</unique_constraint_name>
+        </referential_constraint>
+        <referential_constraint>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>SYS_C0012430</constraint_name>
+            <unique_constraint_catalog></unique_constraint_catalog>
+            <unique_constraint_schema>DEMO_PROJECT</unique_constraint_schema>
+            <unique_constraint_name>PK_SCHOOL_USER_ROLE</unique_constraint_name>
+        </referential_constraint>
+        <referential_constraint>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>SYS_C0012431</constraint_name>
             <unique_constraint_catalog></unique_constraint_catalog>
             <unique_constraint_schema>DEMO_PROJECT</unique_constraint_schema>
             <unique_constraint_name>PK_SCHOOL_USER_ROLE</unique_constraint_name>
@@ -1953,15 +2005,7 @@
         <referential_constraint>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
-            <constraint_name>SYS_C0012388</constraint_name>
-            <unique_constraint_catalog></unique_constraint_catalog>
-            <unique_constraint_schema>DEMO_PROJECT</unique_constraint_schema>
-            <unique_constraint_name>PK_SCHOOL_USER</unique_constraint_name>
-        </referential_constraint>
-        <referential_constraint>
-            <constraint_catalog></constraint_catalog>
-            <constraint_schema>DEMO_PROJECT</constraint_schema>
-            <constraint_name>SYS_C0012097</constraint_name>
+            <constraint_name>SYS_C0012441</constraint_name>
             <unique_constraint_catalog></unique_constraint_catalog>
             <unique_constraint_schema>DEMO_PROJECT</unique_constraint_schema>
             <unique_constraint_name>PK_SCHOOL_USER_ROLE</unique_constraint_name>

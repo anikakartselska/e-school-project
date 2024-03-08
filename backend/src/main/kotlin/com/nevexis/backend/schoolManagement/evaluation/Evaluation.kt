@@ -5,7 +5,7 @@ import java.time.LocalDate
 
 data class Evaluation(
     val id: BigDecimal,
-    val studentId: BigDecimal,
+    val studentRoleId: BigDecimal,
     val subjectId: BigDecimal,
     val schoolLessonId: BigDecimal,
     val evaluationDate: LocalDate,

@@ -2,18 +2,27 @@ import {DetailsForParent, DetailsForStudent, DetailsForUser, SchoolRole} from ".
 import {RequestStatus} from "./RequestStatus";
 import {School} from "./School";
 import {translationOfRoles} from "../utils";
+import {SchoolPeriod} from "./SchoolPeriod";
 
 export interface SchoolUserRole {
     id: number,
     userId: number,
-    periodId: number,
+    period: SchoolPeriod,
     school: School,
     role: SchoolRole,
     status: RequestStatus
     detailsForUser: DetailsForUser | null
 }
 
+export const constructSchoolUserRoleMessageWithSchoolAndPeriodInformation = (schoolUserRole: SchoolUserRole) => {
+    const detailsMessage = constructDetailsMessage(schoolUserRole)
+    return `${translationOfRoles[schoolUserRole.role]} ${detailsMessage} - ${schoolUserRole.school.schoolName} - ${schoolUserRole.period.startYear.substring(0, 4)}/${schoolUserRole.period.endYear.substring(0, 4)}`
+}
 export const constructSchoolUserRoleMessage = (schoolUserRole: SchoolUserRole) => {
+    const detailsMessage = constructDetailsMessage(schoolUserRole)
+    return `${translationOfRoles[schoolUserRole.role]} ${detailsMessage} `
+}
+export const constructDetailsMessage = (schoolUserRole: SchoolUserRole) => {
     let detailsMessage = ''
     switch (schoolUserRole.role) {
         case SchoolRole.ADMIN:
@@ -25,9 +34,9 @@ export const constructSchoolUserRoleMessage = (schoolUserRole: SchoolUserRole) =
             break;
         }
         case SchoolRole.STUDENT: {
-            detailsMessage = ` - ученик в ${(schoolUserRole.detailsForUser as DetailsForStudent).schoolClass?.name}`
+            detailsMessage = ` - в ${(schoolUserRole.detailsForUser as DetailsForStudent).schoolClass?.name}`
             break
         }
     }
-    return `${translationOfRoles[schoolUserRole.role]} ${detailsMessage} `
+    return detailsMessage
 }

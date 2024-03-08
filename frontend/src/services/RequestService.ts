@@ -1,12 +1,12 @@
 import {api, auth} from "../boot/axios";
-import {OneRoleUser, StudentView, UserView} from "../model/User";
+import {OneRoleUser, StudentView, User, UserView} from "../model/User";
 import {SubjectWithEvaluationDTO} from "../model/SubjectWithEvaluationDTO";
 import {Subject, SubjectWithSchoolClassInformation} from "../model/Subject";
 import axios, {AxiosResponse} from "axios";
 import {SchoolClass} from "../model/SchoolClass";
 import {School} from "../model/School";
 import {SchoolUserRole} from "../model/SchoolUserRole";
-import {SchoolPeriod} from "../model/SchoolPeriod";
+import {SchoolPeriod, SchoolPeriodWithSchoolIds} from "../model/SchoolPeriod";
 
 export const login = async (email: string, password: string): Promise<AxiosResponse> =>
         await axios.post<string>(`/authenticate`, {username: email, password}, {
@@ -18,9 +18,9 @@ export const logout = async () =>
         })
 
 
-export const loginAfterSelectedRole = async (roleId: number): Promise<AxiosResponse> =>
+export const loginAfterSelectedRole = async (roleId: number, periodId: number): Promise<AxiosResponse> =>
         await auth.post<string>(`/authenticate-after-selected-school`, null, {
-            params: {roleId: roleId},
+            params: {roleId: roleId, periodId: periodId},
             baseURL: "/auth",
         })
 
@@ -88,8 +88,31 @@ export const getAllSchoolClasses = async (): Promise<SchoolClass[]> =>
 export const getAllSchools = async (): Promise<School[]> =>
         await auth.get<School[]>('/get-all-schools').then(p => p.data)
 
-export const getAllUserRoles = async (): Promise<SchoolUserRole[]> =>
-        await auth.get<SchoolUserRole[]>('/get-all-user-roles').then(p => p.data)
+export const getAllUserRoles = async (userId: number): Promise<SchoolUserRole[]> =>
+        await auth.get<SchoolUserRole[]>('/get-all-user-roles', {
+            params: {userId: userId}
+        }).then(p => p.data)
 
 export const getAllSchoolPeriods = async (): Promise<SchoolPeriod[]> =>
         await auth.get<SchoolPeriod[]>('/get-all-periods').then(p => p.data)
+
+export const getAllSchoolPeriodsWithTheSchoolsTheyAreStarted = async (): Promise<SchoolPeriodWithSchoolIds[]> =>
+        await auth.get<SchoolPeriodWithSchoolIds[]>('/get-all-school-periods-with-school-ids').then(p => p.data)
+
+export const findStudentByPhoneNumberPeriodAndSchoolClass = async (phoneNumber,
+                                                                   periodId,
+                                                                   schoolClassId): Promise<OneRoleUser> =>
+        await auth.get<OneRoleUser>('/find-user-by-phone-number-period-class', {
+            params: {
+                phoneNumber,
+                periodId,
+                schoolClassId,
+            }
+        }).then(p => p.data)
+export const findUserWithAllItsRolesByPhoneNumber = async (phoneNumber): Promise<User | null> =>
+        await auth.get<User | null>('/find-user-with-all-its-roles-by-phone-number', {
+            params: {
+                phoneNumber
+            }
+        }).then(p => p.data)
+

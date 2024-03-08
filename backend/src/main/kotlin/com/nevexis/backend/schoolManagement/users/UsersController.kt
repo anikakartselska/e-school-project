@@ -17,6 +17,7 @@ class UsersController {
         @RequestParam periodId: BigDecimal
     ) = userService.getAllUserViewsBySchool(schoolId, periodId)
 
+
 //    @GetMapping("/get-user-by-id")
 //    fun getUserDetailsById(
 //        @RequestParam userId: BigDecimal,

@@ -30,15 +30,16 @@ class SubjectService : BaseService() {
 
     fun getAllStudentSubjectsAndTheirEvaluations(
         schoolClassId: BigDecimal,
-        studentId: BigDecimal,
+        studentRoleId: BigDecimal,
         periodId: BigDecimal,
         schoolId: BigDecimal
     ): List<SubjectWithEvaluationDTO> {
-        val studentEvaluations = evaluationService.getAllEvaluationsForStudentAndPeriod(studentId, periodId, schoolId)
-            .groupBy { it.subjectId }
-            .mapValues { (_, evaluations) ->
-                evaluations.groupBy { it.evaluationType }
-            }
+        val studentEvaluations =
+            evaluationService.getAllEvaluationsForStudentAndPeriod(studentRoleId, periodId, schoolId)
+                .groupBy { it.subjectId }
+                .mapValues { (_, evaluations) ->
+                    evaluations.groupBy { it.evaluationType }
+                }
 
         return getAllSubjectsBySchoolClassId(schoolClassId, periodId, schoolId).map { subject ->
             SubjectWithEvaluationDTO(
@@ -61,7 +62,7 @@ class SubjectService : BaseService() {
 
         val studentIdToEvaluations =
             evaluationService.getAllEvaluationsForSubject(subjectId, schoolClassId, periodId, schoolId).groupBy {
-                it.studentId
+                it.studentRoleId
             }
 
         return studentsFromClassMap.map { student ->

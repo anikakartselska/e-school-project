@@ -17,7 +17,7 @@ class SubjectController {
     @GetMapping("/get-student-subjects-with-evaluation")
     fun getStudentSubjectsAndTheirEvaluations(
         schoolClassId: BigDecimal,
-        studentId: BigDecimal,
+        studentId: BigDecimal,//TODO studentRoleId
         schoolId: BigDecimal,
         periodId: BigDecimal
     ) = subjectService.getAllStudentSubjectsAndTheirEvaluations(schoolClassId, studentId, periodId, schoolId)

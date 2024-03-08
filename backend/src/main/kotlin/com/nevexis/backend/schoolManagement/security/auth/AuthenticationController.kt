@@ -7,10 +7,10 @@ import com.nevexis.backend.schoolManagement.schoolClass.SchoolClassService
 import com.nevexis.backend.schoolManagement.school_period.SchoolPeriod
 import com.nevexis.backend.schoolManagement.school_period.SchoolPeriodService
 import com.nevexis.backend.schoolManagement.security.JwtService
-import com.nevexis.backend.schoolManagement.security.user_security.UserSecurity
-import com.nevexis.backend.schoolManagement.security.user_security.UserSecurityService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolRolesService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
+import com.nevexis.backend.schoolManagement.users.user_security.UserSecurity
+import com.nevexis.backend.schoolManagement.users.user_security.UserSecurityService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseCookie
@@ -75,13 +75,14 @@ class AuthenticationController {
     @PostMapping("/authenticate-after-selected-school")
     fun authenticateAfterSelectedSchool(
         @RequestParam roleId: BigDecimal,
+        @RequestParam periodId: BigDecimal,
         principal: Principal,
         exchange: ServerWebExchange
     ): ResponseEntity<AuthenticationResponse> {
         exchange.response.addCookie(generateCookie("", "token"))// reset cookie
         exchange.response.addCookie(generateCookie("", "refreshToken"))// reset cookie
 
-        return userSecurityService.findActiveUserByUsername(principal.name, roleId)
+        return userSecurityService.findActiveUserByUsername(principal.name, periodId, roleId)
             ?.let { userDetails ->
                 val token = jwtService.generateToken(userDetails)
                 val refreshToken = jwtService.generateRefreshToken(userDetails)
@@ -98,26 +99,25 @@ class AuthenticationController {
     }
 
     @GetMapping("/get-all-user-roles")
-    suspend fun getAllUserRoles(principal: Principal): List<SchoolUserRole> {
-        val userId = userSecurityService.findActiveUserByUsername(principal.name)?.user?.id
-            ?: error("User with username ${principal.name} does not exist")
-        return schoolUserRolesService.getAllUserRoles(userId)
-    }
+    suspend fun getAllUserRoles(@RequestParam userId: BigDecimal, principal: Principal): List<SchoolUserRole> =
+        schoolUserRolesService.getAllUserRoles(userId)
+
 
     @GetMapping("/get-all-school-classes")
-    suspend fun getSchoolClassesFromSchool(): List<SchoolClass> {
-        return schoolClassService.getSchoolClasses()
-    }
+    suspend fun getAllSchoolClasses(): List<SchoolClass> = schoolClassService.getSchoolClasses()
+
 
     @GetMapping("/get-all-periods")
-    suspend fun getAllSchoolPeriods(): List<SchoolPeriod> {
-        return schoolPeriodService.fetchAllSchoolPeriods()
-    }
+    suspend fun getAllSchoolPeriods(): List<SchoolPeriod> = schoolPeriodService.fetchAllSchoolPeriods()
+
+
+    @GetMapping("/get-all-school-periods-with-school-ids")
+    suspend fun getAllSchoolPeriodsWithTheSchoolsTheyAreStarted() =
+        schoolPeriodService.fetchAllSchoolPeriodsWithTheSchoolsTheyAreStarted()
+
 
     @GetMapping("/get-all-schools")
-    suspend fun getAllSchools(exchange: ServerWebExchange): List<School> {
-        return schoolService.getAllSchools()
-    }
+    suspend fun getAllSchools(exchange: ServerWebExchange): List<School> = schoolService.getAllSchools()
 
 
     @PostMapping("/logout")
@@ -125,6 +125,22 @@ class AuthenticationController {
         exchange.response.addCookie(generateCookie("", "token"))
         exchange.response.addCookie(generateCookie("", "refreshToken"))
     }
+
+    @GetMapping("/find-user-by-phone-number-period-class")
+    fun findStudentByPhoneNumberPeriodAndSchoolClass(
+        @RequestParam phoneNumber: String,
+        @RequestParam periodId: BigDecimal,
+        @RequestParam schoolClassId: BigDecimal
+    ) = userSecurityService.findStudentByPhoneNumberPeriodAndSchoolClass(
+        phoneNumber,
+        periodId,
+        schoolClassId
+    )
+
+    @GetMapping("/find-user-with-all-its-roles-by-phone-number")
+    fun findUserWithAllItsRolesByPhoneNumber(
+        @RequestParam phoneNumber: String
+    ) = userSecurityService.findUserWithAllItsRolesByPhoneNumber(phoneNumber)
 
     private fun generateCookie(token: String, cookieName: String) = ResponseCookie.from(cookieName, token)
         .path("/")

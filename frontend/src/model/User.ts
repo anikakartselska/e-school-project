@@ -34,17 +34,18 @@ export interface StudentView {
     numberInCass: string,
 }
 
-export interface UserWithAllRolesOrAllRolesFromSchool {
+export interface User {
     id: number | null,
     firstName: string,
     middleName: string,
     lastName: string,
     username: string,
     personalNumber: string,
+    gender: Gender,
     email: string,
     phoneNumber: string,
     address: string,
-    role: SchoolUserRole[]
+    roles: SchoolUserRole[] | null
 }
 
 export interface UserSecurity {
@@ -63,6 +64,11 @@ export enum SchoolRole {
     TEACHER = "TEACHER",
     STUDENT = "STUDENT",
     PARENT = "PARENT",
+}
+
+export enum Gender {
+    FEMALE = "FEMALE",
+    MALE = "MALE",
 }
 
 

@@ -14,6 +14,23 @@
               <q-icon name="school"/>
             </template>
           </q-select>
+          <q-select v-model="schoolUserRole.period" :option-label="(option:SchoolPeriodWithSchoolIds) => `${option.startYear.substring(0,4)}/${option.endYear.substring(0,4)}`"
+                    :option-value="(option: SchoolPeriodWithSchoolIds) => {return {
+    id: option.id,
+    startYear: option.startYear,
+    endYear: option.endYear,
+    firstSemester: option.firstSemester,
+    secondSemester: option.secondSemester
+  }
+}"
+                    :options="schoolPeriodOptions"
+                    emit-value
+                    label="Учебна година"
+                    map-options>
+            <template v-slot:prepend>
+              <q-icon name="calendar_month"/>
+            </template>
+          </q-select>
           <q-select v-model="schoolUserRole.role" :options="roleOptions"
                     :option-label="option => translationOfRoles[option]" label="Роля">
             <template v-slot:prepend>
@@ -32,7 +49,7 @@
             <q-input v-model="schoolUserRole.detailsForUser.child.firstName" class="q-pa-sm" filled label="Име"/>
             <q-input v-model="schoolUserRole.detailsForUser.child.lastName" class="q-pa-sm" filled label="Фамилия"/>
             <q-input v-model="schoolUserRole.detailsForUser.child.phoneNumber" class="q-pa-sm" filled label="Адрес"/>
-            <q-select v-model="schoolUserRole.detailsForUser.child.details.schoolClass"
+            <q-select v-model="schoolUserRole.detailsForUser.child.role.detailsForUser.schoolClass"
                       :options="schoolClassesOptions"
                       :option-label="option => option.name" label="Клас">
               <template v-slot:prepend>
@@ -68,22 +85,27 @@ import {watch} from "vue";
 import {SchoolUserRole} from "../model/SchoolUserRole";
 import {School} from "../model/School";
 import {RequestStatus} from "../model/RequestStatus";
+import {SchoolPeriodWithSchoolIds} from "../model/SchoolPeriod";
 
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
 const props = defineProps<{
   schoolOptions: School[],
+  schoolPeriodsWithSchoolIds: SchoolPeriodWithSchoolIds[],
   allSchoolClassesOptions: SchoolClass[]
 }>()
+
 const quasar = useQuasar()
 defineEmits([...useDialogPluginComponent.emits])
 
 const roleOptions = Object.keys(SchoolRole)
 let schoolClassesOptions = $ref(<SchoolClass[]>[])
+let schoolPeriodOptions = $ref(<SchoolPeriodWithSchoolIds[]>[])
 const schoolUserRole = $ref(<SchoolUserRole>{status: RequestStatus.PENDING})
 
 watch(() => schoolUserRole.school, async () => {
-          schoolClassesOptions = [...props.allSchoolClassesOptions].filter(it => it.schoolId == schoolUserRole.school.id)
+  schoolClassesOptions = [...props.allSchoolClassesOptions].filter(it => it.schoolId == schoolUserRole.school.id)
+  schoolPeriodOptions = [...props.schoolPeriodsWithSchoolIds].filter(it => it.schoolIds.find(schoolId => schoolId == schoolUserRole.school.id))
         }
 )
 watch(() => schoolUserRole.role, () => {
@@ -93,7 +115,7 @@ watch(() => schoolUserRole.role, () => {
       break
     }
     case SchoolRole.PARENT: {
-      schoolUserRole.detailsForUser = new DetailsForParent(<OneRoleUser><unknown>{details: new DetailsForStudent(<SchoolClass>{}, null)})
+      schoolUserRole.detailsForUser = new DetailsForParent(<OneRoleUser><unknown>{role: <SchoolUserRole><unknown>{detailsForUser: new DetailsForStudent(<SchoolClass>{}, null)}})
       break
     }
     case SchoolRole.TEACHER:
@@ -108,6 +130,15 @@ const submit = () => {
   onDialogOK({
     item: schoolUserRole
   })
+}
+const test = (option: SchoolPeriodWithSchoolIds) => {
+  return {
+    id: option.id,
+    startYear: option.startYear,
+    endYear: option.endYear,
+    firstSemester: option.firstSemester,
+    secondSemester: option.secondSemester
+  }
 }
 
 </script>

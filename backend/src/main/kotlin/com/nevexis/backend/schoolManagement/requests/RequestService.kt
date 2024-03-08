@@ -1,10 +1,10 @@
 package com.nevexis.backend.schoolManagement.requests
 
 import com.nevexis.backend.schoolManagement.BaseService
-import com.nevexis.backend.schoolManagement.security.user_security.UserSecurityService
 import com.nevexis.backend.schoolManagement.users.UserRegistrationInformation
 import com.nevexis.backend.schoolManagement.users.roles.SchoolRolesService
 import com.nevexis.backend.schoolManagement.users.school_user.SchoolUserService
+import com.nevexis.backend.schoolManagement.users.user_security.UserSecurityService
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.beans.factory.annotation.Autowired

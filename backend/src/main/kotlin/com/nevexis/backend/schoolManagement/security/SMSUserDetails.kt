@@ -1,6 +1,6 @@
 package com.nevexis.backend.schoolManagement.security
 
-import com.nevexis.backend.schoolManagement.security.user_security.UserSecurity
+import com.nevexis.backend.schoolManagement.users.user_security.UserSecurity
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails

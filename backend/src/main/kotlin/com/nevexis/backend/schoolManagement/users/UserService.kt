@@ -1,27 +1,14 @@
 package com.nevexis.backend.schoolManagement.users
 
-import com.nevexis.backend.schoolManagement.BaseService
-import com.nevexis.backend.schoolManagement.schoolClass.SchoolClassService
-import com.nevexis.backend.schoolManagement.users.roles.SchoolRolesService
-import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
+import com.nevexis.backend.schoolManagement.requests.RequestStatus
 import com.nevexis.`demo-project`.jooq.tables.records.UserRecord
-import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_USER
-import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_USER_PERIOD
-import com.nevexis.`demo-project`.jooq.tables.references.STUDENT_SCHOOL_CLASS
-import com.nevexis.`demo-project`.jooq.tables.references.USER
+import com.nevexis.`demo-project`.jooq.tables.references.*
 import org.jooq.DSLContext
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 
 @Service
-class UserService : BaseService() {
-
-    @Autowired
-    private lateinit var schoolClassService: SchoolClassService
-
-    @Autowired
-    private lateinit var schoolUserRolesService: SchoolRolesService
+class UserService : UserBaseService() {
 
     fun getAllUserViewsBySchool(schoolId: BigDecimal, periodId: BigDecimal, dsl: DSLContext = db) {
         val rolesForSchoolGroupedByUserId = schoolUserRolesService.getAllRolesFromSchoolForPeriod(schoolId, periodId)
@@ -40,71 +27,49 @@ class UserService : BaseService() {
         }
     }
 
+
     fun getAllStudentsInSchoolClass(
         schoolClassId: BigDecimal,
         periodId: BigDecimal
     ): List<StudentView> =
-        db.select(USER.asterisk(), STUDENT_SCHOOL_CLASS.asterisk()).from(USER).leftJoin(STUDENT_SCHOOL_CLASS).on(
-            STUDENT_SCHOOL_CLASS.STUDENT_ID.eq(USER.ID)
-        ).where(
-            STUDENT_SCHOOL_CLASS.SCHOOL_CLASS_ID.eq(schoolClassId).and(
-                STUDENT_SCHOOL_CLASS.PERIOD_ID.eq(periodId)
-            ).and(USER.DELETED.eq("N"))
-        ).orderBy(STUDENT_SCHOOL_CLASS.NUMBER_IN_CLASS)
+        studentRecordSelectOnConditionStep()
+            .where(
+                STUDENT_SCHOOL_CLASS.SCHOOL_CLASS_ID.eq(schoolClassId).and(
+                    SCHOOL_USER_PERIOD.PERIOD_ID.eq(periodId).and(SCHOOL_USER_PERIOD.STATUS.eq(UserStatus.ACTIVE.name))
+                )
+            ).orderBy(STUDENT_SCHOOL_CLASS.NUMBER_IN_CLASS)
             .fetchInto(StudentView::class.java)
 
 
-    fun mapToUserView(
-        userRecord: UserRecord,
-        rolesForSchool: List<SchoolRole>
-    ): UserView {
-        return UserView(
-            id = userRecord.id!!,
-            email = userRecord.email!!,
-            firstName = userRecord.firstName!!,
-            middleName = userRecord.middleName!!,
-            lastName = userRecord.lastName!!,
-            username = userRecord.username!!,
-            roles = rolesForSchool
-        )
+    fun findUsersByItsRoleIdsAndPeriodId(
+        roleIds: List<BigDecimal>,
+        periodId: BigDecimal,
+        dsl: DSLContext = db
+    ): List<OneRoleUser> = recordSelectOnConditionStepJoinedWithUserRoles(dsl)
+        .where(SCHOOL_USER_ROLE.ID.`in`(roleIds))
+        .and(SCHOOL_ROLE_PERIOD.PERIOD_ID.eq(periodId))
+        .and(SCHOOL_ROLE_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
+        .and(SCHOOL_USER_PERIOD.PERIOD_ID.eq(periodId))
+        .and(SCHOOL_USER_PERIOD.STATUS.eq(UserStatus.ACTIVE.name))
+        .fetch().map {
+            val schoolUserRole = schoolUserRolesService.mapToModel(it)
+            mapUserRecordToOneRoleModel(it.into(UserRecord::class.java), schoolUserRole)
+        }
 
-    }
-
-    fun mapUserRecordToOneRoleModel(userRecord: UserRecord, schoolUserRole: SchoolUserRole): OneRoleUser {
-        return OneRoleUser(
-            id = userRecord.id!!,
-            personalNumber = userRecord.personalNumber!!,
-            email = userRecord.email!!,
-            phoneNumber = userRecord.phoneNumber!!,
-            firstName = userRecord.firstName!!,
-            middleName = userRecord.middleName!!,
-            lastName = userRecord.lastName!!,
-            username = userRecord.username!!,
-            address = userRecord.address!!,
-            role = schoolUserRole
-        )
-    }
-
-    fun mapUserRecordToUserModel(userRecord: UserRecord, schoolUserRoles: List<SchoolUserRole>): User {
-        return User(
-            id = userRecord.id!!,
-            personalNumber = userRecord.personalNumber!!,
-            email = userRecord.email!!,
-            phoneNumber = userRecord.phoneNumber!!,
-            firstName = userRecord.firstName!!,
-            middleName = userRecord.middleName!!,
-            lastName = userRecord.lastName!!,
-            username = userRecord.username!!,
-            address = userRecord.address!!,
-            roles = schoolUserRoles
-        )
-    }
-
-    private fun recordSelectOnConditionStep(dsl: DSLContext = db) =
-        dsl.select(USER.asterisk(), SCHOOL_USER.asterisk(), SCHOOL_USER_PERIOD.asterisk()).from(USER)
-            .leftJoin(SCHOOL_USER).on(
-                SCHOOL_USER.USER_ID.eq(USER.ID)
-            ).leftJoin(SCHOOL_USER_PERIOD).on(SCHOOL_USER_PERIOD.ID.eq(SCHOOL_USER.ID))
+    fun findUserByItsRoleIdAndPeriodId(
+        roleId: BigDecimal,
+        periodId: BigDecimal,
+        dsl: DSLContext = db
+    ) = recordSelectOnConditionStepJoinedWithUserRoles(dsl)
+        .where(SCHOOL_USER_ROLE.ID.eq(roleId))
+        .and(SCHOOL_ROLE_PERIOD.PERIOD_ID.eq(periodId))
+        .and(SCHOOL_ROLE_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
+        .and(SCHOOL_USER_PERIOD.PERIOD_ID.eq(periodId))
+        .and(SCHOOL_USER_PERIOD.STATUS.eq(UserStatus.ACTIVE.name))
+        .fetchAny()?.let {
+            val schoolUserRole = schoolUserRolesService.mapToModel(it)
+            mapUserRecordToOneRoleModel(it.into(UserRecord::class.java), schoolUserRole)
+        } ?: error("User with role id $roleId does not exist in period id $periodId")
 
 
 }

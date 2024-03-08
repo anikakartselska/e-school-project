@@ -13,9 +13,9 @@ import java.math.BigDecimal
 @Service
 class EvaluationService : BaseService() {
 
-    fun getAllEvaluationsForStudentAndPeriod(studentId: BigDecimal, periodId: BigDecimal, schoolId: BigDecimal) =
+    fun getAllEvaluationsForStudentAndPeriod(studentRoleId: BigDecimal, periodId: BigDecimal, schoolId: BigDecimal) =
         db.selectFrom(EVALUATION).where(
-            EVALUATION.STUDENT_ID.eq(studentId).and(EVALUATION.SCHOOL_PERIOD_ID.eq(periodId)).and(
+            EVALUATION.STUDENT_ROLE_ID.eq(studentRoleId).and(EVALUATION.SCHOOL_PERIOD_ID.eq(periodId)).and(
                 EVALUATION.SCHOOL_ID.eq(schoolId)
             )
         ).fetch().map { it.mapToInternalModel() }
@@ -26,8 +26,8 @@ class EvaluationService : BaseService() {
         periodId: BigDecimal,
         schoolId: BigDecimal
     ) = db.selectFrom(EVALUATION).where(
-        EVALUATION.STUDENT_ID.`in`(
-            db.select(STUDENT_SCHOOL_CLASS.STUDENT_ID).from(STUDENT_SCHOOL_CLASS).where(
+        EVALUATION.STUDENT_ROLE_ID.`in`(
+            db.select(STUDENT_SCHOOL_CLASS.STUDENT_SCHOOL_USER_ROLE_ID).from(STUDENT_SCHOOL_CLASS).where(
                 STUDENT_SCHOOL_CLASS.SCHOOL_CLASS_ID.eq(schoolClassId)
             )
         ).and(EVALUATION.SUBJECT_ID.eq(subjectId))
@@ -39,7 +39,7 @@ class EvaluationService : BaseService() {
 
     fun EvaluationRecord.mapToInternalModel() = Evaluation(
         id = id!!,
-        studentId = studentId!!,
+        studentRoleId = studentRoleId!!,
         subjectId = subjectId!!,
         schoolLessonId = schoolLessonId!!,
         evaluationDate = evaluationDate!!,
@@ -51,7 +51,7 @@ class EvaluationService : BaseService() {
 
     fun Evaluation.mapToRecord() = EvaluationRecord(
         id = id,
-        studentId = studentId,
+        studentRoleId = studentRoleId,
         subjectId = subjectId,
         schoolLessonId = schoolLessonId,
         evaluationDate = evaluationDate,

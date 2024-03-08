@@ -10,3 +10,12 @@ data class SchoolPeriod(
     val firstSemester: BigDecimal,
     val secondSemester: BigDecimal
 )
+
+data class SchoolPeriodWithSchoolIds(
+    val id: BigDecimal,
+    val startYear: LocalDate,
+    val endYear: LocalDate,
+    val firstSemester: BigDecimal,
+    val secondSemester: BigDecimal,
+    val schoolIds: List<BigDecimal>
+)

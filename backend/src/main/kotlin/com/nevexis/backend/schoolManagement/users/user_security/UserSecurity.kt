@@ -1,4 +1,4 @@
-package com.nevexis.backend.schoolManagement.security.user_security
+package com.nevexis.backend.schoolManagement.users.user_security
 
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
 import java.math.BigDecimal
