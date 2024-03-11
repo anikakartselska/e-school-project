@@ -47,10 +47,10 @@ class SchoolClassService : BaseService() {
         )
 
     private fun SchoolClassRecord.mapToInternalModel(mainTeacher: UserView) = SchoolClass(
-        id = id!!,
+        id = id!!.toInt(),
         name = name!!,
         mainTeacher = mainTeacher,
-        schoolId = schoolId!!,
-        schoolPeriodId = schoolPeriodId!!
+        schoolId = schoolId!!.toInt(),
+        schoolPeriodId = schoolPeriodId!!.toInt()
     )
 }

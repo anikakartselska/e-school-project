@@ -2,8 +2,14 @@
   <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 500px;">
       <q-card-section class="dialog-header">
-        <div class="text-h6">Добави роля</div>
-        <q-btn v-close-popup dense flat icon="close" round/>
+          <span class="text-h6">Добави роля
+        <q-btn v-close-popup
+               class="float-right text-black"
+               dense
+               flat
+               icon="close"
+               round/>
+            </span>
       </q-card-section>
       <q-card-section>
         <q-form class="q-gutter-md" @submit="submit">
@@ -14,7 +20,8 @@
               <q-icon name="school"/>
             </template>
           </q-select>
-          <q-select v-model="schoolUserRole.period" :option-label="(option:SchoolPeriodWithSchoolIds) => `${option.startYear.substring(0,4)}/${option.endYear.substring(0,4)}`"
+          <q-select v-model="schoolUserRole.period"
+                    :option-label="(option:SchoolPeriodWithSchoolIds) => `${option.startYear.substring(0,4)}/${option.endYear.substring(0,4)}`"
                     :option-value="(option: SchoolPeriodWithSchoolIds) => {return {
     id: option.id,
     startYear: option.startYear,
@@ -46,9 +53,10 @@
             </q-select>
           </div>
           <div v-if="isDetailsForParent(schoolUserRole.detailsForUser)">
-            <q-input v-model="schoolUserRole.detailsForUser.child.firstName" class="q-pa-sm" filled label="Име"/>
-            <q-input v-model="schoolUserRole.detailsForUser.child.lastName" class="q-pa-sm" filled label="Фамилия"/>
-            <q-input v-model="schoolUserRole.detailsForUser.child.phoneNumber" class="q-pa-sm" filled label="Адрес"/>
+            <q-input v-model="schoolUserRole.detailsForUser.child.firstName" class="q-pa-sm" label="Име"/>
+            <q-input v-model="schoolUserRole.detailsForUser.child.lastName" class="q-pa-sm" label="Фамилия"/>
+            <q-input v-model="schoolUserRole.detailsForUser.child.phoneNumber" class="q-pa-sm" label="Телефонен номер"
+                     mask="##########"/>
             <q-select v-model="schoolUserRole.detailsForUser.child.role.detailsForUser.schoolClass"
                       :options="schoolClassesOptions"
                       :option-label="option => option.name" label="Клас">
@@ -90,6 +98,7 @@ import {SchoolPeriodWithSchoolIds} from "../model/SchoolPeriod";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
 const props = defineProps<{
+  role: SchoolUserRole,
   schoolOptions: School[],
   schoolPeriodsWithSchoolIds: SchoolPeriodWithSchoolIds[],
   allSchoolClassesOptions: SchoolClass[]
@@ -99,13 +108,13 @@ const quasar = useQuasar()
 defineEmits([...useDialogPluginComponent.emits])
 
 const roleOptions = Object.keys(SchoolRole)
-let schoolClassesOptions = $ref(<SchoolClass[]>[])
-let schoolPeriodOptions = $ref(<SchoolPeriodWithSchoolIds[]>[])
-const schoolUserRole = $ref(<SchoolUserRole>{status: RequestStatus.PENDING})
+const schoolUserRole = $ref(<SchoolUserRole>{...props.role, status: RequestStatus.PENDING})
+let schoolClassesOptions = $ref([...props.allSchoolClassesOptions].filter(it => schoolUserRole?.school?.id ? it.schoolId == schoolUserRole.school.id : false))
+let schoolPeriodOptions = $ref([...props.schoolPeriodsWithSchoolIds].filter(it => it.schoolIds.find(schoolId => schoolUserRole?.school?.id ? schoolId == schoolUserRole.school.id : false)))
 
 watch(() => schoolUserRole.school, async () => {
-  schoolClassesOptions = [...props.allSchoolClassesOptions].filter(it => it.schoolId == schoolUserRole.school.id)
-  schoolPeriodOptions = [...props.schoolPeriodsWithSchoolIds].filter(it => it.schoolIds.find(schoolId => schoolId == schoolUserRole.school.id))
+          schoolClassesOptions = [...props.allSchoolClassesOptions].filter(it => schoolUserRole?.school?.id ? it.schoolId == schoolUserRole?.school?.id : false)
+          schoolPeriodOptions = [...props.schoolPeriodsWithSchoolIds].filter(it => it.schoolIds.find(schoolId => schoolUserRole?.school?.id ? schoolId == schoolUserRole.school.id : false))
         }
 )
 watch(() => schoolUserRole.role, () => {

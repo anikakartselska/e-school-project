@@ -1,5 +1,6 @@
 package com.nevexis.backend.schoolManagement.security.auth
 
+import com.nevexis.backend.schoolManagement.requests.RequestService
 import com.nevexis.backend.schoolManagement.school.School
 import com.nevexis.backend.schoolManagement.school.SchoolService
 import com.nevexis.backend.schoolManagement.schoolClass.SchoolClass
@@ -7,6 +8,7 @@ import com.nevexis.backend.schoolManagement.schoolClass.SchoolClassService
 import com.nevexis.backend.schoolManagement.school_period.SchoolPeriod
 import com.nevexis.backend.schoolManagement.school_period.SchoolPeriodService
 import com.nevexis.backend.schoolManagement.security.JwtService
+import com.nevexis.backend.schoolManagement.users.User
 import com.nevexis.backend.schoolManagement.users.roles.SchoolRolesService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
 import com.nevexis.backend.schoolManagement.users.user_security.UserSecurity
@@ -46,6 +48,9 @@ class AuthenticationController {
 
     @Autowired
     private lateinit var schoolUserRolesService: SchoolRolesService
+
+    @Autowired
+    private lateinit var requestService: RequestService
 
     @PostMapping("/authenticate")
     suspend fun authenticate(
@@ -141,6 +146,11 @@ class AuthenticationController {
     fun findUserWithAllItsRolesByPhoneNumber(
         @RequestParam phoneNumber: String
     ) = userSecurityService.findUserWithAllItsRolesByPhoneNumber(phoneNumber)
+
+    @PostMapping("/create-requests")
+    fun createRequests(
+        @RequestBody user: User,
+    ) = requestService.createRequests(user)
 
     private fun generateCookie(token: String, cookieName: String) = ResponseCookie.from(cookieName, token)
         .path("/")

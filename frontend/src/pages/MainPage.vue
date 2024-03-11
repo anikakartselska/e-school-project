@@ -5,25 +5,47 @@
             :class="$q.dark.isActive ? 'header_dark' : 'header_normal'"
     >
       <q-toolbar>
-        <q-btn
-                @click="left = !left"
-                flat
-                round
-                dense
-                icon="menu"
-                class="q-mr-sm"
-        />
-        <q-toolbar-title>Електронен дневник</q-toolbar-title>
-        <q-btn
-                class="q-mr-xs"
-                flat
-                round
-                @click="$q.dark.toggle()"
-                :icon="$q.dark.isActive ? 'nights_stay' : 'wb_sunny'"
-        />
-        <q-btn flat round dense icon="search" class="q-mr-xs"/>
-        <q-btn
-                flat
+          <q-btn
+                  class="q-mr-sm"
+                  dense
+                  flat
+                  icon="menu"
+                  round
+                  @click="left = !left"
+          />
+          <q-toolbar-title>Електронен дневник</q-toolbar-title>
+          <q-btn dense flat icon="switch_account">
+              <q-menu>
+                  <div class="row no-wrap q-pa-md">
+                      <div class="column">
+                          <div class="text-h6 q-mb-md">Смяна на роля</div>
+                          <q-select v-model="selectedPeriod"
+                                    :option-label="(option:SchoolPeriod) => `${option.startYear.substring(0,4)}/${option.endYear.substring(0,4)}`"
+                                    :options="schoolPeriods"
+                                    label="Учебна година"/>
+                          <q-select v-model="selectedRole" :disable="selectedPeriod==null"
+                                    :option-label="option => constructSchoolUserRoleMessage(option)"
+                                    :options="userRolesFilteredBySelectedPeriod"
+                                    label="Роля"/>
+                          <q-item>
+                              <q-item-section>
+                                  <q-btn color="primary" dense flat label="Промени роля" @click="changeUserRole()"/>
+                              </q-item-section>
+                          </q-item>
+                      </div>
+                  </div>
+              </q-menu>
+          </q-btn>
+          <q-btn
+                  :icon="$q.dark.isActive ? 'nights_stay' : 'wb_sunny'"
+                  class="q-mr-xs"
+                  flat
+                  round
+                  @click="$q.dark.toggle()"
+          />
+          <q-btn class="q-mr-xs" dense flat icon="search" round/>
+          <q-btn
+                  flat
                 round
                 dense
                 icon="logout"
@@ -47,7 +69,7 @@
             <q-avatar>
               <img src="https://cdn.quasar.dev/img/boy-avatar.png"/>
             </q-avatar>
-            <q-toolbar-title>Mayank Patel</q-toolbar-title>
+              <q-toolbar-title>{{ currentUser.firstName }} {{ currentUser.lastName }}</q-toolbar-title>
           </q-toolbar>
           <hr/>
           <q-scroll-area style="height:100%;">
@@ -94,31 +116,69 @@
 </template>
 
 <script lang="ts" setup>
+import {useRouter} from "vue-router";
 import {$ref} from "vue/macros";
-import {router} from "../router";
-import {clearUserStorage} from "../services/LocalStorageService";
-import {logout} from "../services/RequestService";
+import {clearUserStorage, getCurrentUser, updateUserInLocalStorage} from "../services/LocalStorageService";
+import {getAllSchoolPeriods, getAllUserRoles, loginAfterSelectedRole, logout} from "../services/RequestService";
+import {onBeforeMount, watch} from "vue";
+import {constructSchoolUserRoleMessage, SchoolUserRole} from "../model/SchoolUserRole";
+import {SchoolPeriod} from "../model/SchoolPeriod";
+import {confirmActionPromiseDialogWithCancelButton} from "../utils";
+import {AuthenticationResponse, Success} from "../model/AuthenticationResponse";
 
+const router = useRouter();
 const onLogoutClick = async () => {
-  await logout().then(r => {
-    clearUserStorage()
-    router.push('/login')
-  })
+    await logout().then(async r => {
+        clearUserStorage()
+        await router.push('/login')
+    })
 }
 
+let currentUser = getCurrentUser();
+let userRoles = $ref(<SchoolUserRole[]>[]);
+let schoolPeriods = $ref(<SchoolPeriod[]>[]);
+onBeforeMount(async () => {
+    currentUser = getCurrentUser()
+    await load()
+
+})
+
+const load = async () => {
+    userRoles = await getAllUserRoles(currentUser.id)
+    schoolPeriods = await getAllSchoolPeriods()
+    userRolesFilteredBySelectedPeriod = userRoles.filter(role => role.period.id == selectedPeriod?.id)
+}
+
+let userRolesFilteredBySelectedPeriod = $ref<SchoolUserRole[]>([])
+let selectedRole = $ref<SchoolUserRole | null>(currentUser.role)
+const selectedPeriod = $ref<SchoolPeriod | null>(currentUser.role.period)
+watch(() => selectedPeriod, () => {
+    selectedRole = null
+    userRolesFilteredBySelectedPeriod = userRoles.filter(role => role.period.id == selectedPeriod?.id)
+})
+
+const changeUserRole = async () => {
+    await confirmActionPromiseDialogWithCancelButton("Смяна на роля", `Сигурни ли сте, че искате да влезнете в приложението като ${constructSchoolUserRoleMessage(selectedRole)}`)
+    await loginAfterSelectedRole(selectedRole?.id!!, selectedPeriod?.id!!).then(async r => {
+                const authResponse: AuthenticationResponse = <Success>r.data
+                updateUserInLocalStorage(authResponse.user)
+                await router.push({path: '/'})
+            }
+    )
+}
 const left = $ref(true)
 const pages = [{to: "/users", label: "Потребители", show: true},
-  {to: "/dashboard_v2", label: "Dashboard v2", show: true},
-  {to: "/dashboard_v3", label: "Dashboard v3", show: true},
-  {to: "/customer_management", label: "Customer Management", show: true},
-  {to: "/change_request", label: "Change Request", show: true},
-  {to: "/sales_invoices", label: "Sales Invoices", show: true},
-  {to: "/quotes", label: "Quotes", show: true},
-  {to: "/transactions", label: "Transactions", show: true},
-  {to: "/employee_salary_list", label: "Employee Salary List", show: true},
-  {to: "/calendar", label: "Calendar", show: true},
-  {
-    to: "/department", label: "Department", show: true
+    {to: "/dashboard_v2", label: "Заявки", show: true},
+    {to: "/dashboard_v3", label: "Dashboard v3", show: true},
+    {to: "/customer_management", label: "Customer Management", show: true},
+    {to: "/change_request", label: "Change Request", show: true},
+    {to: "/sales_invoices", label: "Sales Invoices", show: true},
+    {to: "/quotes", label: "Quotes", show: true},
+    {to: "/transactions", label: "Transactions", show: true},
+    {to: "/employee_salary_list", label: "Employee Salary List", show: true},
+    {to: "/calendar", label: "Calendar", show: true},
+    {
+        to: "/department", label: "Department", show: true
   }]
 
 </script>

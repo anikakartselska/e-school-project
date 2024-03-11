@@ -66,7 +66,7 @@ import {getUserWithDetailsByUserId} from "../services/RequestService";
 import {$ref} from "vue/macros";
 import {isDetailsForParent, isDetailsForStudent, UserView} from "../model/User";
 import {watch} from "vue";
-import {router} from "../router";
+import {useRouter} from "vue-router";
 
 const props = defineProps<{
   id: number,
@@ -74,19 +74,19 @@ const props = defineProps<{
   schoolId: number
 }>()
 let user = $ref(await getUserWithDetailsByUserId(props.id, props.periodId, props.schoolId))
-
+const router = useRouter()
 watch(props, async () => {
   user = await getUserWithDetailsByUserId(props.id, props.periodId, props.schoolId)
 })
-const openUser = (row: UserView) => {
-  router.push({
-    name: "user",
-    params: {
-      id: row.id,
-      periodId: props.periodId,
-      schoolId: props.schoolId,
-    }
-  })
+const openUser = async (row: UserView) => {
+    await router.push({
+        name: "user",
+        params: {
+            id: row.id,
+            periodId: props.periodId,
+            schoolId: props.schoolId,
+        }
+    })
 }
 
 const columns = [

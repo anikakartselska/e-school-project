@@ -54,12 +54,13 @@
 import {$ref} from "vue/macros";
 import {getAllSchoolPeriods, getAllUserRoles, login, loginAfterSelectedRole} from "../services/RequestService";
 import {constructSchoolUserRoleMessage, SchoolUserRole} from "../model/SchoolUserRole";
-import {router} from "../router";
 import {storeUser, updateUserInLocalStorage} from "../services/LocalStorageService";
 import {AuthenticationResponse, Success} from "../model/AuthenticationResponse";
 import {SchoolPeriod} from "../model/SchoolPeriod";
 import {watch} from "vue";
+import {useRouter} from "vue-router";
 
+const router = useRouter()
 let step = $ref(1)
 const username = $ref(null);
 const password = $ref(null);
@@ -87,12 +88,12 @@ const loginClick = async () => {
           })
 }
 const loginAfterSelectingRole = async () => {
-  await loginAfterSelectedRole(selectedRole?.id!!, selectedPeriod?.id!!).then(r => {
-            const authResponse: AuthenticationResponse = <Success>r.data
-            updateUserInLocalStorage(authResponse.user)
-            router.push({path: '/'})
-          }
-  )
+    await loginAfterSelectedRole(selectedRole?.id!!, selectedPeriod?.id!!).then(async r => {
+                const authResponse: AuthenticationResponse = <Success>r.data
+                updateUserInLocalStorage(authResponse.user)
+                await router.push({path: '/'})
+            }
+    )
 
 }
 </script>

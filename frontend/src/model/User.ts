@@ -45,6 +45,7 @@ export interface User {
     email: string,
     phoneNumber: string,
     address: string,
+    password: string | null,
     roles: SchoolUserRole[] | null
 }
 

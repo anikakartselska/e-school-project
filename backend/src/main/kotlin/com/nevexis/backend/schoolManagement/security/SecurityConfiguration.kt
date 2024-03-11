@@ -54,7 +54,8 @@ class SecurityConfiguration {
                 "/auth/get-all-periods",
                 "/auth/get-all-school-periods-with-school-ids",
                 "/auth/find-user-by-phone-number-period-class",
-                "/auth/find-user-with-all-its-roles-by-phone-number"
+                "/auth/find-user-with-all-its-roles-by-phone-number",
+                "/auth/create-requests"
             )
             .permitAll()
             .anyExchange().authenticated()

@@ -1,10 +1,11 @@
 package com.nevexis.backend.schoolManagement.users.user_security
 
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
-import java.math.BigDecimal
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class UserSecurity(
-    val id: BigDecimal,
+    val id: Int,
     val email: String,
     val firstName: String,
     val middleName: String,

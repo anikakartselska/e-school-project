@@ -4,10 +4,13 @@ import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.schoolClass.SchoolClassService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolRolesService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
+import com.nevexis.`demo-project`.jooq.tables.records.ParentStudentRecord
+import com.nevexis.`demo-project`.jooq.tables.records.StudentSchoolClassRecord
 import com.nevexis.`demo-project`.jooq.tables.references.PARENT_STUDENT
 import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_CLASS
 import com.nevexis.`demo-project`.jooq.tables.references.STUDENT_SCHOOL_CLASS
 import com.nevexis.`demo-project`.jooq.tables.references.USER
+import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
@@ -28,6 +31,52 @@ class UserDetailsService : BaseService() {
     @Autowired
     @Lazy
     private lateinit var userService: UserService
+
+    fun insertUserDetailsForSchoolUserRoles(
+        schoolUserRoles: List<SchoolUserRole>,
+        dsl: DSLContext
+    ) {
+        schoolUserRoles.mapNotNull {
+            when (it.role) {
+                SchoolRole.ADMIN, SchoolRole.TEACHER -> null
+                SchoolRole.STUDENT -> createStudentClassRecordForSchoolUserRole(it, dsl)
+                SchoolRole.PARENT -> createParentStudentRecordForSchoolUserRole(it, dsl)
+            }
+        }.apply { dsl.batchStore(this).execute() }
+    }
+
+    private fun createStudentClassRecordForSchoolUserRole(
+        schoolUserRole: SchoolUserRole,
+        dsl: DSLContext
+    ): StudentSchoolClassRecord {
+        if (schoolUserRole.detailsForUser !is DetailsForUser.DetailsForStudent) {
+            error("User with ${schoolUserRole.userId} does not have student details")
+        }
+        return dsl.selectFrom(STUDENT_SCHOOL_CLASS).where(
+            STUDENT_SCHOOL_CLASS.STUDENT_SCHOOL_USER_ROLE_ID
+                .eq(schoolUserRole.id?.toBigDecimal())
+        )
+            .fetchOne() ?: dsl.newRecord(STUDENT_SCHOOL_CLASS).apply {
+            schoolClassId = schoolUserRole.detailsForUser.schoolClass.id.toBigDecimal()
+            numberInClass = schoolUserRole.detailsForUser.numberInClass?.toBigDecimal()
+            studentSchoolUserRoleId = schoolUserRole.id?.toBigDecimal()
+        }
+    }
+
+    private fun createParentStudentRecordForSchoolUserRole(
+        schoolUserRole: SchoolUserRole,
+        dsl: DSLContext
+    ): ParentStudentRecord {
+        if (schoolUserRole.detailsForUser !is DetailsForUser.DetailsForParent) {
+            error("User with ${schoolUserRole.userId} does not have parent details")
+        }
+        return dsl.selectFrom(PARENT_STUDENT)
+            .where(PARENT_STUDENT.PARENT_SCHOOL_USER_ROLE_ID.eq(schoolUserRole.id?.toBigDecimal()))
+            .fetchOne() ?: dsl.newRecord(PARENT_STUDENT).apply {
+            parentSchoolUserRoleId = schoolUserRole.id?.toBigDecimal()
+            studentSchoolUserRoleId = schoolUserRole.detailsForUser.child.role.id?.toBigDecimal()
+        }
+    }
 
     fun getParentDetailsPerSchoolUserRolesAndPeriodId(
         schoolUserRoles: List<SchoolUserRole>,
@@ -63,7 +112,7 @@ class UserDetailsService : BaseService() {
             .fetch().map {
                 DetailsForUser.DetailsForStudent(
                     schoolClassService.mapRecordToInternalModel(it),
-                    it.get(DSL.field("NUMBER_IN_CLASS", BigDecimal::class.java))
+                    it.get(DSL.field("NUMBER_IN_CLASS", BigDecimal::class.java)).toInt()
                 )
             }
 

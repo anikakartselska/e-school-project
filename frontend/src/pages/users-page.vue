@@ -44,19 +44,20 @@ import {getAllUsersBySchoolId} from "../services/RequestService";
 import {periodId, schoolId} from "../model/constants";
 import {$ref} from "vue/macros";
 import {UserView} from "../model/User";
-import {router} from "../router";
+import {useRouter} from "vue-router";
 
+const router = useRouter()
 const userData: UserView[] = $ref(await getAllUsersBySchoolId(schoolId))
 
-const openUser = (row: UserView) => {
-  router.push({
-    name: "user",
-    params: {
-      id: row.id,
-      periodId: periodId,
-      schoolId: schoolId
-    }
-  })
+const openUser = async (row: UserView) => {
+    await router.push({
+        name: "user",
+        params: {
+            id: row.id,
+            periodId: periodId,
+            schoolId: schoolId
+        }
+    })
 }
 const filter = $ref('')
 const columns = [

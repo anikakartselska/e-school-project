@@ -28,6 +28,56 @@ class SchoolRolesService : BaseService() {
     private lateinit var userDetailsService: UserDetailsService
 
 
+    fun createSchoolUserRoles(
+        userId: BigDecimal,
+        schoolUserRoles: List<SchoolUserRole>,
+        dsl: DSLContext
+    ): List<BigDecimal> {
+        return dsl.transactionResult { transaction ->
+            schoolUserRoles.map { schoolUserRole ->
+                (transaction.dsl().fetchOne(
+                    SCHOOL_USER_ROLE,
+                    SCHOOL_USER_ROLE.ID.eq(schoolUserRole.id?.toBigDecimal())
+                ) ?: transaction.dsl().newRecord(SCHOOL_USER_ROLE).apply {
+                    this.schoolId = schoolUserRole.school.id.toBigDecimal()
+                    this.userId = userId
+                    this.role = schoolUserRole.role.name
+                    id = getSchoolUserRoleSeqNextVal()
+                }).let { userRoleRecord ->
+                    val existingRecordFromDataBase = transaction.dsl().fetchOne(
+                        SCHOOL_ROLE_PERIOD,
+                        SCHOOL_ROLE_PERIOD.SCHOOL_USER_ROLE_ID.eq(userRoleRecord.id),
+                        SCHOOL_ROLE_PERIOD.PERIOD_ID.eq(schoolUserRole.period.id.toBigDecimal())
+                    )
+                    userRoleRecord to if (existingRecordFromDataBase != null) {
+                        existingRecordFromDataBase to false
+                    } else {
+                        transaction.dsl().newRecord(SCHOOL_ROLE_PERIOD).apply {
+                            this.schoolUserRoleId = userRoleRecord.id
+                            this.periodId = schoolUserRole.period.id.toBigDecimal()
+                            id = getSchoolUserRolePeriodSeqNextVal()
+                            status = RequestStatus.PENDING.name
+                        } to true
+                    }
+                }
+            }.let { listOfPairs ->
+                val schoolRoleRecords = listOfPairs.map { it.first }
+                val schoolRolePeriodRecords = listOfPairs.map { it.second }
+                val newlyCreatedSchoolRolePeriodRecords = schoolRolePeriodRecords.filter { it.second }
+                transaction.dsl().batchStore(schoolRoleRecords).execute()
+                transaction.dsl().batchStore(schoolRolePeriodRecords.map { it.first }).execute()
+
+                schoolUserRoles.mapIndexed { index, schoolUserRole ->
+                    schoolUserRole.copy(id = schoolRoleRecords[index].id?.toInt())
+                }.apply {
+                    userDetailsService.insertUserDetailsForSchoolUserRoles(this, transaction.dsl())
+                }
+                newlyCreatedSchoolRolePeriodRecords.map { it.first.id!! }
+
+            }
+        }
+    }
+
     fun getUserSchoolRoleByIdAndPeriodId(id: BigDecimal, periodId: BigDecimal, dsl: DSLContext) =
         schoolRolesRecordSelectOnConditionStep(dsl)
             .where(
@@ -67,7 +117,11 @@ class SchoolRolesService : BaseService() {
             .mapValues { (_, userIdToRoles) -> userIdToRoles.map { it.second } }
 
     fun getSchoolUserRoleSeqNextVal(): BigDecimal =
-        db.select(DSL.field("SCHOOL_USER_ROLE_REQUEST_SEQ.nextval")).from("DUAL")
+        db.select(DSL.field("SCHOOL_USER_ROLE_SEQ.nextval")).from("DUAL")
+            .fetchOne()!!.map { it.into(BigDecimal::class.java) }
+
+    fun getSchoolUserRolePeriodSeqNextVal(): BigDecimal =
+        db.select(DSL.field("SCHOOL_ROLE_PERIOD_SEQ.nextval")).from("DUAL")
             .fetchOne()!!.map { it.into(BigDecimal::class.java) }
 
     private fun schoolRolesRecordSelectOnConditionStep(dsl: DSLContext) = dsl.select(
@@ -86,16 +140,16 @@ class SchoolRolesService : BaseService() {
             val approvedSchoolRolePeriodRecord = record.into(SchoolRolePeriodRecord::class.java)
             val period = record.into(SchoolPeriodRecord::class.java).let { schoolPeriodRecord ->
                 SchoolPeriod(
-                    id = schoolPeriodRecord.id!!,
+                    id = schoolPeriodRecord.id!!.toInt(),
                     startYear = schoolPeriodRecord.startYear!!,
                     endYear = schoolPeriodRecord.endYear!!,
-                    firstSemester = schoolPeriodRecord.firstSemester!!,
-                    secondSemester = schoolPeriodRecord.secondSemester!!
+                    firstSemester = schoolPeriodRecord.firstSemester!!.toInt(),
+                    secondSemester = schoolPeriodRecord.secondSemester!!.toInt()
                 )
             }
             val schoolUserRole = SchoolUserRole(
-                id = it.id!!,
-                userId = it.userId!!,
+                id = it.id!!.toInt(),
+                userId = it.userId!!.toInt(),
                 school = schoolService.getSchoolById(it.schoolId!!),
                 period = period,
                 role = SchoolRole.valueOf(it.role!!),
@@ -104,7 +158,7 @@ class SchoolRolesService : BaseService() {
             return schoolUserRole.copy(
                 detailsForUser = userDetailsService.getUserDetailsPerSchoolUserRole(
                     schoolUserRole,
-                    period.id
+                    period.id.toBigDecimal()
                 )
             )
         }

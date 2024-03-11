@@ -9,6 +9,8 @@ import com.nevexis.`demo-project`.jooq.tables.references.*
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Lazy
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 
@@ -16,12 +18,27 @@ import java.math.BigDecimal
 class UserBaseService : BaseService() {
     @Autowired
     lateinit var schoolUserRolesService: SchoolRolesService
+
+    @Autowired
+    @Lazy
+    private lateinit var passwordEncoder: PasswordEncoder
+    fun createUser(user: User, dsl: DSLContext): BigDecimal {
+        val newUserId = getUserSeqNextVal()
+        dsl.newRecord(USER, user).apply {
+            id = getUserSeqNextVal()
+            password = passwordEncoder.encode(user.password)
+            gender = user.gender.name
+        }.insert()
+
+        return newUserId
+    }
+
     fun mapToUserView(
         userRecord: UserRecord,
         rolesForSchool: List<SchoolRole>
     ): UserView {
         return UserView(
-            id = userRecord.id!!,
+            id = userRecord.id!!.toInt(),
             email = userRecord.email!!,
             firstName = userRecord.firstName!!,
             middleName = userRecord.middleName!!,
@@ -34,7 +51,7 @@ class UserBaseService : BaseService() {
 
     fun mapUserRecordToUserModel(userRecord: UserRecord, schoolUserRoles: List<SchoolUserRole>): User {
         return User(
-            id = userRecord.id!!,
+            id = userRecord.id!!.toInt(),
             personalNumber = userRecord.personalNumber!!,
             email = userRecord.email!!,
             phoneNumber = userRecord.phoneNumber!!,
@@ -81,7 +98,7 @@ class UserBaseService : BaseService() {
             null
         }
         return UserSecurity(
-            id = id!!,
+            id = id?.toInt()!!,
             email = email!!,
             firstName = firstName!!,
             middleName = middleName!!,
@@ -94,7 +111,7 @@ class UserBaseService : BaseService() {
 
     fun mapUserRecordToOneRoleModel(userRecord: UserRecord, schoolUserRole: SchoolUserRole): OneRoleUser {
         return OneRoleUser(
-            id = userRecord.id!!,
+            id = userRecord.id!!.toInt(),
             personalNumber = userRecord.personalNumber!!,
             email = userRecord.email!!,
             phoneNumber = userRecord.phoneNumber!!,

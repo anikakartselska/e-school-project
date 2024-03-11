@@ -5,7 +5,7 @@ import {translationOfRoles} from "../utils";
 import {SchoolPeriod} from "./SchoolPeriod";
 
 export interface SchoolUserRole {
-    id: number,
+    id: number | null,
     userId: number,
     period: SchoolPeriod,
     school: School,
@@ -25,9 +25,14 @@ export const constructSchoolUserRoleMessage = (schoolUserRole: SchoolUserRole) =
 export const constructDetailsMessage = (schoolUserRole: SchoolUserRole) => {
     let detailsMessage = ''
     switch (schoolUserRole.role) {
-        case SchoolRole.ADMIN:
-        case SchoolRole.TEACHER:
+        case SchoolRole.ADMIN: {
+            detailsMessage = ''
             break;
+        }
+        case SchoolRole.TEACHER: {
+            detailsMessage = ''
+            break;
+        }
         case SchoolRole.PARENT: {
             const child = (schoolUserRole?.detailsForUser as DetailsForParent)?.child
             detailsMessage = ` - на ${child?.firstName} ${child?.lastName} от ${(child?.role.detailsForUser as DetailsForStudent).schoolClass?.name}`

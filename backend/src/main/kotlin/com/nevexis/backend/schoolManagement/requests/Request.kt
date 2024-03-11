@@ -14,7 +14,6 @@ import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
-import java.math.BigDecimal
 import java.time.LocalDateTime
 
 data class Request(
@@ -41,20 +40,20 @@ sealed class RequestValue {
 sealed class RequestValueJson {
     @Serializable
     data class UserRegistration(
-        val schoolUserId: BigDecimal,
+        val schoolUserPeriodId: Int,
     ) : RequestValueJson()
 
     @Serializable
     data class Role(
-        val schoolUserRoleId: BigDecimal
+        val schoolUserRolePeriodId: Int
     ) : RequestValueJson()
 }
 
 object RequestValueSerializer :
     JsonContentPolymorphicSerializer<RequestValueJson>(RequestValueJson::class) {
     override fun selectDeserializer(element: JsonElement) = when {
-        "schoolUserId" in element.jsonObject -> RequestValueJson.UserRegistration.serializer()
-        "schoolUserRoleId" in element.jsonObject -> RequestValueJson.Role.serializer()
+        "schoolUserPeriodId" in element.jsonObject -> RequestValueJson.UserRegistration.serializer()
+        "schoolUserRolePeriodId" in element.jsonObject -> RequestValueJson.Role.serializer()
         else -> error("There are no other types of requests")
     }
 }

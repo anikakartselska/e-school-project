@@ -1,10 +1,12 @@
 package com.nevexis.backend.schoolManagement.users
 
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
+import kotlinx.serialization.Serializable
 import java.math.BigDecimal
 
+@Serializable
 data class User(
-    val id: BigDecimal?,
+    val id: Int? = null,
     val firstName: String,
     val middleName: String,
     val lastName: String,
@@ -14,11 +16,13 @@ data class User(
     val email: String,
     val phoneNumber: String,
     val address: String,
+    val password: String? = null,
     val roles: List<SchoolUserRole>? = null
 )
 
+@Serializable
 data class OneRoleUser(
-    val id: BigDecimal?,
+    val id: Int?,
     val firstName: String,
     val middleName: String,
     val lastName: String,
@@ -31,8 +35,9 @@ data class OneRoleUser(
     val role: SchoolUserRole
 )
 
+@Serializable
 data class UserView(
-    val id: BigDecimal,
+    val id: Int,
     val email: String,
     val firstName: String,
     val middleName: String,

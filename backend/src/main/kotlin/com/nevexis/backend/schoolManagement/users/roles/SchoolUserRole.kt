@@ -5,12 +5,12 @@ import com.nevexis.backend.schoolManagement.school.School
 import com.nevexis.backend.schoolManagement.school_period.SchoolPeriod
 import com.nevexis.backend.schoolManagement.users.DetailsForUser
 import com.nevexis.backend.schoolManagement.users.SchoolRole
-import java.math.BigDecimal
+import kotlinx.serialization.Serializable
 
-
+@Serializable
 data class SchoolUserRole(
-    val id: BigDecimal,
-    val userId: BigDecimal,
+    val id: Int? = null,
+    val userId: Int? = null,
     val period: SchoolPeriod,
     val school: School,
     val role: SchoolRole,

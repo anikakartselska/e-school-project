@@ -116,3 +116,8 @@ export const findUserWithAllItsRolesByPhoneNumber = async (phoneNumber): Promise
             }
         }).then(p => p.data)
 
+export const createRequestFromUser = async (user): Promise<any> =>
+        await auth.post<string>(`/create-requests`, user, {
+            baseURL: "/auth",
+        })
+

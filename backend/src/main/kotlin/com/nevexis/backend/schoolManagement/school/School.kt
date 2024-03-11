@@ -1,9 +1,11 @@
 package com.nevexis.backend.schoolManagement.school
 
-import java.math.BigDecimal
+import kotlinx.serialization.Serializable
 
+
+@Serializable
 data class School(
-    val id: BigDecimal,
+    val id: Int,
     val schoolName: String,
     val city: String,
     val address: String

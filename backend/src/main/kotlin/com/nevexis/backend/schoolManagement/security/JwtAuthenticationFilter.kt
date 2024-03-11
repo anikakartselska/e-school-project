@@ -26,11 +26,11 @@ class AuthenticationManager : ReactiveAuthenticationManager {
             .map {
                 val username = jwtUtil.extractUsername(authToken)
                 val claims = jwtUtil.extractAllClaims(authToken)
-                val rolesMap = claims.get("role", List::class.java) ?: emptyList<String>()
+                val role = claims.get("role", String::class.java)?.let { listOf(it) } ?: emptyList()
                 UsernamePasswordAuthenticationToken(
                     username,
                     null,
-                    rolesMap.map { SimpleGrantedAuthority(it?.toString()) }
+                    role.map { SimpleGrantedAuthority(it) }
                 )
             }
     }
