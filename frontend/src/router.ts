@@ -16,6 +16,10 @@ import LoginSingIn from "./pages/login-signin.vue";
 import LoginTab from "./pages/login-tab.vue";
 import SignInTab from "./pages/sign-in-tab.vue";
 import {userIsLoggedIn} from "./services/LocalStorageService";
+import RequestsPage from "./pages/requests/requests-page.vue";
+import {periodId, schoolId} from "./model/constants";
+import UserRequestsTab from "./pages/requests/user-requests-tab.vue";
+import RoleRequestsTab from "./pages/requests/role-requests-tab.vue";
 
 const routes = [
     {
@@ -28,13 +32,13 @@ const routes = [
     {
         path: '/',
         component: MainPage,
-        redirect: to => ({path: `/home`}),
+        redirect: to => ({path: `/home/${periodId.value}/${schoolId.value}`}),
         beforeEnter: (to, from, next) => {
             if (!userIsLoggedIn()) return next('/login')
             return next()
         },
         children: [
-            {path: '/home', component: Home},
+            {path: '/home/:periodId(\\d+)/:schoolId(\\d+)', component: Home, props: true},
             {path: '/component/:year(\\d+)/:month(\\d+)', component: Component, props: true},
             {path: '/users', component: UsersPage, name: 'users'},
             {
@@ -63,6 +67,19 @@ const routes = [
                 ],
             },
             {
+                path: '/requests/:periodId(\\d+)/:schoolId(\\d+)', component: RequestsPage, props: true,
+                children: [
+                    {
+                        path: 'user-requests',
+                        component: UserRequestsTab
+                    },
+                    {
+                        path: 'role-requests',
+                        component: RoleRequestsTab
+                    }
+                ],
+            },
+            {
                 path: '/schoolClassDiary/:schoolClassId(\\d+)/:periodId(\\d+)/:schoolId(\\d+)',
                 component: SchoolClassSubjectsAndEvaluations,
                 props: true,
@@ -86,7 +103,13 @@ const routes = [
     {
         path: '/component',
         redirect: to => ({path: `/component/${new Date().getFullYear()}/${new Date().getMonth()}`}),
-    }
+    },
+    {
+        path: '/requests',
+        redirect: to => {
+            return {path: `/requests/${periodId.value}/${schoolId.value}`}
+        },
+    },
 
 ]
 

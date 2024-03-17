@@ -5,15 +5,16 @@
 package com.nevexis.backend.schoolManagement.requests
 
 
+import com.nevexis.backend.schoolManagement.users.OneRoleUser
+import com.nevexis.backend.schoolManagement.users.User
 import com.nevexis.backend.schoolManagement.users.UserView
-import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
-import com.nevexis.backend.schoolManagement.users.school_user.SchoolUser
 import com.nevexis.backend.serializers.BigDecimalSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
+import java.math.BigDecimal
 import java.time.LocalDateTime
 
 data class Request(
@@ -26,13 +27,19 @@ data class Request(
     val resolvedDate: LocalDateTime? = null
 )
 
+data class AdditionalRequestInformation(
+    val valueId: BigDecimal,
+    val schoolId: BigDecimal,
+    val periodId: BigDecimal
+)
+
 sealed class RequestValue {
     data class UserRegistration(
-        val schoolUser: SchoolUser,
+        val user: User,
     ) : RequestValue()
 
     data class Role(
-        val schoolUserRole: SchoolUserRole
+        val oneRoleUser: OneRoleUser
     ) : RequestValue()
 }
 

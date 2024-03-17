@@ -35,7 +35,7 @@ export const constructDetailsMessage = (schoolUserRole: SchoolUserRole) => {
         }
         case SchoolRole.PARENT: {
             const child = (schoolUserRole?.detailsForUser as DetailsForParent)?.child
-            detailsMessage = ` - на ${child?.firstName} ${child?.lastName} от ${(child?.role.detailsForUser as DetailsForStudent).schoolClass?.name}`
+            detailsMessage = ` - на ${child?.firstName} ${child?.lastName} от ${(child?.role.detailsForUser as DetailsForStudent)?.schoolClass?.name}`
             break;
         }
         case SchoolRole.STUDENT: {

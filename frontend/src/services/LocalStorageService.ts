@@ -1,5 +1,5 @@
 import {useLocalStorage} from "@vueuse/core";
-import {UserSecurity} from "../model/User";
+import {UserSecurity, UserView} from "../model/User";
 import {SchoolUserRole} from "../model/SchoolUserRole";
 
 export const storeUser = (user: UserSecurity) => {
@@ -12,6 +12,19 @@ export const storeUser = (user: UserSecurity) => {
 export const clearUserStorage = () => localStorage.clear()
 
 export const getCurrentUser = (): UserSecurity => JSON.parse(<string>localStorage.getItem('user')) as UserSecurity
+
+export const getCurrentUserAsUserView = (): UserView => {
+    const user = getCurrentUser()
+
+    return <UserView>{
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        middleName: user.middleName,
+        lastName: user.lastName,
+        username: user.username,
+    }
+}
 
 export const userIsLoggedIn = (): boolean => localStorage.getItem('user') != null
 

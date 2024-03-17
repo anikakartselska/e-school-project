@@ -60,12 +60,6 @@ enum class SchoolRole {
     ADMIN, TEACHER, STUDENT, PARENT
 }
 
-enum class UserStatus {
-    CREATED,
-    ACTIVE,
-    INACTIVE,
-    DELETED
-}
 
 enum class Gender {
     MALE, FEMALE

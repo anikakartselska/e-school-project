@@ -53,9 +53,8 @@
             </q-select>
           </div>
           <div v-if="isDetailsForParent(schoolUserRole.detailsForUser)">
-            <q-input v-model="schoolUserRole.detailsForUser.child.firstName" class="q-pa-sm" label="Име"/>
-            <q-input v-model="schoolUserRole.detailsForUser.child.lastName" class="q-pa-sm" label="Фамилия"/>
-            <q-input v-model="schoolUserRole.detailsForUser.child.phoneNumber" class="q-pa-sm" label="Телефонен номер"
+            <q-input v-model="schoolUserRole.detailsForUser.child.phoneNumber" class="q-pa-sm"
+                     label="Телефонен номер на ученика"
                      mask="##########"/>
             <q-select v-model="schoolUserRole.detailsForUser.child.role.detailsForUser.schoolClass"
                       :options="schoolClassesOptions"

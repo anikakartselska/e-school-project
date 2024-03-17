@@ -1,15 +1,16 @@
 package com.nevexis.backend.schoolManagement.users.school_user
 
 import com.nevexis.backend.schoolManagement.BaseService
+import com.nevexis.backend.schoolManagement.requests.AdditionalRequestInformation
 import com.nevexis.backend.schoolManagement.requests.RequestStatus
+import com.nevexis.backend.schoolManagement.requests.RequestValueJson
+import com.nevexis.backend.schoolManagement.school.School
 import com.nevexis.backend.schoolManagement.school.SchoolService
+import com.nevexis.backend.schoolManagement.school_period.SchoolPeriod
 import com.nevexis.backend.schoolManagement.users.UserService
-import com.nevexis.backend.schoolManagement.users.UserStatus
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
-import com.nevexis.`demo-project`.jooq.tables.records.SchoolUserPeriodRecord
-import com.nevexis.`demo-project`.jooq.tables.records.SchoolUserRecord
-import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_USER
-import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_USER_PERIOD
+import com.nevexis.`demo-project`.jooq.tables.records.*
+import com.nevexis.`demo-project`.jooq.tables.references.*
 import org.jooq.DSLContext
 import org.jooq.Record
 import org.jooq.impl.DSL
@@ -30,7 +31,7 @@ class SchoolUserService : BaseService() {
         userId: BigDecimal,
         schoolUserRoles: List<SchoolUserRole>,
         dsl: DSLContext
-    ): List<BigDecimal> {
+    ): List<AdditionalRequestInformation> {
         return dsl.transactionResult { transaction ->
             schoolUserRoles.groupBy { Pair(it.school, it.period) }
                 .keys.map { (school, period) ->
@@ -55,7 +56,7 @@ class SchoolUserService : BaseService() {
                                 this.schoolUserId = schoolUser.id
                                 this.periodId = period.id.toBigDecimal()
                                 id = getSchoolUserPeriodSeqNextVal()
-                                status = UserStatus.CREATED.name
+                                status = RequestStatus.PENDING.name
                             } to true
                         }
 
@@ -63,19 +64,69 @@ class SchoolUserService : BaseService() {
                 }.let { listOfPairs ->
                     val schoolUserRecords = listOfPairs.map { it.first }
                     val schoolUserPeriodRecords = listOfPairs.map { it.second }
-                    val newlyCreatedUserPeriodRecords = schoolUserPeriodRecords.filter { it.second }
+                    val newlyCreatedUserPeriodRecords = listOfPairs.filter { it.second.second }
                     transaction.dsl().batchStore(schoolUserRecords).execute()
                     transaction.dsl().batchStore(schoolUserPeriodRecords.map { it.first }).execute()
-                    newlyCreatedUserPeriodRecords.map { it.first.id!! }
+                    newlyCreatedUserPeriodRecords.map {
+                        AdditionalRequestInformation(
+                            valueId = it.second.first.id!!,
+                            periodId = it.second.first.periodId!!,
+                            schoolId = it.first.schoolId!!
+                        )
+                    }
                 }
         }
     }
 
-    fun getSchoolUserById(schoolUserId: BigDecimal, dsl: DSLContext): SchoolUser {
-        return recordSelectOnConditionStep(dsl)
-            .where(SCHOOL_USER.ID.eq(schoolUserId))
-            .fetchAny()?.mapIntoModel(dsl) ?: error("There is no record in SCHOOL_USER with id: $schoolUserId")
+    fun getSchoolUsersByListOfSchoolUserPeriodIds(
+        schoolUserPeriodIds: List<BigDecimal>,
+        dsl: DSLContext
+    ): Map<BigDecimal, SchoolUser> {
+        return recordSelectConditionStep(dsl).where(
+            SCHOOL_USER_PERIOD.ID.`in`(schoolUserPeriodIds)
+        ).fetch()
+            .associate {
+                it.get(SCHOOL_USER_PERIOD.ID)!! to mapRecordToModel(it)
+            }
+
     }
+
+    private fun mapRecordToModel(it: Record): SchoolUser {
+        val schoolUserPeriodRecord = it.into(SchoolUserPeriodRecord::class.java)
+        val schoolUserRecord = it.into(SchoolUserRecord::class.java)
+        val schoolPeriod = it.into(SchoolPeriodRecord::class.java).into(SchoolPeriod::class.java)
+        val school = it.into(SchoolRecord::class.java).into(School::class.java)
+        val user = userService.mapUserRecordToUserModel(it.into(UserRecord::class.java), emptyList())
+        return SchoolUser(
+            id = schoolUserRecord.id!!.toInt(),
+            school = school,
+            user = user,
+            status = RequestStatus.valueOf(schoolUserPeriodRecord.status!!),
+            period = schoolPeriod
+        )
+    }
+
+
+    private fun recordSelectConditionStep(dsl: DSLContext) = dsl.select(
+        SCHOOL_USER_PERIOD.asterisk(), SCHOOL_USER.asterisk(), USER.asterisk(), SCHOOL_PERIOD.asterisk(),
+        SCHOOL.asterisk()
+    )
+        .from(SCHOOL_USER_PERIOD)
+        .leftJoin(SCHOOL_USER)
+        .on(SCHOOL_USER.ID.eq(SCHOOL_USER_PERIOD.SCHOOL_USER_ID))
+        .leftJoin(USER)
+        .on(USER.ID.eq(SCHOOL_USER.ID))
+        .leftJoin(SCHOOL_PERIOD)
+        .on(SCHOOL_PERIOD.ID.eq(SCHOOL_USER_PERIOD.PERIOD_ID))
+        .leftJoin(SCHOOL)
+        .on(SCHOOL.ID.eq(SCHOOL_USER.SCHOOL_ID))
+
+
+//    fun getSchoolUserById(schoolUserId: BigDecimal, dsl: DSLContext): SchoolUser {
+//        return recordSelectOnConditionStep(dsl)
+//            .where(SCHOOL_USER.ID.eq(schoolUserId))
+//            .fetchAny()?.mapIntoModel(dsl) ?: error("There is no record in SCHOOL_USER with id: $schoolUserId")
+//    }
 
     private fun recordSelectOnConditionStep(dsl: DSLContext) =
         dsl.select(SCHOOL_USER.asterisk(), SCHOOL_USER_PERIOD.asterisk())
@@ -91,16 +142,29 @@ class SchoolUserService : BaseService() {
         db.select(DSL.field("SCHOOL_USER_PERIOD_SEQ.nextval")).from("DUAL")
             .fetchOne()!!.map { it.into(BigDecimal::class.java) }
 
-    fun Record.mapIntoModel(dsl: DSLContext): SchoolUser {
-        this.into(SchoolUserRecord::class.java).let {
-            val approvedSchoolUserPeriodRecord = this.into(SchoolUserPeriodRecord::class.java)
-            return SchoolUser(
-                id = it.id!!,
-                periodId = approvedSchoolUserPeriodRecord.periodId!!,
-                user = userService.getUserByIdWithoutRoles(it.userId!!, dsl) ?: error("User do not exist"),
-                status = RequestStatus.valueOf(approvedSchoolUserPeriodRecord.status!!),
-                school = schoolService.getSchoolById(it.schoolId!!, dsl)
-            )
-        }
+    fun changeSchoolUserPeriodStatus(
+        requestValue: RequestValueJson.UserRegistration,
+        requestStatus: RequestStatus,
+        dsl: DSLContext
+    ) {
+        dsl.selectFrom(SCHOOL_USER_PERIOD)
+            .where(SCHOOL_USER_PERIOD.ID.eq(requestValue.schoolUserPeriodId.toBigDecimal()))
+            .fetchAny()
+            ?.apply {
+                status = requestStatus.name
+            }?.update()
     }
+
+//    fun Record.mapIntoModel(dsl: DSLContext): SchoolUser {
+//        this.into(SchoolUserRecord::class.java).let {
+//            val approvedSchoolUserPeriodRecord = this.into(SchoolUserPeriodRecord::class.java)
+//            return SchoolUser(
+//                id = it.id!!,
+//                periodId = approvedSchoolUserPeriodRecord.periodId!!,
+//                user = userService.getUserByIdWithoutRoles(it.userId!!, dsl) ?: error("User do not exist"),
+//                status = RequestStatus.valueOf(approvedSchoolUserPeriodRecord.status!!),
+//                school = schoolService.getSchoolById(it.schoolId!!, dsl)
+//            )
+//        }
+//    }
 }

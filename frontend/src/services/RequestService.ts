@@ -121,3 +121,26 @@ export const createRequestFromUser = async (user): Promise<any> =>
             baseURL: "/auth",
         })
 
+
+export const getUserRequestsBySchoolAndPeriod = async (periodId, schoolId, userId: number | null = null): Promise<Request[]> =>
+        await api.get<Request[]>('/get-user-requests-by-school-and-period', {
+            params: {
+                periodId, schoolId, userId
+            }
+        }).then(p => p.data)
+
+export const getRoleRequestsBySchoolAndPeriod = async (periodId, schoolId, userId: number | null = null): Promise<Request[]> =>
+        await api.get<Request[]>('/get-role-requests-by-school-and-period', {
+            params: {
+                periodId, schoolId, userId
+            }
+        }).then(p => p.data)
+
+export const changeRequestStatus = async (requestIds,
+                                          requestStatus, resolvedByUserId): Promise<any> =>
+        await api.post<string>(`/change-request-status`, Array.isArray(requestIds) ? requestIds : [requestIds], {
+            params: {
+                requestStatus,
+                resolvedByUserId
+            }
+        })

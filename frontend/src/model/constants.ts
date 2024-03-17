@@ -1,7 +1,8 @@
 import {SchoolRole} from "./User";
+import {ref} from "vue";
 
-export const schoolId = 1
-export const periodId = 1
+export let schoolId = ref<string>("1")
+export let periodId = ref<string>("1")
 export const users = [{
     id: 1,
     firstName: "John",

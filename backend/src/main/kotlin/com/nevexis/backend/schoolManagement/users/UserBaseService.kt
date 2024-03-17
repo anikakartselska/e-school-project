@@ -25,7 +25,7 @@ class UserBaseService : BaseService() {
     fun createUser(user: User, dsl: DSLContext): BigDecimal {
         val newUserId = getUserSeqNextVal()
         dsl.newRecord(USER, user).apply {
-            id = getUserSeqNextVal()
+            id = newUserId
             password = passwordEncoder.encode(user.password)
             gender = user.gender.name
         }.insert()
@@ -82,7 +82,7 @@ class UserBaseService : BaseService() {
             SCHOOL_PERIOD.asterisk()
         ).from(USER)
             .leftJoin(SCHOOL_USER).on(SCHOOL_USER.USER_ID.eq(USER.ID))
-            .leftJoin(SCHOOL_USER_PERIOD).on(SCHOOL_USER_PERIOD.ID.eq(SCHOOL_USER.ID))
+            .leftJoin(SCHOOL_USER_PERIOD).on(SCHOOL_USER_PERIOD.SCHOOL_USER_ID.eq(SCHOOL_USER.ID))
             .leftJoin(SCHOOL_USER_ROLE).on(SCHOOL_USER_ROLE.USER_ID.eq(USER.ID))
             .leftJoin(SCHOOL_ROLE_PERIOD).on(SCHOOL_ROLE_PERIOD.SCHOOL_USER_ROLE_ID.eq(SCHOOL_USER_ROLE.ID))
             .leftJoin(SCHOOL_PERIOD).on(SCHOOL_USER_PERIOD.PERIOD_ID.eq(SCHOOL_PERIOD.ID))

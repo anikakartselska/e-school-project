@@ -1,7 +1,9 @@
 package com.nevexis.backend.schoolManagement.users.roles
 
 import com.nevexis.backend.schoolManagement.BaseService
+import com.nevexis.backend.schoolManagement.requests.AdditionalRequestInformation
 import com.nevexis.backend.schoolManagement.requests.RequestStatus
+import com.nevexis.backend.schoolManagement.requests.RequestValueJson
 import com.nevexis.backend.schoolManagement.school.SchoolService
 import com.nevexis.backend.schoolManagement.school_period.SchoolPeriod
 import com.nevexis.backend.schoolManagement.users.SchoolRole
@@ -32,7 +34,7 @@ class SchoolRolesService : BaseService() {
         userId: BigDecimal,
         schoolUserRoles: List<SchoolUserRole>,
         dsl: DSLContext
-    ): List<BigDecimal> {
+    ): List<AdditionalRequestInformation> {
         return dsl.transactionResult { transaction ->
             schoolUserRoles.map { schoolUserRole ->
                 (transaction.dsl().fetchOne(
@@ -63,7 +65,7 @@ class SchoolRolesService : BaseService() {
             }.let { listOfPairs ->
                 val schoolRoleRecords = listOfPairs.map { it.first }
                 val schoolRolePeriodRecords = listOfPairs.map { it.second }
-                val newlyCreatedSchoolRolePeriodRecords = schoolRolePeriodRecords.filter { it.second }
+                val newlyCreatedSchoolRolePeriodRecords = listOfPairs.filter { it.second.second }
                 transaction.dsl().batchStore(schoolRoleRecords).execute()
                 transaction.dsl().batchStore(schoolRolePeriodRecords.map { it.first }).execute()
 
@@ -72,8 +74,13 @@ class SchoolRolesService : BaseService() {
                 }.apply {
                     userDetailsService.insertUserDetailsForSchoolUserRoles(this, transaction.dsl())
                 }
-                newlyCreatedSchoolRolePeriodRecords.map { it.first.id!! }
-
+                newlyCreatedSchoolRolePeriodRecords.map {
+                    AdditionalRequestInformation(
+                        valueId = it.second.first.id!!,
+                        periodId = it.second.first.periodId!!,
+                        schoolId = it.first.schoolId!!
+                    )
+                }
             }
         }
     }
@@ -115,6 +122,18 @@ class SchoolRolesService : BaseService() {
             }
             .groupBy { it.first }
             .mapValues { (_, userIdToRoles) -> userIdToRoles.map { it.second } }
+
+    fun getSchoolRolesByListOfSchoolRolePeriodIds(
+        schoolUserPeriodIds: List<BigDecimal>,
+        dsl: DSLContext
+    ): Map<BigDecimal, SchoolUserRole> {
+        return schoolRolesRecordSelectOnConditionStep(dsl).where(SCHOOL_ROLE_PERIOD.ID.`in`(schoolUserPeriodIds))
+            .fetch()
+            .associate {
+                it.get(SCHOOL_ROLE_PERIOD.ID)!! to
+                        mapToModel(it)
+            }
+    }
 
     fun getSchoolUserRoleSeqNextVal(): BigDecimal =
         db.select(DSL.field("SCHOOL_USER_ROLE_SEQ.nextval")).from("DUAL")
@@ -162,5 +181,18 @@ class SchoolRolesService : BaseService() {
                 )
             )
         }
+    }
+
+    fun changeSchoolUserRolePeriodStatus(
+        requestValue: RequestValueJson.Role,
+        requestStatus: RequestStatus,
+        dsl: DSLContext
+    ) {
+        dsl.selectFrom(SCHOOL_ROLE_PERIOD)
+            .where(SCHOOL_ROLE_PERIOD.ID.eq(requestValue.schoolUserRolePeriodId.toBigDecimal()))
+            .fetchAny()
+            ?.apply {
+                status = requestStatus.name
+            }?.update()
     }
 }

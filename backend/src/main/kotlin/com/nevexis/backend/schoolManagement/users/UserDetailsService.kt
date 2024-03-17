@@ -112,7 +112,7 @@ class UserDetailsService : BaseService() {
             .fetch().map {
                 DetailsForUser.DetailsForStudent(
                     schoolClassService.mapRecordToInternalModel(it),
-                    it.get(DSL.field("NUMBER_IN_CLASS", BigDecimal::class.java)).toInt()
+                    it.get(DSL.field("NUMBER_IN_CLASS", BigDecimal::class.java))?.toInt()
                 )
             }
 

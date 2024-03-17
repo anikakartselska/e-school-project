@@ -53,9 +53,9 @@ const openUser = async (row: UserView) => {
     await router.push({
         name: "user",
         params: {
-            id: row.id,
-            periodId: periodId,
-            schoolId: schoolId
+          id: row.id,
+          periodId: periodId.value,
+          schoolId: schoolId.value
         }
     })
 }
