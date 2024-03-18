@@ -142,6 +142,7 @@ class UserBaseService : BaseService() {
     fun studentRecordSelectOnConditionStep() = db.select(
         USER.asterisk(),
         STUDENT_SCHOOL_CLASS.asterisk(),
+        STUDENT_SCHOOL_CLASS_PERIOD.asterisk(),
         SCHOOL_USER.asterisk(),
         SCHOOL_USER_ROLE.asterisk(),
         SCHOOL_USER_PERIOD.asterisk(),
@@ -149,6 +150,11 @@ class UserBaseService : BaseService() {
         SCHOOL_PERIOD.asterisk()
     )
         .from(STUDENT_SCHOOL_CLASS)
+        .leftJoin(STUDENT_SCHOOL_CLASS_PERIOD).on(
+            STUDENT_SCHOOL_CLASS_PERIOD.STUDENT_SCHOOL_CLASS_ID.eq(
+                STUDENT_SCHOOL_CLASS.ID
+            )
+        )
         .leftJoin(SCHOOL_USER_ROLE).on(SCHOOL_USER_ROLE.ID.eq(STUDENT_SCHOOL_CLASS.STUDENT_SCHOOL_USER_ROLE_ID))
         .leftJoin(USER).on(SCHOOL_USER_ROLE.USER_ID.eq(USER.ID))
         .leftJoin(SCHOOL_USER).on(SCHOOL_USER.USER_ID.eq(USER.ID))

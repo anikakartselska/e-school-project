@@ -105,7 +105,9 @@ class SchoolRolesService : BaseService() {
             SCHOOL_USER_ROLE.USER_ID.eq(userId).and(
                 SCHOOL_ROLE_PERIOD.STATUS.eq(RequestStatus.APPROVED.name)
             )
-        ).fetch().map { mapToModel(it) }
+        ).fetch().map {
+            mapToModel(it)
+        }
 
     fun getAllRolesFromSchoolForPeriod(schoolId: BigDecimal, periodId: BigDecimal) =
         schoolRolesRecordSelectOnConditionStep(db)
