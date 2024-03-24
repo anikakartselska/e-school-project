@@ -27,8 +27,8 @@ sealed class DetailsForUser {
 object DetailsForUserSerializer :
     JsonContentPolymorphicSerializer<DetailsForUser>(DetailsForUser::class) {
     override fun selectDeserializer(element: JsonElement) = when {
-        "numberInClass" in element.jsonObject -> DetailsForUser.DetailsForStudent.serializer()
         "child" in element.jsonObject -> DetailsForUser.DetailsForParent.serializer()
+        "schoolClass" in element.jsonObject -> DetailsForUser.DetailsForStudent.serializer()
         else -> error("There are no other details for user")
     }
 }

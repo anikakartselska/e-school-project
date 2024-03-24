@@ -1,71 +1,73 @@
 <template>
-  <div class="col-2"></div>
-  <div class="col-8">
-    <q-page class="page-content" padding>
-      <div style="margin-top: 30px;">
-        <div class="row">
-          <div class="col-8">
-            <q-tabs dense>
-              <q-route-tab label="Заявки за регистрация" to="user-requests"/>
-              <q-route-tab label="Заявки за роля" to="role-requests"/>
-            </q-tabs>
-          </div>
-          <div class="col-2">
-            <q-select
-                    v-model="filter"
-                    hide-dropdown-icon
-                    input-debounce="0"
-                    label="Търси"
-                    multiple
-                    new-value-mode="add-unique"
-                    style="width: 250px"
-                    use-chips
-                    use-input
-            >
-              <template v-slot:append>
-                <q-icon name="search"></q-icon>
-              </template>
-            </q-select>
-          </div>
-          <div class="col-12">
-            <router-view v-slot="{ Component }"
-                         v-model:roleRequests="filteredRoleRequests"
-                         v-model:userRequests="filteredUserRequests"
-            >
-              <template v-if="Component">
-                <suspense>
-                  <component :is="Component">
-                    <template v-slot:toggleSlot>
-                      <q-toggle v-model="requestStatusFilters"
-                                :label="translationOfRequestStatus[RequestStatus.PENDING]"
-                                :val="RequestStatus.PENDING"
-                                color="blue"/>
-                      <q-toggle v-model="requestStatusFilters"
-                                :label="translationOfRequestStatus[RequestStatus.REJECTED]"
-                                :val="RequestStatus.REJECTED"
-                                color="red"/>
-                      <q-toggle v-model="requestStatusFilters"
-                                :label="translationOfRequestStatus[RequestStatus.APPROVED]"
-                                :val="RequestStatus.APPROVED"
-                                color="green"/>
+  <div class="bg-sms">
+    <div class="col-2"></div>
+    <div class="col-8">
+      <q-page class="page-content" padding>
+        <div style="margin-top: 30px;">
+          <div class="row">
+            <div class="col-8">
+              <q-tabs dense>
+                <q-route-tab label="Заявки за регистрация" to="user-requests"/>
+                <q-route-tab label="Заявки за роля" to="role-requests"/>
+              </q-tabs>
+            </div>
+            <div class="col-2">
+              <q-select
+                      v-model="filter"
+                      hide-dropdown-icon
+                      input-debounce="0"
+                      label="Търси"
+                      multiple
+                      new-value-mode="add-unique"
+                      style="width: 250px"
+                      use-chips
+                      use-input
+              >
+                <template v-slot:append>
+                  <q-icon name="search"></q-icon>
+                </template>
+              </q-select>
+            </div>
+            <div class="col-12">
+              <router-view v-slot="{ Component }"
+                           v-model:roleRequests="filteredRoleRequests"
+                           v-model:userRequests="filteredUserRequests"
+              >
+                <template v-if="Component">
+                  <suspense>
+                    <component :is="Component">
+                      <template v-slot:toggleSlot>
+                        <q-toggle v-model="requestStatusFilters"
+                                  :label="translationOfRequestStatus[RequestStatus.PENDING]"
+                                  :val="RequestStatus.PENDING"
+                                  color="blue"/>
+                        <q-toggle v-model="requestStatusFilters"
+                                  :label="translationOfRequestStatus[RequestStatus.REJECTED]"
+                                  :val="RequestStatus.REJECTED"
+                                  color="red"/>
+                        <q-toggle v-model="requestStatusFilters"
+                                  :label="translationOfRequestStatus[RequestStatus.APPROVED]"
+                                  :val="RequestStatus.APPROVED"
+                                  color="green"/>
+                      </template>
+                    </component>
+                    <template #fallback>
+                      <div class="centered-div">
+                        <q-spinner
+                                :thickness="2"
+                                color="primary"
+                                size="5.5em"
+                        />
+                      </div>
                     </template>
-                  </component>
-                  <template #fallback>
-                    <div class="centered-div">
-                      <q-spinner
-                              :thickness="2"
-                              color="primary"
-                              size="5.5em"
-                      />
-                    </div>
-                  </template>
-                </suspense>
-              </template>
-            </router-view>
+                  </suspense>
+                </template>
+              </router-view>
+            </div>
           </div>
         </div>
-      </div>
-    </q-page>
+      </q-page>
+    </div>
   </div>
 </template>
 

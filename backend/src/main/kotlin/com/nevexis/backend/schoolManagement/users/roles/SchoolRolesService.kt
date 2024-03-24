@@ -109,6 +109,20 @@ class SchoolRolesService : BaseService() {
             mapToModel(it)
         }
 
+    fun getAllUserRolesForPeriodAndSchool(
+        userId: BigDecimal,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ): List<SchoolUserRole> =
+        schoolRolesRecordSelectOnConditionStep(db).where(
+            SCHOOL_USER_ROLE.USER_ID.eq(userId).and(
+                SCHOOL_ROLE_PERIOD.STATUS.eq(RequestStatus.APPROVED.name)
+            ).and(SCHOOL_ROLE_PERIOD.PERIOD_ID.eq(periodId))
+                .and(SCHOOL_USER_ROLE.SCHOOL_ID.eq(schoolId))
+        ).fetch().map {
+            mapToModel(it)
+        }
+
     fun getAllRolesFromSchoolForPeriod(schoolId: BigDecimal, periodId: BigDecimal) =
         schoolRolesRecordSelectOnConditionStep(db)
             .where(

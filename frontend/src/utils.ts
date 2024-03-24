@@ -1,4 +1,4 @@
-import {date, Dialog} from "quasar";
+import {date, Dialog, Notify} from "quasar";
 import {RequestStatus} from "./model/RequestStatus";
 
 export const translationOfRoles = {
@@ -49,7 +49,19 @@ export const formatToBulgarian = (dateToFormat: string | null) => {
     }
     return date.formatDate(new Date(dateToFormat), 'DD.MM.YYYY');
 };
-
+export const notifyForError = (title: string, caption: string, setTimeout: boolean = false) =>
+        Notify.create({
+            message: title,
+            caption: caption,
+            color: 'negative',
+            icon: "report_problem",
+            progress: true,
+            timeout: setTimeout ? 5000 : 0,
+            actions: [
+                {label: 'Dismiss', color: 'yellow'}
+            ],
+            multiLine: true,
+        })
 export const confirmActionPromiseDialogWithCancelButton = (title: string, message: string) => new Promise<void>((resolve) => {
     Dialog.create({
         title: title,

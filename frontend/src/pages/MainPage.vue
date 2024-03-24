@@ -1,5 +1,12 @@
 <template>
   <q-layout view="lHh LpR lFf">
+    <q-ajax-bar
+            ref="bar"
+            color="bg-red-6"
+            position="bottom"
+            size="5px"
+
+    />
     <q-header
             reveal
             :class="$q.dark.isActive ? 'header_dark' : 'header_normal'"
@@ -14,7 +21,8 @@
                 @click="left = !left"
         />
         <q-toolbar-title>Електронен дневник</q-toolbar-title>
-        <q-btn dense flat icon="switch_account">
+        <q-btn :label="`${getCurrentUser().role.period.startYear.substring(0,4)}/${getCurrentUser().role.period.endYear.substring(0,4)}`" dense flat
+               icon="switch_account">
           <q-menu>
             <div class="row no-wrap q-pa-md">
               <div class="column">
@@ -168,19 +176,10 @@ const changeUserRole = async () => {
   )
 }
 const left = $ref(true)
-const pages = [{to: "/users", label: "Потребители", show: true},
+const pages = [{to: `/users/${periodId.value}/${schoolId.value}/teachers`, label: "Потребители", show: true},
   {to: `/requests/${periodId.value}/${schoolId.value}/user-requests`, label: "Заявки", show: true},
-  {to: "/dashboard_v3", label: "Dashboard v3", show: true},
-  {to: "/customer_management", label: "Customer Management", show: true},
-  {to: "/change_request", label: "Change Request", show: true},
-  {to: "/sales_invoices", label: "Sales Invoices", show: true},
-  {to: "/quotes", label: "Quotes", show: true},
-  {to: "/transactions", label: "Transactions", show: true},
-  {to: "/employee_salary_list", label: "Employee Salary List", show: true},
-  {to: "/calendar", label: "Calendar", show: true},
-  {
-    to: "/department", label: "Department", show: true
-  }]
+  {to: `/school-classes/${periodId.value}/${schoolId.value}`, label: "Класове", show: true},
+]
 
 </script>
 
@@ -217,4 +216,73 @@ body {
 .header_dark {
   background: linear-gradient(145deg, rgb(61, 14, 42) 15%, rgb(14, 43, 78) 70%);
 }
+
+</style>
+
+<style lang="sass" scoped>
+.box-shadow
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2)
+
+.toggle-boarder
+  border: 1px solid
+  color: #0e6be7
+
+.body--light
+  .GNL
+    &__toolbar
+      height: 64px
+
+    &__toolbar-input
+      width: 55%
+
+    &__drawer-item
+      color: #606061
+      line-height: 24px
+      border-radius: 0 24px 24px 0
+      margin-right: 12px
+
+      .q-item__label
+        letter-spacing: .01785714em
+        font-size: .875rem
+        font-weight: 500
+        line-height: 1.25rem
+
+
+    &__drawer-footer-link
+      text-decoration: none
+      font-weight: 500
+      font-size: .75rem
+
+      &:hover
+        color: #000
+
+.body--dark
+  .GNL
+    &__toolbar
+      height: 64px
+
+    &__toolbar-input
+      width: 55%
+
+    &__drawer-item
+      line-height: 24px
+      border-radius: 0 24px 24px 0
+      margin-right: 12px
+
+      .q-item__label
+        color: white
+        letter-spacing: .01785714em
+        font-size: .875rem
+        font-weight: 500
+        line-height: 1.25rem
+
+
+    &__drawer-footer-link
+      color: lightgrey
+      text-decoration: none
+      font-weight: 500
+      font-size: .75rem
+
+      &:hover
+        color: #000
 </style>

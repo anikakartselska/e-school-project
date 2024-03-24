@@ -70,7 +70,7 @@ class UserBaseService : BaseService() {
         dsl.select(USER.asterisk(), SCHOOL_USER.asterisk(), SCHOOL_USER_PERIOD.asterisk()).from(USER)
             .leftJoin(SCHOOL_USER).on(
                 SCHOOL_USER.USER_ID.eq(USER.ID)
-            ).leftJoin(SCHOOL_USER_PERIOD).on(SCHOOL_USER_PERIOD.ID.eq(SCHOOL_USER.ID))
+            ).leftJoin(SCHOOL_USER_PERIOD).on(SCHOOL_USER_PERIOD.SCHOOL_USER_ID.eq(SCHOOL_USER.ID))
 
     fun recordSelectOnConditionStepJoinedWithUserRoles(dsl: DSLContext = db) =
         dsl.select(

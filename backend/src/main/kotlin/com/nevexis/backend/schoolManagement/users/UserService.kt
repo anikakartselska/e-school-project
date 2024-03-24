@@ -1,19 +1,65 @@
 package com.nevexis.backend.schoolManagement.users
 
+import com.nevexis.backend.schoolManagement.requests.RequestService
 import com.nevexis.backend.schoolManagement.requests.RequestStatus
 import com.nevexis.`demo-project`.jooq.tables.records.UserRecord
 import com.nevexis.`demo-project`.jooq.tables.references.*
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 
 @Service
 class UserService : UserBaseService() {
 
-    fun getAllUserViewsBySchool(schoolId: BigDecimal, periodId: BigDecimal, dsl: DSLContext = db) {
+    @Autowired
+    @Lazy
+    private lateinit var requestService: RequestService
+
+    fun updateUser(user: User, loggedUserId: BigDecimal) {
+        db.transaction { transaction ->
+            transaction.dsl().selectFrom(USER).where(USER.ID.eq(user.id?.toBigDecimal()))
+                .fetchOne()
+                ?.apply {
+                    firstName = user.firstName
+                    middleName = user.middleName
+                    lastName = user.lastName
+                    username = user.username
+                    personalNumber = user.personalNumber
+                    gender = user.gender.name
+                    email = user.email
+                    phoneNumber = user.phoneNumber
+                    address = user.address
+                }?.update()
+            requestService.createRequests(user, loggedUserId, transaction.dsl())
+        }
+    }
+
+    fun findUserWithAllItsRolesById(
+        id: BigDecimal,
+        schoolId: BigDecimal,
+        periodId: BigDecimal,
+        username: String
+    ) = db.selectFrom(USER).where(USER.ID.eq(id))
+        .fetchAnyInto(UserRecord::class.java)?.let { userRecord ->
+            val allUserRoles = if (userRecord.username?.equals(username) == true) {
+                schoolUserRolesService.getAllUserRoles(userRecord.id!!)
+            } else {
+                schoolUserRolesService.getAllUserRolesForPeriodAndSchool(id, schoolId, periodId)
+            }
+            mapUserRecordToUserModel(userRecord, allUserRoles)
+        } ?: error("User with id:${id} does not exist in current school and period")
+
+    fun getAllUserViewsBySchool(schoolId: BigDecimal, periodId: BigDecimal, dsl: DSLContext = db): List<UserView> {
         val rolesForSchoolGroupedByUserId = schoolUserRolesService.getAllRolesFromSchoolForPeriod(schoolId, periodId)
-        recordSelectOnConditionStep(dsl).where(
-            SCHOOL_USER.SCHOOL_ID.eq(schoolId).and(SCHOOL_USER_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
+        return recordSelectOnConditionStep(dsl).where(
+            SCHOOL_USER.SCHOOL_ID.eq(schoolId).and(
+                SCHOOL_USER_PERIOD.STATUS.eq(RequestStatus.APPROVED.name).and(
+                    SCHOOL_USER_PERIOD.PERIOD_ID.eq(periodId)
+                )
+            )
         ).map {
             val userRecord = it.into(UserRecord::class.java)
             mapToUserView(userRecord, rolesForSchoolGroupedByUserId[userRecord.id] ?: emptyList())
@@ -39,7 +85,22 @@ class UserService : UserBaseService() {
                         .and(SCHOOL_USER_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
                 )
             ).orderBy(STUDENT_SCHOOL_CLASS_PERIOD.NUMBER_IN_CLASS)
-            .fetchInto(StudentView::class.java)
+            .fetch()
+            .map { record ->
+                val numberInClass = record.get(DSL.field("NUMBER_IN_CLASS", BigDecimal::class.java))?.toInt()
+                record.into(UserRecord::class.java).let { userRecord ->
+                    StudentView(
+                        id = userRecord.id!!,
+                        email = userRecord.email!!,
+                        firstName = userRecord.firstName!!,
+                        middleName = userRecord.middleName!!,
+                        lastName = userRecord.lastName!!,
+                        username = userRecord.username!!,
+                        numberInClass = numberInClass
+                    )
+                }
+            }
+
 
     fun findUsersByTheirSchoolRolePeriodIds(
         schoolRolePeriodIds: List<BigDecimal>,

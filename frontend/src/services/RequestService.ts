@@ -24,8 +24,13 @@ export const loginAfterSelectedRole = async (roleId: number, periodId: number): 
             baseURL: "/auth",
         })
 
-export const getAllUsersBySchoolId = async (schoolId): Promise<UserView[]> =>
-        await api.get<UserView[]>('/get-all-users-by-school-id', {params: {schoolId: schoolId}}).then(p => p.data)
+export const getAllUsersBySchoolIdAndPeriodId = async (schoolId, periodId): Promise<UserView[]> =>
+        await api.get<UserView[]>('/get-all-users-by-school-id-and-period-id', {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId
+            }
+        }).then(p => p.data)
 
 export const getUserWithDetailsByUserId = async (userId, periodId, schoolId): Promise<OneRoleUser> =>
         await api.get<OneRoleUser>('/get-user-by-id', {
@@ -144,3 +149,37 @@ export const changeRequestStatus = async (requestIds,
                 resolvedByUserId
             }
         })
+
+export const fetchUserWithAllItsRolesById = async (id, schoolId, periodId): Promise<User> =>
+        await api.get<User>('/get-user-with-all-roles', {
+            params: {
+                id, schoolId, periodId
+            }
+        }).then(p => p.data)
+
+export const updateUser = async (user, loggedUserId): Promise<any> =>
+        await api.post<any>(`/update-user`, user, {
+            params: {loggedUserId},
+            headers: {'Content-Type': 'application/json'}
+        })
+
+export const getSchoolClassesFromSchool = async (schoolId, periodId): Promise<SchoolClass[]> =>
+        await api.get<SchoolClass[]>('/get-school-classes-from-school', {
+            params: {
+                schoolId, periodId
+            }
+        }).then(p => p.data)
+
+export const getAllStudentsFromSchoolClass = async (schoolClassId, periodId): Promise<StudentView[]> =>
+        await api.get<StudentView[]>('/get-all-students-from-school-class', {
+            params: {
+                schoolClassId, periodId
+            }
+        }).then(p => p.data)
+
+export const getSchoolClassById = async (schoolClassId, periodId): Promise<SchoolClass> =>
+        await api.get<SchoolClass>('/get-school-class-by-id', {
+            params: {
+                schoolClassId, periodId
+            }
+        }).then(p => p.data)

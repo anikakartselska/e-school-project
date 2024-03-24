@@ -53,7 +53,7 @@ data class StudentView(
     val middleName: String,
     val lastName: String,
     val username: String,
-    val numberInClass: String,
+    val numberInClass: Int?,
 )
 
 enum class SchoolRole {

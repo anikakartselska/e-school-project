@@ -1,5 +1,6 @@
 package com.nevexis.backend.schoolManagement.schoolClass
 
+import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.users.SchoolRole
 import com.nevexis.backend.schoolManagement.users.UserService
@@ -13,6 +14,7 @@ import org.jooq.Record
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
 
 @Service
 class SchoolClassService : BaseService() {
@@ -22,23 +24,42 @@ class SchoolClassService : BaseService() {
     private lateinit var userService: UserService
 
 
-//    fun getSchoolClassById(schoolClassId: BigDecimal, schoolId: BigDecimal, dsl: DSLContext) =
-//        dsl.select(SCHOOL_CLASS.asterisk(), USER.asterisk()).from(SCHOOL_CLASS).leftJoin(USER).on(
-//            SCHOOL_CLASS.MAIN_TEACHER.eq(
-//                USER.ID
-//            )
-//        ).where(SCHOOL_CLASS.ID.eq(schoolClassId)).fetchAny()?.map {
-//            mapRecordToInternalModel(it)
-//        }
+    fun getSchoolClassById(schoolClassId: BigDecimal, dsl: DSLContext = db) =
+        recordSelectOnConditionStep(dsl).where(SCHOOL_CLASS.ID.eq(schoolClassId)).fetchAny()?.map {
+            mapRecordToInternalModel(it)
+        } ?: error("School class with id:${schoolClassId} does not exist")
+
+    fun getSchoolClassByNameSchoolAndPeriod(name: String, schoolId: BigDecimal, periodId: BigDecimal, dsl: DSLContext) =
+        recordSelectOnConditionStep(dsl).where(
+            SCHOOL_CLASS.NAME.eq(name),
+            SCHOOL_CLASS.SCHOOL_ID.eq(schoolId),
+            SCHOOL_CLASS.SCHOOL_PERIOD_ID.eq(periodId)
+        ).fetchAny()?.map {
+            mapRecordToInternalModel(it)
+        } ?: throw SMSError("NOT_FOUND", "School class $name does not exist")
 
     fun getSchoolClasses(dsl: DSLContext = db): List<SchoolClass> =
+        recordSelectOnConditionStep(dsl).orderBy(SCHOOL_CLASS.NAME)
+            .fetch().map {
+                mapRecordToInternalModel(it)
+            }
+
+
+    fun getAllSchoolClassesFromSchoolAndPeriod(schoolId: BigDecimal, periodId: BigDecimal) =
+        recordSelectOnConditionStep().where(
+            SCHOOL_CLASS.SCHOOL_PERIOD_ID.eq(periodId).and(SCHOOL_CLASS.SCHOOL_ID.eq(schoolId))
+        )
+            .orderBy(SCHOOL_CLASS.NAME).map {
+                mapRecordToInternalModel(it)
+            }
+
+
+    private fun recordSelectOnConditionStep(dsl: DSLContext = db) =
         dsl.select(SCHOOL_CLASS.asterisk(), USER.asterisk()).from(SCHOOL_CLASS).leftJoin(USER).on(
             SCHOOL_CLASS.MAIN_TEACHER.eq(
                 USER.ID
             )
-        ).fetch().map {
-            mapRecordToInternalModel(it)
-        }
+        )
 
 
     fun mapRecordToInternalModel(it: Record) =

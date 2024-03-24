@@ -1,0 +1,131 @@
+@import "../node_modules/quasar/src/css/variables"
+
+.custom-disable-editing
+  opacity: 65%
+
+.aka-colors-gradient
+  background: rgb(13, 43, 73)
+  background: linear-gradient(149deg, rgba(13, 43, 73, 1) 0%, rgba(13, 43, 73, 1) 47%, rgba(64, 147, 189, 1) 100%)
+
+.error-text
+  color: $red-8
+  font-family: Helvetica, Arial, sans-serif
+  font-size: 0.9em
+  font-weight: bold
+  line-height: 20px
+
+.shadow-border
+  box-shadow: 0 1px 5px #0003, 0 2px 2px #00000024, 0 3px 1px -2px #0000001f
+
+\:root
+  --scrollbar-width-height: 10px
+  --scrollbar-track-dark: #d2d2d2
+  --scrollbar-thumb-dark: rgb(101, 183, 220)
+  --scrollbar-thumb-hover-dark: rgba(25, 118, 210, 255)
+
+::-webkit-scrollbar
+  width: var(--scrollbar-width-height)
+  height: var(--scrollbar-width-height)
+
+// the track (progress bar) of the scrollbar
+::-webkit-scrollbar-track
+  // border-top: var(--markdown-border)
+  background: var(--scrollbar-track-dark)
+  box-shadow: inset 0 0 4px var(--scrollbar-track-dark)
+
+// the bottom corner of the scrollbar, where both horizontal and vertical scrollbars meet
+::-webkit-scrollbar-corner
+  background: var(--scrollbar-track-dark)
+
+// the draggable scrolling handle
+::-webkit-scrollbar-thumb
+  background: var(--scrollbar-thumb-dark)
+  border-radius: 5px
+
+  &:hover
+    background: var(--scrollbar-thumb-hover-dark)
+
+.sticky-headers
+  height: 310px
+
+  thead tr th
+    position: sticky
+    z-index: 1
+
+  thead tr:first-child th
+    top: 0
+
+  &.q-table--loading thead tr:last-child th
+    top: 48px
+
+.body--light
+  .sticky-headers
+    .q-table__top,
+    .q-table__bottom,
+    thead tr:first-child th
+      background-color: white
+
+.body--dark
+  .sticky-headers
+    .q-table__top,
+    .q-table__bottom,
+    thead tr:first-child th
+      background-color: $grey-10
+
+  .text-black
+    color: white !important
+
+  .highlight:hover, .highlight:checked
+    background-color: #000000 !important
+
+  .highlight
+    background-color: #2a2a2a !important
+
+  .q-item--active, .q-item
+    color: white !important
+
+.body--dark
+  .bg-sms
+    background: $grey-9 !important
+
+  .bg-sms-black-white
+    background: black !important
+    color: #0d2b49
+  --q-secondary: #40a399
+  --q-negative: #c44141
+
+  .white
+    color: #212123 !important
+
+  .bg-white
+    background-color: #212123 !important
+
+  .bg-blue-grey-1
+    background: black !important
+    color: #BDBDBD
+
+  .bg-red-1
+    background: #720000 !important
+
+  .bg-red-2
+    background: #4b0101 !important
+
+  .bg-green-1
+    background: #1f7201 !important
+
+  .bg-green-2
+    background: #1a5201 !important
+
+  .bg-yellow-2
+    background: #8f6a00 !important
+
+  .bg-blue-1
+    background: #20449b !important
+
+.body--light
+  .bg-sms
+    background: $grey-1 !important
+
+  .bg-sms-black-white
+    background: white !important
+

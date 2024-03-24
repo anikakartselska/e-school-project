@@ -14,6 +14,7 @@ import com.nevexis.`demo-project`.jooq.tables.references.USER
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.Json.Default.decodeFromString
+import org.jooq.DSLContext
 import org.jooq.Record
 import org.jooq.Result
 import org.jooq.impl.DSL
@@ -197,8 +198,8 @@ class RequestService : BaseService() {
         }
     }
 
-    fun createRequests(user: User) {
-        db.transaction { transaction ->
+    fun createRequests(user: User, loggedUserId: BigDecimal? = null, dsl: DSLContext = db) {
+        dsl.transaction { transaction ->
             val userId = user.id?.toBigDecimal() ?: userSecurityService.createUser(user, transaction.dsl())
             schoolUserService.createSchoolUsersFromListOfSchoolUserRoles(
                 userId,
@@ -210,7 +211,7 @@ class RequestService : BaseService() {
                     requestStatus = RequestStatus.PENDING.name,
                     periodId = it.periodId,
                     schoolId = it.schoolId,
-                    requestedByUserId = userId,
+                    requestedByUserId = loggedUserId ?: userId,
                     requestValue = Json.encodeToString(RequestValueJson.UserRegistration(it.valueId.toInt())),
                     requestDate = LocalDateTime.now(),
 
@@ -229,7 +230,7 @@ class RequestService : BaseService() {
                     requestStatus = RequestStatus.PENDING.name,
                     periodId = it.periodId,
                     schoolId = it.schoolId,
-                    requestedByUserId = userId,
+                    requestedByUserId = loggedUserId ?: userId,
                     requestValue = Json.encodeToString(RequestValueJson.Role(it.valueId.toInt())),
                     requestDate = LocalDateTime.now()
                 )

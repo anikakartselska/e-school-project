@@ -15,12 +15,14 @@
         <q-form class="q-gutter-md" @submit="submit">
           <q-select v-model="schoolUserRole.school" :options="schoolOptions"
                     :option-label="option => option.schoolName"
+                    :disable="disablePeriodAndSchoolSelections"
                     label="Училище">
             <template v-slot:prepend>
               <q-icon name="school"/>
             </template>
           </q-select>
           <q-select v-model="schoolUserRole.period"
+                    :disable="disablePeriodAndSchoolSelections"
                     :option-label="(option:SchoolPeriodWithSchoolIds) => `${option.startYear.substring(0,4)}/${option.endYear.substring(0,4)}`"
                     :option-value="(option: SchoolPeriodWithSchoolIds) => {return {
     id: option.id,
@@ -36,6 +38,13 @@
                     map-options>
             <template v-slot:prepend>
               <q-icon name="calendar_month"/>
+            </template>
+            <template v-slot:no-option>
+              <q-item>
+                <q-item-section class="text-italic text-grey">
+                  Изберете училище,за да се покажат учебните години
+                </q-item-section>
+              </q-item>
             </template>
           </q-select>
           <q-select v-model="schoolUserRole.role" :options="roleOptions"
@@ -100,7 +109,8 @@ const props = defineProps<{
   role: SchoolUserRole,
   schoolOptions: School[],
   schoolPeriodsWithSchoolIds: SchoolPeriodWithSchoolIds[],
-  allSchoolClassesOptions: SchoolClass[]
+  allSchoolClassesOptions: SchoolClass[],
+  disablePeriodAndSchoolSelections?: boolean,
 }>()
 
 const quasar = useQuasar()

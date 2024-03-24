@@ -31,7 +31,7 @@ export interface StudentView {
     middleName: string,
     lastName: string,
     username: string,
-    numberInCass: string,
+    numberInCass: number | null,
 }
 
 export interface User {
@@ -55,7 +55,7 @@ export interface UserSecurity {
     firstName: string,
     middleName: string,
     lastName: string,
-    password: string,
+    password: string | null,
     username: string,
     role: SchoolUserRole
 }
@@ -97,7 +97,7 @@ export class DetailsForParent {
 }
 
 export const isDetailsForParent = (detailsForUser: DetailsForUser): detailsForUser is DetailsForParent =>
-        detailsForUser instanceof DetailsForParent || (detailsForUser && 'children' in detailsForUser)
+        detailsForUser instanceof DetailsForParent || (detailsForUser && 'child' in detailsForUser)
 
 export const isDetailsForStudent = (detailsForUser: DetailsForUser): detailsForUser is DetailsForStudent =>
         detailsForUser instanceof DetailsForStudent || (detailsForUser && 'numberInClass' in detailsForUser)

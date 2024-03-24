@@ -2,8 +2,8 @@ import MainPage from './pages/MainPage.vue'
 import Home from './pages/Home.vue'
 import Component from './pages/Component.vue'
 import {createRouter, createWebHistory} from "vue-router";
-import UsersPage from "./pages/users-page.vue";
-import UserPage from "./pages/user-page.vue";
+import UsersPage from "./pages/user/users-page.vue";
+import UserPage from "./pages/user/user-page.vue";
 import AbsenceTabPerStudent from "./pages/per-student-evaluations/absence-tab.vue";
 import FeedbackTabPerStudent from "./pages/per-student-evaluations/feedback-tab.vue";
 import FeedbackTabPerSubject from "./pages/per-school-class-evaluations/feedback-tab.vue";
@@ -20,6 +20,12 @@ import RequestsPage from "./pages/requests/requests-page.vue";
 import {periodId, schoolId} from "./model/constants";
 import UserRequestsTab from "./pages/requests/user-requests-tab.vue";
 import RoleRequestsTab from "./pages/requests/role-requests-tab.vue";
+import AdminsTab from "./pages/user/admins-tab.vue";
+import TeachersTab from "./pages/user/teachers-tab.vue";
+import StudentsTab from "./pages/user/students-tab.vue";
+import ParentsTab from "./pages/user/parents-tab.vue";
+import SchoolClassesPage from "./pages/school-class/school-classes-page.vue";
+import SchoolClassPage from "./pages/school-class/school-class-page.vue";
 
 const routes = [
     {
@@ -40,11 +46,46 @@ const routes = [
         children: [
             {path: '/home/:periodId(\\d+)/:schoolId(\\d+)', component: Home, props: true},
             {path: '/component/:year(\\d+)/:month(\\d+)', component: Component, props: true},
-            {path: '/users', component: UsersPage, name: 'users'},
+            {
+                path: '/users/:periodId(\\d+)/:schoolId(\\d+)',
+                component: UsersPage,
+                name: 'users',
+                props: true,
+                children: [
+                    {
+                        path: 'admins',
+                        component: AdminsTab
+                    },
+                    {
+                        path: 'teachers',
+                        component: TeachersTab
+                    },
+                    {
+                        path: 'students',
+                        component: StudentsTab
+                    },
+                    {
+                        path: 'parents',
+                        component: ParentsTab
+                    },
+                ],
+            },
             {
                 path: '/user/:id(\\d+)/:periodId(\\d+)/:schoolId(\\d+)',
                 name: 'user',
                 component: UserPage,
+                props: true
+            },
+            {
+                path: '/school-classes/:periodId(\\d+)/:schoolId(\\d+)',
+                name: 'school-classes',
+                component: SchoolClassesPage,
+                props: true
+            },
+            {
+                path: '/school-class/:schoolClassId(\\d+)/:periodId(\\d+)/:schoolId(\\d+)',
+                name: 'school-class',
+                component: SchoolClassPage,
                 props: true
             },
             {
@@ -108,6 +149,18 @@ const routes = [
         path: '/requests',
         redirect: to => {
             return {path: `/requests/${periodId.value}/${schoolId.value}`}
+        },
+    },
+    {
+        path: '/users',
+        redirect: to => {
+            return {path: `/users/${periodId.value}/${schoolId.value}`}
+        },
+    },
+    {
+        path: '/school-classes',
+        redirect: to => {
+            return {path: `/school-classes/${periodId.value}/${schoolId.value}`}
         },
     },
 

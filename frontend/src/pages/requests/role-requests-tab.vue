@@ -29,11 +29,11 @@
                                 {{ translationOfRequestStatus[request.requestStatus] }}
                               </div>
                               <div class="absolute-top-right q-pt-sm q-pr-sm">
-                                <q-btn :disable="getCurrentUser().id === request.requestedByUser?.id || request.requestStatus !== RequestStatus.PENDING"
-                                       color="positive"
-                                       flat
-                                       label="Одобри"
-                                       @click="resolveRequest(request,RequestStatus.APPROVED)"
+                                <q-btn
+                                        color="positive"
+                                        flat
+                                        label="Одобри"
+                                        @click="resolveRequest(request,RequestStatus.APPROVED)"
                                 />
                                 <q-tooltip v-if="getCurrentUser().id === request.requestedByUser?.id">
                                   Не може да одобрите ваша заявка

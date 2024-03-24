@@ -1,5 +1,5 @@
 import {useLocalStorage} from "@vueuse/core";
-import {UserSecurity, UserView} from "../model/User";
+import {User, UserSecurity, UserView} from "../model/User";
 import {SchoolUserRole} from "../model/SchoolUserRole";
 
 export const storeUser = (user: UserSecurity) => {
@@ -33,3 +33,19 @@ export const currentUserHasRole = (role: SchoolUserRole): boolean => {
     return currentUser != null && currentUser.role == role;
 }
 export const updateUserInLocalStorage = (user: UserSecurity) => localStorage.setItem('user', JSON.stringify(user));
+
+export const updateOneRoleUserInLocalStorage = (user: User) => {
+    const userRoleFromLocalStorage = getCurrentUser().role
+
+    const userSecurity = <UserSecurity>{
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        middleName: user.middleName,
+        lastName: user.lastName,
+        password: null,
+        username: user.username,
+        role: user.roles?.find(it => it.id == userRoleFromLocalStorage.id),
+    }
+    localStorage.setItem('user', JSON.stringify(userSecurity))
+}

@@ -3,6 +3,7 @@ package com.nevexis.backend.schoolManagement.users
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
+import java.security.Principal
 
 @CrossOrigin("http://localhost:3000/")
 @RestController
@@ -11,11 +12,23 @@ class UsersController {
     @Autowired
     private lateinit var userService: UserService
 
-    @GetMapping("/get-all-users-by-school-id")
-    suspend fun getAllUsersBySchoolId(
+    @PostMapping("/update-user")
+    suspend fun updateUser(@RequestBody user: User, @RequestParam loggedUserId: BigDecimal) =
+        userService.updateUser(user, loggedUserId)
+
+    @GetMapping("/get-all-users-by-school-id-and-period-id")
+    suspend fun getAllUsersBySchoolIdAndPeriodId(
         @RequestParam schoolId: BigDecimal,
         @RequestParam periodId: BigDecimal
-    ) = userService.getAllUserViewsBySchool(schoolId, periodId)
+    ): List<UserView> = userService.getAllUserViewsBySchool(schoolId, periodId)
+
+    @GetMapping("/get-user-with-all-roles")
+    fun fetchUserWithAllItsRolesById(
+        @RequestParam id: BigDecimal,
+        @RequestParam schoolId: BigDecimal,
+        @RequestParam periodId: BigDecimal,
+        principal: Principal
+    ): User = userService.findUserWithAllItsRolesById(id, schoolId, periodId, principal.name)
 
 
 //    @GetMapping("/get-user-by-id")
