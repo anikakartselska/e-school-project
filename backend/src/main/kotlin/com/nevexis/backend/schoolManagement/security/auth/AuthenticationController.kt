@@ -1,6 +1,7 @@
 package com.nevexis.backend.schoolManagement.security.auth
 
 import com.nevexis.backend.schoolManagement.requests.RequestService
+import com.nevexis.backend.schoolManagement.requests.RequestStatus
 import com.nevexis.backend.schoolManagement.school.School
 import com.nevexis.backend.schoolManagement.school.SchoolService
 import com.nevexis.backend.schoolManagement.schoolClass.SchoolClass
@@ -105,7 +106,7 @@ class AuthenticationController {
 
     @GetMapping("/get-all-user-roles")
     suspend fun getAllUserRoles(@RequestParam userId: BigDecimal, principal: Principal): List<SchoolUserRole> =
-        schoolUserRolesService.getAllUserRoles(userId)
+        schoolUserRolesService.getAllUserRoles(userId, RequestStatus.APPROVED)
 
 
     @GetMapping("/get-all-school-classes")
@@ -145,12 +146,12 @@ class AuthenticationController {
     @GetMapping("/find-user-with-all-its-roles-by-phone-number")
     fun findUserWithAllItsRolesByPhoneNumber(
         @RequestParam phoneNumber: String
-    ) = userSecurityService.findUserWithAllItsRolesByPhoneNumber(phoneNumber)
+    ) = userSecurityService.findUserWithAllApprovedRolesByPhoneNumber(phoneNumber)
 
     @PostMapping("/create-requests")
     fun createRequests(
         @RequestBody user: User,
-    ) = requestService.createRequests(user)
+    ) = requestService.createRequests(listOf(user))
 
     private fun generateCookie(token: String, cookieName: String) = ResponseCookie.from(cookieName, token)
         .path("/")

@@ -183,3 +183,32 @@ export const getSchoolClassById = async (schoolClassId, periodId): Promise<Schoo
                 schoolClassId, periodId
             }
         }).then(p => p.data)
+
+export const uploadUsersExcelFile = async (file, periodId,
+                                           schoolId,
+                                           schoolRole,
+                                           userId, schoolClassId: number | null = null) => {
+    const bodyFormData = new FormData()
+    bodyFormData.append('file', file)
+    return await api.post(`/import-user-excel`, bodyFormData, {
+        params: {
+            periodId: periodId,
+            schoolId: schoolId,
+            schoolRole: schoolRole,
+            schoolClassId: schoolClassId,
+            userId: userId,
+        },
+        headers: {"Content-Type": "multipart/form-data"},
+    })
+}
+
+export const updateUserProfilePicture = async (profilePicture, userId) => {
+    const bodyFormData = new FormData()
+    bodyFormData.append('profilePicture', profilePicture)
+    return await api.post(`/change-profile-picture`, bodyFormData, {
+        params: {
+            userId: userId,
+        },
+        headers: {"Content-Type": "multipart/form-data"},
+    })
+}

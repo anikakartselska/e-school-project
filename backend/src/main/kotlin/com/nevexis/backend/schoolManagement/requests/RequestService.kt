@@ -198,44 +198,46 @@ class RequestService : BaseService() {
         }
     }
 
-    fun createRequests(user: User, loggedUserId: BigDecimal? = null, dsl: DSLContext = db) {
+    fun createRequests(users: List<User>, loggedUserId: BigDecimal? = null, dsl: DSLContext = db) {
         dsl.transaction { transaction ->
-            val userId = user.id?.toBigDecimal() ?: userSecurityService.createUser(user, transaction.dsl())
-            schoolUserService.createSchoolUsersFromListOfSchoolUserRoles(
-                userId,
-                user.roles ?: emptyList(),
-                transaction.dsl()
-            ).map {
-                RequestRecord(
-                    id = getRequestSeqNextVal(),
-                    requestStatus = RequestStatus.PENDING.name,
-                    periodId = it.periodId,
-                    schoolId = it.schoolId,
-                    requestedByUserId = loggedUserId ?: userId,
-                    requestValue = Json.encodeToString(RequestValueJson.UserRegistration(it.valueId.toInt())),
-                    requestDate = LocalDateTime.now(),
+            users.map { user ->
+                val userId = user.id?.toBigDecimal() ?: userSecurityService.createUser(user, transaction.dsl())
 
+                val registrationRequests = schoolUserService.createSchoolUsersFromListOfSchoolUserRoles(
+                    userId,
+                    user.roles ?: emptyList(),
+                    transaction.dsl()
+                ).map {
+                    RequestRecord(
+                        id = getRequestSeqNextVal(),
+                        requestStatus = RequestStatus.PENDING.name,
+                        periodId = it.periodId,
+                        schoolId = it.schoolId,
+                        requestedByUserId = loggedUserId ?: userId,
+                        requestValue = Json.encodeToString(RequestValueJson.UserRegistration(it.valueId.toInt())),
+                        requestDate = LocalDateTime.now(),
                     )
-            }.also {
-                transaction.dsl().batchInsert(it).execute()
-            }
+                }
 
-            schoolRolesService.createSchoolUserRoles(
-                userId,
-                user.roles ?: emptyList(),
-                transaction.dsl()
-            ).map {
-                RequestRecord(
-                    id = getRequestSeqNextVal(),
-                    requestStatus = RequestStatus.PENDING.name,
-                    periodId = it.periodId,
-                    schoolId = it.schoolId,
-                    requestedByUserId = loggedUserId ?: userId,
-                    requestValue = Json.encodeToString(RequestValueJson.Role(it.valueId.toInt())),
-                    requestDate = LocalDateTime.now()
-                )
-            }.also {
-                transaction.dsl().batchInsert(it).execute()
+                val roleRequests = schoolRolesService.createSchoolUserRoles(
+                    userId,
+                    user.roles ?: emptyList(),
+                    transaction.dsl()
+                ).map {
+                    RequestRecord(
+                        id = getRequestSeqNextVal(),
+                        requestStatus = RequestStatus.PENDING.name,
+                        periodId = it.periodId,
+                        schoolId = it.schoolId,
+                        requestedByUserId = loggedUserId ?: userId,
+                        requestValue = Json.encodeToString(RequestValueJson.Role(it.valueId.toInt())),
+                        requestDate = LocalDateTime.now()
+                    )
+                }
+
+                registrationRequests + roleRequests
+            }.also { records ->
+                transaction.dsl().batchInsert(records.flatten()).execute()
             }
         }
     }

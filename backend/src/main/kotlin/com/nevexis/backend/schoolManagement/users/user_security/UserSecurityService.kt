@@ -13,11 +13,19 @@ import java.math.BigDecimal
 @Service
 class UserSecurityService : UserBaseService() {
 
-    fun findUserWithAllItsRolesByPhoneNumber(
+    fun findUserWithAllApprovedRolesByPhoneNumber(
         phoneNumber: String
     ) = db.selectFrom(USER).where(USER.PHONE_NUMBER.eq(phoneNumber))
         .fetchAnyInto(UserRecord::class.java)?.let { userRecord ->
-            val allUserRoles = schoolUserRolesService.getAllUserRoles(userRecord.id!!)
+            val allUserRoles = schoolUserRolesService.getAllUserRoles(userRecord.id!!, RequestStatus.APPROVED)
+            mapUserRecordToUserModel(userRecord, allUserRoles)
+        }
+
+    fun findUserWithAllRolesByPhoneNumber(
+        phoneNumber: String
+    ) = db.selectFrom(USER).where(USER.PHONE_NUMBER.eq(phoneNumber))
+        .fetchAnyInto(UserRecord::class.java)?.let { userRecord ->
+            val allUserRoles = schoolUserRolesService.getAllUserRoles(userRecord.id!!, RequestStatus.APPROVED)
             mapUserRecordToUserModel(userRecord, allUserRoles)
         }
 

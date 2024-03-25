@@ -33,7 +33,7 @@ class UserService : UserBaseService() {
                     phoneNumber = user.phoneNumber
                     address = user.address
                 }?.update()
-            requestService.createRequests(user, loggedUserId, transaction.dsl())
+            requestService.createRequests(listOf(user), loggedUserId, transaction.dsl())
         }
     }
 
@@ -45,7 +45,7 @@ class UserService : UserBaseService() {
     ) = db.selectFrom(USER).where(USER.ID.eq(id))
         .fetchAnyInto(UserRecord::class.java)?.let { userRecord ->
             val allUserRoles = if (userRecord.username?.equals(username) == true) {
-                schoolUserRolesService.getAllUserRoles(userRecord.id!!)
+                schoolUserRolesService.getAllUserRoles(userRecord.id!!, RequestStatus.APPROVED)
             } else {
                 schoolUserRolesService.getAllUserRolesForPeriodAndSchool(id, schoolId, periodId)
             }
@@ -152,6 +152,13 @@ class UserService : UserBaseService() {
             val schoolUserRole = schoolUserRolesService.mapToModel(it)
             mapUserRecordToOneRoleModel(it.into(UserRecord::class.java), schoolUserRole)
         } ?: error("User with role id $roleId does not exist in period id $periodId")
+
+    fun changeUserProfilePicture(profilePicture: ByteArray, userId: BigDecimal) {
+        db.selectFrom(USER).where(USER.ID.eq(userId))
+            .fetchAny()?.apply {
+                this.profilePicture = profilePicture
+            }?.update()
+    }
 
 
 }

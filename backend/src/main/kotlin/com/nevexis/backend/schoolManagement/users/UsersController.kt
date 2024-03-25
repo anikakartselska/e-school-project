@@ -30,7 +30,13 @@ class UsersController {
         principal: Principal
     ): User = userService.findUserWithAllItsRolesById(id, schoolId, periodId, principal.name)
 
-
+    @PostMapping("/change-profile-picture")
+    fun changeProfilePicture(
+        @RequestPart profilePicture: ByteArray,
+        @RequestParam userId: BigDecimal
+    ) {
+        userService.changeUserProfilePicture(profilePicture, userId)
+    }
 //    @GetMapping("/get-user-by-id")
 //    fun getUserDetailsById(
 //        @RequestParam userId: BigDecimal,

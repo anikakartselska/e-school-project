@@ -100,11 +100,16 @@ class SchoolRolesService : BaseService() {
         ).fetchAnyInto(SchoolUserRoleRecord::class.java)?.let { mapToModel(it) }
             ?: error("User role with id: $id does not exist")
 
-    fun getAllUserRoles(userId: BigDecimal): List<SchoolUserRole> =
+    fun getAllUserRoles(userId: BigDecimal, requestStatus: RequestStatus? = null): List<SchoolUserRole> =
         schoolRolesRecordSelectOnConditionStep(db).where(
-            SCHOOL_USER_ROLE.USER_ID.eq(userId).and(
-                SCHOOL_ROLE_PERIOD.STATUS.eq(RequestStatus.APPROVED.name)
-            )
+            SCHOOL_USER_ROLE.USER_ID.eq(userId)
+                .apply {
+                    if (requestStatus != null) {
+                        and(
+                            SCHOOL_ROLE_PERIOD.STATUS.eq(requestStatus.name)
+                        )
+                    }
+                }
         ).fetch().map {
             mapToModel(it)
         }

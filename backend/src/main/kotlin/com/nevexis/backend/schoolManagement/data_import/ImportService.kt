@@ -1,19 +1,21 @@
-package com.nevexis.backend.schoolManagement.excel
+package com.nevexis.backend.schoolManagement.data_import
 
 import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.BaseService
+import com.nevexis.backend.schoolManagement.requests.RequestService
 import com.nevexis.backend.schoolManagement.requests.RequestStatus
 import com.nevexis.backend.schoolManagement.school.SchoolService
 import com.nevexis.backend.schoolManagement.schoolClass.SchoolClassService
 import com.nevexis.backend.schoolManagement.school_period.SchoolPeriodService
 import com.nevexis.backend.schoolManagement.users.DetailsForUser
-import com.nevexis.backend.schoolManagement.users.Gender
 import com.nevexis.backend.schoolManagement.users.SchoolRole
 import com.nevexis.backend.schoolManagement.users.User
+import com.nevexis.backend.schoolManagement.users.getTranslationFromBulgarianToEnglish
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
 import com.nevexis.backend.schoolManagement.users.user_security.UserSecurityService
 import org.apache.poi.ss.usermodel.DataFormatter
 import org.apache.poi.ss.usermodel.WorkbookFactory
+import org.jooq.DSLContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.io.ByteArrayInputStream
@@ -32,35 +34,63 @@ class ImportService : BaseService() {
     private lateinit var schoolClassService: SchoolClassService
 
     @Autowired
-    private lateinit var userService: UserSecurityService
+    private lateinit var userSecurityService: UserSecurityService
 
-    fun mapExcelToListOfUsers(
+    @Autowired
+    private lateinit var requestService: RequestService
+
+    fun createRequestsFromUsersExcel(
         byteArray: ByteArray,
         periodId: BigDecimal,
         schoolId: BigDecimal,
         schoolRole: SchoolRole,
-        schoolClassId: BigDecimal? = null
+        schoolClassId: BigDecimal? = null,
+        userId: BigDecimal
+    ) = db.transaction { transaction ->
+        mapExcelToListOfUsers(
+            byteArray,
+            periodId,
+            schoolId,
+            schoolRole,
+            schoolClassId,
+            transaction.dsl()
+        ).let { users ->
+            requestService.createRequests(users, userId, transaction.dsl())
+        }
+    }
+
+    private fun mapExcelToListOfUsers(
+        byteArray: ByteArray,
+        periodId: BigDecimal,
+        schoolId: BigDecimal,
+        schoolRole: SchoolRole,
+        schoolClassId: BigDecimal? = null,
+        dslContext: DSLContext = db
     ): List<User> {
-        return db.transactionResult { transaction ->
+        return dslContext.transactionResult { transaction ->
             val school = schoolService.getSchoolById(schoolId, transaction.dsl())
             val period = periodService.fetchPeriodById(periodId, transaction.dsl())
             return@transactionResult WorkbookFactory.create(ByteArrayInputStream(byteArray)).firstOrNull()
                 ?.let { sheet ->
                     sheet.drop(1).map { row ->
+                        val phoneNumber = DataFormatter().formatCellValue(row.getCell(2))
+                        val existingUser = userSecurityService.findUserWithAllRolesByPhoneNumber(phoneNumber)
                         val schoolUserRole = when (schoolRole) {
                             SchoolRole.ADMIN, SchoolRole.TEACHER -> SchoolUserRole(
+                                userId = existingUser?.id,
                                 period = period,
                                 school = school,
                                 role = schoolRole,
-                                status = RequestStatus.APPROVED,
+                                status = RequestStatus.PENDING,
                                 detailsForUser = null
                             )
 
                             SchoolRole.STUDENT -> SchoolUserRole(
+                                userId = existingUser?.id,
                                 period = period,
                                 school = school,
                                 role = schoolRole,
-                                status = RequestStatus.APPROVED,
+                                status = RequestStatus.PENDING,
                                 detailsForUser = DetailsForUser.DetailsForStudent(
                                     schoolClass = if (schoolClassId != null) {
                                         schoolClassService.getSchoolClassById(schoolClassId, transaction.dsl())
@@ -78,6 +108,7 @@ class ImportService : BaseService() {
                             )
 
                             SchoolRole.PARENT -> SchoolUserRole(
+                                userId = existingUser?.id,
                                 period = period,
                                 school = school,
                                 role = schoolRole,
@@ -93,7 +124,7 @@ class ImportService : BaseService() {
                                             val childPhoneNumber = DataFormatter().formatCellValue(
                                                 row.getCell(9)
                                             )
-                                            userService.findStudentByPhoneNumberPeriodAndSchoolClass(
+                                            userSecurityService.findStudentByPhoneNumberPeriodAndSchoolClass(
                                                 childPhoneNumber,
                                                 periodId,
                                                 schoolClass
@@ -101,19 +132,32 @@ class ImportService : BaseService() {
                                         },
                                 )
                             )
+                        }.let { schoolUserRole ->
+
+                            val existingRoleId = existingUser?.roles?.find { role -> role == schoolUserRole }?.id
+                            schoolUserRole.copy(
+                                id = existingRoleId
+                            )
                         }
-                        val phoneNumber = DataFormatter().formatCellValue(row.getCell(0))
+
                         User(
-                            personalNumber = phoneNumber,
+                            id = existingUser?.id,
+                            personalNumber = DataFormatter().formatCellValue(row.getCell(0)),
                             email = DataFormatter().formatCellValue(row.getCell(1)),
-                            phoneNumber = DataFormatter().formatCellValue(row.getCell(2)),
+                            phoneNumber = phoneNumber,
                             firstName = DataFormatter().formatCellValue(row.getCell(3)),
                             middleName = DataFormatter().formatCellValue(row.getCell(4)),
                             lastName = DataFormatter().formatCellValue(row.getCell(5)),
                             username = DataFormatter().formatCellValue(row.getCell(6)),
                             address = DataFormatter().formatCellValue(row.getCell(7)),
                             password = phoneNumber,
-                            gender = Gender.valueOf(DataFormatter().formatCellValue(row.getCell(8))),
+                            gender = getTranslationFromBulgarianToEnglish(
+                                DataFormatter().formatCellValue(
+                                    row.getCell(
+                                        8
+                                    )
+                                )
+                            ),
                             roles = listOf(schoolUserRole)
                         )
                     }

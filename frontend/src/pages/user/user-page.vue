@@ -30,22 +30,40 @@
                            label="ЕГН"/>
                   <q-input v-model="user.email" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
                            label="Имейл"/>
-                  <q-input v-model="user.address" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
-                           label="Адрес"/>
-                  <q-input v-model="user.username" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
-                           label="Потребителско име"/>
-                  <q-select v-model="user.gender" :option-label="option=>translationOfGender[option]"
-                            :options="Object.keys(Gender)"
-                            :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
-                            label="Пол"/>
+                    <q-input v-model="user.address" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
+                             label="Адрес"/>
+                    <q-input v-model="user.username" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
+                             label="Потребителско име"/>
+                    <q-select v-model="user.gender" :option-label="option=>translationOfGender[option]"
+                              :options="Object.keys(Gender)"
+                              :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
+                              label="Пол"/>
                 </q-card-section>
-                <div class="col-1"/>
-                <q-card-section class="col-3">
-                  <q-img
-                          class="rounded-borders"
-                          src="https://cdn.quasar.dev/img/boy-avatar.png"
-                  />
-                </q-card-section>
+                  <q-card-section class="col">
+                      <div>
+                          <q-avatar v-if="user.profilePicture" color="cyan-2" font-size="155x" size="180px" square
+                                    text-color="white">
+                              <q-img
+                                      :src="imageUrl"
+                                      fit="contain"
+                                      ratio="1"
+                                      spinner-color="white"
+                              ></q-img>
+                          </q-avatar>
+                          <q-avatar v-else color="cyan-2" font-size="155x" size="180px" square text-color="white">
+                              {{ getCurrentUser().firstName[0] }}{{ getCurrentUser().lastName[0] }}
+                          </q-avatar>
+                      </div>
+                      <div>
+                          <q-file
+                                  v-model="user.profilePicture"
+                                  filled
+                                  label="Pick one file"
+                                  style="max-width: 300px"
+                                  @update:model-value="handleUpload()"
+                          ></q-file>
+                      </div>
+                  </q-card-section>
               </q-card-section>
 
               <q-separator/>
@@ -67,11 +85,12 @@
                               label="Учебна година"/>
                   </div>
 
-                  <div class="col-5">
-                    <q-btn v-if="!isNotCurrentUserAndNotAdmin" class="float-right" color="primary" icon="add" label="Заяви нова роля"
-                           outline rounded
-                           @click="addNewRole()"/>
-                  </div>
+                    <div class="col-5">
+                        <q-btn v-if="!isNotCurrentUserAndNotAdmin" class="float-right" color="primary" icon="add"
+                               label="Заяви нова роля"
+                               outline rounded
+                               @click="addNewRole()"/>
+                    </div>
                 </div>
               </q-card-section>
               <q-scroll-area style="height: 62vh" visible>
@@ -156,11 +175,12 @@ import {
     getAllSchoolClasses,
     getAllSchoolPeriodsWithTheSchoolsTheyAreStarted,
     getAllSchools,
-    updateUser
+    updateUser,
+    updateUserProfilePicture
 } from "../../services/RequestService";
 import {$ref} from "vue/macros";
 import {DetailsForParent, DetailsForStudent, Gender, SchoolRole, UserView} from "../../model/User";
-import {watch} from "vue";
+import {onUnmounted, watch} from "vue";
 import {useRouter} from "vue-router";
 import {translationOfGender} from "../../utils";
 import AddRoleDialog from "../add-role-dialog.vue";
@@ -188,22 +208,43 @@ const isAdminAndNotCurrentUser = !isCurrentUser && currentUser.role.role == Scho
 const isNotCurrentUserAndNotAdmin = !isCurrentUser && !isAdminAndNotCurrentUser
 const selectedPeriod = $ref(currentUser.role.period)
 let userRolesFilteredBySelectedPeriod = $ref<SchoolUserRole[]>(user?.roles?.filter(role => role.period.id == selectedPeriod?.id))
+
 watch(props, async () => {
-  databaseUser = await fetchUserWithAllItsRolesById(props.id, props.periodId, props.schoolId)
-  user = cloneDeep(databaseUser)
+    databaseUser = await fetchUserWithAllItsRolesById(props.id, props.periodId, props.schoolId)
+    user = cloneDeep(databaseUser)
 })
 
 watch(() => selectedPeriod, () => {
-  userRolesFilteredBySelectedPeriod = user?.roles?.filter(role => role.period.id == selectedPeriod?.id)
+    userRolesFilteredBySelectedPeriod = user?.roles?.filter(role => role.period.id == selectedPeriod?.id)
 },)
+// let image = $ref(null);
+let imageUrl = $ref(user.profilePicture ? window.URL.createObjectURL(user.profilePicture) : '');
+
+
+const handleUpload = async () => {
+    console.log('handleUpload is triggered');
+    if (user.profilePicture) {
+        imageUrl = window.URL.createObjectURL(user.profilePicture)
+        await updateUserProfilePicture(user.profilePicture, user.id)
+        console.log(imageUrl);
+    }
+};
+
+// Watcher or onUnmounted hook to revoke the Object URL when the component unmounts
+onUnmounted(() => {
+    if (imageUrl) {
+        URL.revokeObjectURL(imageUrl);
+    }
+});
+
 
 const update = async () => {
-  const currentUserId = currentUser.id
-  await updateUser(user, currentUserId)
-  databaseUser = cloneDeep(user)
-  if (currentUserId == user.id) {
-    updateOneRoleUserInLocalStorage(user)
-  }
+    const currentUserId = currentUser.id
+    await updateUser(user, currentUserId)
+    databaseUser = cloneDeep(user)
+    if (currentUserId == user.id) {
+        updateOneRoleUserInLocalStorage(user)
+    }
 }
 
 const addNewRole = async () => quasar.dialog({
@@ -278,7 +319,6 @@ const openUser = async (row: UserView) => {
 }
 const reset = () => {
   user = cloneDeep(databaseUser)
-  debugger
   userRolesFilteredBySelectedPeriod = user?.roles?.filter(role => role.period.id == selectedPeriod?.id)
 }
 const columns = [

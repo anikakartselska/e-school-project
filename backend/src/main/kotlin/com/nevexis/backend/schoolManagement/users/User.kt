@@ -1,5 +1,6 @@
 package com.nevexis.backend.schoolManagement.users
 
+import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
 import kotlinx.serialization.Serializable
 import java.math.BigDecimal
@@ -57,7 +58,16 @@ data class StudentView(
 )
 
 enum class SchoolRole {
-    ADMIN, TEACHER, STUDENT, PARENT
+    ADMIN, TEACHER, STUDENT, PARENT;
+
+}
+
+fun getTranslationFromBulgarianToEnglish(bulgarianGender: String): Gender {
+    return when (bulgarianGender.uppercase()) {
+        "МЪЖ" -> Gender.MALE
+        "ЖЕНА" -> Gender.FEMALE
+        else -> throw SMSError("NOT_FOUNT", "Gender not exist")
+    }
 }
 
 

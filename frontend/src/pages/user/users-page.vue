@@ -7,10 +7,10 @@
           <div class="row">
             <div class="col-8">
               <q-tabs dense>
-                <q-route-tab :to="`teachers`" label="Учители"/>
-                <q-route-tab :to="`students`" label="Ученици"/>
-                <q-route-tab :to="`parents`" label="Родители"/>
-                <q-route-tab :to="`admins`" label="Админи"/>
+                  <q-route-tab label="Учители" to="teachers"/>
+                  <q-route-tab label="Ученици" to="students"/>
+                  <q-route-tab label="Родители" to="parents"/>
+                  <q-route-tab label="Админи" to="admins"/>
               </q-tabs>
             </div>
             <div class="col-12">
