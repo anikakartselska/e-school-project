@@ -1533,7 +1533,7 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>USER</table_name>
-            <column_name>PROFILE_PICTURE</column_name>
+            <column_name>PROFILE_IMAGE</column_name>
             <data_type>blob</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>

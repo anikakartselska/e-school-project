@@ -20,16 +20,16 @@
               <q-card-section horizontal>
                 <q-card-section class="col-8">
                   <span class="text-h4">Лична информация</span>
-                  <q-input v-model="user.firstName" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
-                           label="Име"/>
-                  <q-input v-model="user.middleName" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
-                           label="Презиме"/>
-                  <q-input v-model="user.lastName" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
-                           label="Фамилия"/>
-                  <q-input v-model="user.personalNumber" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
-                           label="ЕГН"/>
-                  <q-input v-model="user.email" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
-                           label="Имейл"/>
+                    <q-input v-model="user.firstName" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
+                             label="Име"/>
+                    <q-input v-model="user.middleName" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
+                             label="Презиме"/>
+                    <q-input v-model="user.lastName" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
+                             label="Фамилия"/>
+                    <q-input v-model="user.personalNumber" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
+                             label="ЕГН"/>
+                    <q-input v-model="user.email" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
+                             label="Имейл"/>
                     <q-input v-model="user.address" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
                              label="Адрес"/>
                     <q-input v-model="user.username" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
@@ -41,27 +41,34 @@
                 </q-card-section>
                   <q-card-section class="col">
                       <div>
-                          <q-avatar v-if="user.profilePicture" color="cyan-2" font-size="155x" size="180px" square
+                          <q-avatar v-if="imageUrl!==''" font-size="155x" size="180px" square
                                     text-color="white">
                               <q-img
                                       :src="imageUrl"
                                       fit="contain"
                                       ratio="1"
                                       spinner-color="white"
+                                      font-size="155x" size="180px"
                               ></q-img>
                           </q-avatar>
-                          <q-avatar v-else color="cyan-2" font-size="155x" size="180px" square text-color="white">
+                          <q-avatar v-else color="cyan-2" square
+                                    text-color="white">
                               {{ getCurrentUser().firstName[0] }}{{ getCurrentUser().lastName[0] }}
                           </q-avatar>
                       </div>
                       <div>
-                          <q-file
-                                  v-model="user.profilePicture"
-                                  filled
-                                  label="Pick one file"
-                                  style="max-width: 300px"
+                          <q-file v-model="profilePictureFile"
+
                                   @update:model-value="handleUpload()"
-                          ></q-file>
+                                  accept="image/*"
+                                  dense
+                                  display-value="Смени снимка"
+                                  outlined
+                          >
+                              <template v-slot:prepend>
+                                  <q-icon name="attach_file"/>
+                              </template>
+                          </q-file>
                       </div>
                   </q-card-section>
               </q-card-section>
@@ -76,14 +83,14 @@
                   <div class="col-4">
                     <span class="text-h4">Роли</span>
                   </div>
-                  <div class="col-3">
-                    <q-select v-if="isCurrentUser"
-                              v-model="selectedPeriod"
-                              :option-label="(option:SchoolPeriod) => `${option.startYear.substring(0,4)}/${option.endYear.substring(0,4)}`"
-                              :options="allSchoolPeriods"
-                              dense
-                              label="Учебна година"/>
-                  </div>
+                    <div class="col-3">
+                        <q-select v-if="isCurrentUser"
+                                  v-model="selectedPeriod"
+                                  :option-label="(option:SchoolPeriod) => `${option.startYear.substring(0,4)}/${option.endYear.substring(0,4)}`"
+                                  :options="allSchoolPeriods"
+                                  dense
+                                  label="Учебна година"/>
+                    </div>
 
                     <div class="col-5">
                         <q-btn v-if="!isNotCurrentUserAndNotAdmin" class="float-right" color="primary" icon="add"
@@ -175,6 +182,7 @@ import {
     getAllSchoolClasses,
     getAllSchoolPeriodsWithTheSchoolsTheyAreStarted,
     getAllSchools,
+    getUserProfilePicture,
     updateUser,
     updateUserProfilePicture
 } from "../../services/RequestService";
@@ -185,7 +193,7 @@ import {useRouter} from "vue-router";
 import {translationOfGender} from "../../utils";
 import AddRoleDialog from "../add-role-dialog.vue";
 import {constructSchoolUserRoleMessage, SchoolUserRole} from "../../model/SchoolUserRole";
-import {useQuasar} from "quasar";
+import {QFile, useQuasar} from "quasar";
 import {getCurrentUser, updateOneRoleUserInLocalStorage} from "../../services/LocalStorageService";
 import {SchoolPeriod} from "../../model/SchoolPeriod";
 import {cloneDeep} from "lodash-es";
@@ -217,26 +225,27 @@ watch(props, async () => {
 watch(() => selectedPeriod, () => {
     userRolesFilteredBySelectedPeriod = user?.roles?.filter(role => role.period.id == selectedPeriod?.id)
 },)
-// let image = $ref(null);
-let imageUrl = $ref(user.profilePicture ? window.URL.createObjectURL(user.profilePicture) : '');
 
+const profilePictureFile = $ref(await getUserProfilePicture(props.id))
+console.log(profilePictureFile)
+let imageUrl = $ref(profilePictureFile ? window.URL.createObjectURL(profilePictureFile) : '');
+console.log(imageUrl)
 
 const handleUpload = async () => {
     console.log('handleUpload is triggered');
-    if (user.profilePicture) {
-        imageUrl = window.URL.createObjectURL(user.profilePicture)
-        await updateUserProfilePicture(user.profilePicture, user.id)
-        console.log(imageUrl);
+    console.log(profilePictureFile)
+    if (profilePictureFile) {
+        imageUrl = window.URL.createObjectURL(profilePictureFile)
+        await updateUserProfilePicture(profilePictureFile, user.id)
+
     }
 };
 
-// Watcher or onUnmounted hook to revoke the Object URL when the component unmounts
 onUnmounted(() => {
     if (imageUrl) {
         URL.revokeObjectURL(imageUrl);
     }
 });
-
 
 const update = async () => {
     const currentUserId = currentUser.id

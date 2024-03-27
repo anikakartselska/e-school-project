@@ -125,6 +125,7 @@ class UserBaseService : BaseService() {
         )
     }
 
+
     fun getUserSeqNextVal(): BigDecimal =
         db.select(DSL.field("USER_SEQ.nextval")).from("DUAL")
             .fetchOne()!!.map { it.into(BigDecimal::class.java) }

@@ -1,6 +1,11 @@
 package com.nevexis.backend.schoolManagement.users
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.io.ByteArrayResource
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.security.Principal
@@ -36,6 +41,31 @@ class UsersController {
         @RequestParam userId: BigDecimal
     ) {
         userService.changeUserProfilePicture(profilePicture, userId)
+    }
+
+    @PostMapping("/get-user-profile-picture")
+    fun generateReportExcel(
+        @RequestParam userId: BigDecimal
+    ): ResponseEntity<ByteArrayResource>? {
+
+        val resource = userService.getUserProfilePicture(userId)?.let {
+            ByteArrayResource(
+                it
+            )
+        }
+
+        return resource?.contentLength()?.let {
+            ResponseEntity.status(HttpStatus.OK).headers(
+                HttpHeaders().apply {
+                    set(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        """attachment; filename="profile-picture${userId}.jpeg""""
+                    )
+                }
+            ).contentLength(it)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource)
+        }
     }
 //    @GetMapping("/get-user-by-id")
 //    fun getUserDetailsById(

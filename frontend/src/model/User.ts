@@ -46,8 +46,7 @@ export interface User {
     phoneNumber: string,
     address: string,
     password: string | null,
-    roles: SchoolUserRole[] | null,
-    profilePicture: Blob | null
+    roles: SchoolUserRole[] | null
 }
 
 export interface UserSecurity {
@@ -58,8 +57,7 @@ export interface UserSecurity {
     lastName: string,
     password: string | null,
     username: string,
-    role: SchoolUserRole,
-    profileImage: string | null
+    role: SchoolUserRole
 }
 
 export enum SchoolRole {

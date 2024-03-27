@@ -212,3 +212,13 @@ export const updateUserProfilePicture = async (profilePicture, userId) => {
         headers: {"Content-Type": "multipart/form-data"},
     })
 }
+
+export const getUserProfilePicture = async (userId): Promise<File | null> =>
+        await api.post<BlobPart>(`/get-user-profile-picture`, null, {
+            params: {
+                userId
+            },
+            responseType: 'blob'
+        }).then(async response =>
+                response.data?.size !== 0 ? new File([response.data], "profilePicture") : null
+        )

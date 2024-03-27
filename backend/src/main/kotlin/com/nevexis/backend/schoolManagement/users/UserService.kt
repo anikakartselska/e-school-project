@@ -156,8 +156,14 @@ class UserService : UserBaseService() {
     fun changeUserProfilePicture(profilePicture: ByteArray, userId: BigDecimal) {
         db.selectFrom(USER).where(USER.ID.eq(userId))
             .fetchAny()?.apply {
-                this.profilePicture = profilePicture
+                this.profileImage = profilePicture
             }?.update()
+    }
+
+    fun getUserProfilePicture(userId: BigDecimal): ByteArray? {
+        return db.select(USER.PROFILE_IMAGE).from(USER).where(USER.ID.eq(userId))
+            .fetchAny()?.getValue(USER.PROFILE_IMAGE)
+
     }
 
 
