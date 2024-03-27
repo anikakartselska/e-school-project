@@ -21,12 +21,19 @@ class UserSecurityService : UserBaseService() {
             mapUserRecordToUserModel(userRecord, allUserRoles)
         }
 
-    fun findUserWithAllRolesByPhoneNumber(
-        phoneNumber: String
-    ) = db.selectFrom(USER).where(USER.PHONE_NUMBER.eq(phoneNumber))
-        .fetchAnyInto(UserRecord::class.java)?.let { userRecord ->
-            val allUserRoles = schoolUserRolesService.getAllUserRoles(userRecord.id!!, RequestStatus.APPROVED)
-            mapUserRecordToUserModel(userRecord, allUserRoles)
+    fun findUserWithAllRolesByPhoneNumberForSchoolAndPeriod(
+        phoneNumber: String,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ) = recordSelectOnConditionStep(db)
+        .where(
+            USER.PHONE_NUMBER.eq(phoneNumber).and(SCHOOL_USER.SCHOOL_ID.eq(schoolId))
+                .and(SCHOOL_USER_PERIOD.PERIOD_ID.eq(periodId))
+        )
+        .fetchAny()?.let { record ->
+            val userId = record.get(USER.ID)
+            val allUserRoles = schoolUserRolesService.getAllUserRoles(userId!!)
+            mapUserRecordToUserModel(record, allUserRoles)
         }
 
 

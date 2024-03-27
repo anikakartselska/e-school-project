@@ -1,5 +1,6 @@
 import {SchoolClass} from "./SchoolClass";
 import {SchoolUserRole} from "./SchoolUserRole";
+import {RequestStatus} from "./RequestStatus";
 
 export interface OneRoleUser {
     id: number,
@@ -21,7 +22,8 @@ export interface UserView {
     middleName: string,
     lastName: string,
     username: string,
-    roles: SchoolRole[]
+    roles: SchoolRole[],
+    status: RequestStatus
 }
 
 export interface StudentView {
@@ -46,7 +48,8 @@ export interface User {
     phoneNumber: string,
     address: string,
     password: string | null,
-    roles: SchoolUserRole[] | null
+    roles: SchoolUserRole[] | null,
+    status: RequestStatus
 }
 
 export interface UserSecurity {

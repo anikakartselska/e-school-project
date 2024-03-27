@@ -120,15 +120,13 @@ class SchoolRolesService : BaseService() {
         periodId: BigDecimal
     ): List<SchoolUserRole> =
         schoolRolesRecordSelectOnConditionStep(db).where(
-            SCHOOL_USER_ROLE.USER_ID.eq(userId).and(
-                SCHOOL_ROLE_PERIOD.STATUS.eq(RequestStatus.APPROVED.name)
-            ).and(SCHOOL_ROLE_PERIOD.PERIOD_ID.eq(periodId))
+            SCHOOL_USER_ROLE.USER_ID.eq(userId).and(SCHOOL_ROLE_PERIOD.PERIOD_ID.eq(periodId))
                 .and(SCHOOL_USER_ROLE.SCHOOL_ID.eq(schoolId))
         ).fetch().map {
             mapToModel(it)
         }
 
-    fun getAllRolesFromSchoolForPeriod(schoolId: BigDecimal, periodId: BigDecimal) =
+    fun getAllApprovedRolesFromSchoolForPeriod(schoolId: BigDecimal, periodId: BigDecimal) =
         schoolRolesRecordSelectOnConditionStep(db)
             .where(
                 SCHOOL_USER_ROLE.SCHOOL_ID.eq(schoolId).and(
@@ -177,7 +175,7 @@ class SchoolRolesService : BaseService() {
 
     fun mapToModel(record: Record): SchoolUserRole {
         record.into(SchoolUserRoleRecord::class.java).let {
-            val approvedSchoolRolePeriodRecord = record.into(SchoolRolePeriodRecord::class.java)
+            val schoolRolePeriodRecord = record.into(SchoolRolePeriodRecord::class.java)
             val period = record.into(SchoolPeriodRecord::class.java).let { schoolPeriodRecord ->
                 SchoolPeriod(
                     id = schoolPeriodRecord.id!!.toInt(),
@@ -193,7 +191,7 @@ class SchoolRolesService : BaseService() {
                 school = schoolService.getSchoolById(it.schoolId!!),
                 period = period,
                 role = SchoolRole.valueOf(it.role!!),
-                status = RequestStatus.valueOf(approvedSchoolRolePeriodRecord.status!!)
+                status = RequestStatus.valueOf(schoolRolePeriodRecord.status!!)
             )
             return schoolUserRole.copy(
                 detailsForUser = userDetailsService.getUserDetailsPerSchoolUserRole(

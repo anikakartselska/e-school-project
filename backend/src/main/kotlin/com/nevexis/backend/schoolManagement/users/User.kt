@@ -1,6 +1,7 @@
 package com.nevexis.backend.schoolManagement.users
 
 import com.nevexis.backend.error_handling.SMSError
+import com.nevexis.backend.schoolManagement.requests.RequestStatus
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
 import kotlinx.serialization.Serializable
 import java.math.BigDecimal
@@ -18,6 +19,7 @@ data class User(
     val phoneNumber: String,
     val address: String,
     val password: String? = null,
+    val status: RequestStatus? = null,
     val roles: List<SchoolUserRole>? = null
 )
 
@@ -44,7 +46,8 @@ data class UserView(
     val middleName: String,
     val lastName: String,
     val username: String,
-    val roles: List<SchoolRole>
+    val roles: List<SchoolRole>,
+    val status: RequestStatus? = null,
 )
 
 data class StudentView(

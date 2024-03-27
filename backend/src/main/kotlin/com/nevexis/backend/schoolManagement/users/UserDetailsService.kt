@@ -97,7 +97,7 @@ class UserDetailsService : BaseService() {
             PARENT_STUDENT.PARENT_SCHOOL_USER_ROLE_ID.`in`(schoolUserRoleIds)
         ).fetchInto(BigDecimal::class.java)
             .let { roleIds ->
-                userService.findUsersByItsRoleIdsAndPeriodId(roleIds, periodId).map {
+                userService.findApprovedUsersByItsRoleIdsAndPeriodId(roleIds, periodId).map {
                     DetailsForUser.DetailsForParent(it)
                 }
             }

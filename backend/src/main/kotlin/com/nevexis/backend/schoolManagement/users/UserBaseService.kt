@@ -1,12 +1,15 @@
 package com.nevexis.backend.schoolManagement.users
 
 import com.nevexis.backend.schoolManagement.BaseService
+import com.nevexis.backend.schoolManagement.requests.RequestStatus
 import com.nevexis.backend.schoolManagement.users.roles.SchoolRolesService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
 import com.nevexis.backend.schoolManagement.users.user_security.UserSecurity
+import com.nevexis.`demo-project`.jooq.tables.records.SchoolUserPeriodRecord
 import com.nevexis.`demo-project`.jooq.tables.records.UserRecord
 import com.nevexis.`demo-project`.jooq.tables.references.*
 import org.jooq.DSLContext
+import org.jooq.Record
 import org.jooq.impl.DSL
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
@@ -34,9 +37,11 @@ class UserBaseService : BaseService() {
     }
 
     fun mapToUserView(
-        userRecord: UserRecord,
+        record: Record,
         rolesForSchool: List<SchoolRole>
     ): UserView {
+        val userRecord = record.into(UserRecord::class.java)
+        val schoolUserPeriodRecord = record.into(SchoolUserPeriodRecord::class.java)
         return UserView(
             id = userRecord.id!!.toInt(),
             email = userRecord.email!!,
@@ -44,12 +49,15 @@ class UserBaseService : BaseService() {
             middleName = userRecord.middleName!!,
             lastName = userRecord.lastName!!,
             username = userRecord.username!!,
-            roles = rolesForSchool
+            roles = rolesForSchool,
+            status = schoolUserPeriodRecord.status?.let { RequestStatus.valueOf(it) }
         )
 
     }
 
-    fun mapUserRecordToUserModel(userRecord: UserRecord, schoolUserRoles: List<SchoolUserRole>): User {
+    fun mapUserRecordToUserModel(record: Record, schoolUserRoles: List<SchoolUserRole>): User {
+        val userRecord = record.into(UserRecord::class.java)
+        val schoolUserPeriodRecord = record.into(SchoolUserPeriodRecord::class.java)
         return User(
             id = userRecord.id!!.toInt(),
             personalNumber = userRecord.personalNumber!!,
@@ -61,7 +69,8 @@ class UserBaseService : BaseService() {
             lastName = userRecord.lastName!!,
             username = userRecord.username!!,
             address = userRecord.address!!,
-            roles = schoolUserRoles
+            roles = schoolUserRoles,
+            status = schoolUserPeriodRecord.status?.let { RequestStatus.valueOf(it) }
         )
     }
 

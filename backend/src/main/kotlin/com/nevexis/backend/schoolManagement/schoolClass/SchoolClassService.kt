@@ -6,7 +6,6 @@ import com.nevexis.backend.schoolManagement.users.SchoolRole
 import com.nevexis.backend.schoolManagement.users.UserService
 import com.nevexis.backend.schoolManagement.users.UserView
 import com.nevexis.`demo-project`.jooq.tables.records.SchoolClassRecord
-import com.nevexis.`demo-project`.jooq.tables.records.UserRecord
 import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_CLASS
 import com.nevexis.`demo-project`.jooq.tables.references.USER
 import org.jooq.DSLContext
@@ -64,7 +63,7 @@ class SchoolClassService : BaseService() {
 
     fun mapRecordToInternalModel(it: Record) =
         it.into(SchoolClassRecord::class.java).mapToInternalModel(
-            mainTeacher = userService.mapToUserView(it.into(UserRecord::class.java), listOf(SchoolRole.TEACHER))
+            mainTeacher = userService.mapToUserView(it, listOf(SchoolRole.TEACHER))
         )
 
     private fun SchoolClassRecord.mapToInternalModel(mainTeacher: UserView) = SchoolClass(

@@ -48,10 +48,9 @@
                                       fit="contain"
                                       ratio="1"
                                       spinner-color="white"
-                                      font-size="155x" size="180px"
                               ></q-img>
                           </q-avatar>
-                          <q-avatar v-else color="cyan-2" square
+                          <q-avatar v-else color="cyan-2" font-size="155x" size="180px" square
                                     text-color="white">
                               {{ getCurrentUser().firstName[0] }}{{ getCurrentUser().lastName[0] }}
                           </q-avatar>

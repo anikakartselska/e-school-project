@@ -146,7 +146,6 @@ class RequestService : BaseService() {
                     requestDate = it.requestDate!!,
                     requestStatus = RequestStatus.valueOf(it.requestStatus!!),
                     resolvedByUser = record.into(RESOLVED_BY_USER_ALIAS).nullIfPrimaryKeyIsNull()
-                        ?.into(UserRecord::class.java)
                         ?.let { userRecord -> userService.mapToUserView(userRecord, emptyList()) },
                     resolvedDate = it.resolvedDate
                 )

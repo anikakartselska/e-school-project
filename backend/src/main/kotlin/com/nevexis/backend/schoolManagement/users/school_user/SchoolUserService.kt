@@ -9,7 +9,10 @@ import com.nevexis.backend.schoolManagement.school.SchoolService
 import com.nevexis.backend.schoolManagement.school_period.SchoolPeriod
 import com.nevexis.backend.schoolManagement.users.UserService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
-import com.nevexis.`demo-project`.jooq.tables.records.*
+import com.nevexis.`demo-project`.jooq.tables.records.SchoolPeriodRecord
+import com.nevexis.`demo-project`.jooq.tables.records.SchoolRecord
+import com.nevexis.`demo-project`.jooq.tables.records.SchoolUserPeriodRecord
+import com.nevexis.`demo-project`.jooq.tables.records.SchoolUserRecord
 import com.nevexis.`demo-project`.jooq.tables.references.*
 import org.jooq.DSLContext
 import org.jooq.Record
@@ -96,7 +99,7 @@ class SchoolUserService : BaseService() {
         val schoolUserRecord = it.into(SchoolUserRecord::class.java)
         val schoolPeriod = it.into(SchoolPeriodRecord::class.java).into(SchoolPeriod::class.java)
         val school = it.into(SchoolRecord::class.java).into(School::class.java)
-        val user = userService.mapUserRecordToUserModel(it.into(UserRecord::class.java), emptyList())
+        val user = userService.mapUserRecordToUserModel(it, emptyList())
         return SchoolUser(
             id = schoolUserRecord.id!!.toInt(),
             school = school,
@@ -155,16 +158,4 @@ class SchoolUserService : BaseService() {
             }?.update()
     }
 
-//    fun Record.mapIntoModel(dsl: DSLContext): SchoolUser {
-//        this.into(SchoolUserRecord::class.java).let {
-//            val approvedSchoolUserPeriodRecord = this.into(SchoolUserPeriodRecord::class.java)
-//            return SchoolUser(
-//                id = it.id!!,
-//                periodId = approvedSchoolUserPeriodRecord.periodId!!,
-//                user = userService.getUserByIdWithoutRoles(it.userId!!, dsl) ?: error("User do not exist"),
-//                status = RequestStatus.valueOf(approvedSchoolUserPeriodRecord.status!!),
-//                school = schoolService.getSchoolById(it.schoolId!!, dsl)
-//            )
-//        }
-//    }
 }

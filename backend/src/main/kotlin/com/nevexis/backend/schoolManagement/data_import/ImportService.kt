@@ -74,7 +74,11 @@ class ImportService : BaseService() {
                 ?.let { sheet ->
                     sheet.drop(1).map { row ->
                         val phoneNumber = DataFormatter().formatCellValue(row.getCell(2))
-                        val existingUser = userSecurityService.findUserWithAllRolesByPhoneNumber(phoneNumber)
+                        val existingUser = userSecurityService.findUserWithAllRolesByPhoneNumberForSchoolAndPeriod(
+                            phoneNumber,
+                            schoolId,
+                            periodId
+                        )
                         val schoolUserRole = when (schoolRole) {
                             SchoolRole.ADMIN, SchoolRole.TEACHER -> SchoolUserRole(
                                 userId = existingUser?.id,
@@ -158,7 +162,8 @@ class ImportService : BaseService() {
                                     )
                                 )
                             ),
-                            roles = listOf(schoolUserRole)
+                            roles = listOf(schoolUserRole),
+                            status = existingUser?.status ?: RequestStatus.PENDING
                         )
                     }
                 } ?: throw SMSError("EMPTY", "Workbook empty !")

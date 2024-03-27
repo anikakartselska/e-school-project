@@ -42,34 +42,30 @@ class UserService : UserBaseService() {
         schoolId: BigDecimal,
         periodId: BigDecimal,
         username: String
-    ) = db.selectFrom(USER).where(USER.ID.eq(id))
-        .fetchAnyInto(UserRecord::class.java)?.let { userRecord ->
-            val allUserRoles = if (userRecord.username?.equals(username) == true) {
-                schoolUserRolesService.getAllUserRoles(userRecord.id!!, RequestStatus.APPROVED)
-            } else {
-                schoolUserRolesService.getAllUserRolesForPeriodAndSchool(id, schoolId, periodId)
-            }
-            mapUserRecordToUserModel(userRecord, allUserRoles)
-        } ?: error("User with id:${id} does not exist in current school and period")
+    ) = recordSelectOnConditionStep(db).where(
+        SCHOOL_USER.SCHOOL_ID.eq(schoolId).and(
+            SCHOOL_USER_PERIOD.PERIOD_ID.eq(periodId)
+        ).and(USER.ID.eq(id))
+    ).fetchAny()?.let { record ->
+        val userUsername = record.get(USER.USERNAME)
+        val allUserRoles = if (userUsername?.equals(username) == true) {
+            schoolUserRolesService.getAllUserRoles(id)
+        } else {
+            schoolUserRolesService.getAllUserRolesForPeriodAndSchool(id, schoolId, periodId)
+        }
+        mapUserRecordToUserModel(record, allUserRoles)
+    } ?: error("User with id:${id} does not exist in current school and period")
 
     fun getAllUserViewsBySchool(schoolId: BigDecimal, periodId: BigDecimal, dsl: DSLContext = db): List<UserView> {
-        val rolesForSchoolGroupedByUserId = schoolUserRolesService.getAllRolesFromSchoolForPeriod(schoolId, periodId)
+        val rolesForSchoolGroupedByUserId =
+            schoolUserRolesService.getAllApprovedRolesFromSchoolForPeriod(schoolId, periodId)
         return recordSelectOnConditionStep(dsl).where(
             SCHOOL_USER.SCHOOL_ID.eq(schoolId).and(
-                SCHOOL_USER_PERIOD.STATUS.eq(RequestStatus.APPROVED.name).and(
-                    SCHOOL_USER_PERIOD.PERIOD_ID.eq(periodId)
-                )
+                SCHOOL_USER_PERIOD.PERIOD_ID.eq(periodId)
             )
         ).map {
-            val userRecord = it.into(UserRecord::class.java)
-            mapToUserView(userRecord, rolesForSchoolGroupedByUserId[userRecord.id] ?: emptyList())
-        }
-    }
-
-
-    fun getUserByIdWithoutRoles(userId: BigDecimal, dsl: DSLContext): User? {
-        return dsl.selectFrom(USER).where(USER.ID.eq(userId)).fetchAny()?.map {
-            mapUserRecordToUserModel(it.into(UserRecord::class.java), emptyList())
+            val userId = it.get(USER.ID, BigDecimal::class.java)
+            mapToUserView(it, rolesForSchoolGroupedByUserId[userId] ?: emptyList())
         }
     }
 
@@ -120,10 +116,10 @@ class UserService : UserBaseService() {
         .where(SCHOOL_USER_PERIOD.ID.`in`(schoolUserPeriodIds))
         .fetch().associate {
             it.get(SCHOOL_USER_PERIOD.ID)!! to
-                    mapUserRecordToUserModel(it.into(UserRecord::class.java), emptyList())
+                    mapUserRecordToUserModel(it, emptyList())
         }
 
-    fun findUsersByItsRoleIdsAndPeriodId(
+    fun findApprovedUsersByItsRoleIdsAndPeriodId(
         roleIds: List<BigDecimal>,
         periodId: BigDecimal,
         dsl: DSLContext = db
@@ -138,20 +134,6 @@ class UserService : UserBaseService() {
             mapUserRecordToOneRoleModel(it.into(UserRecord::class.java), schoolUserRole)
         }
 
-    fun findUserByItsRoleIdAndPeriodId(
-        roleId: BigDecimal,
-        periodId: BigDecimal,
-        dsl: DSLContext = db
-    ) = recordSelectOnConditionStepJoinedWithUserRoles(dsl)
-        .where(SCHOOL_USER_ROLE.ID.eq(roleId))
-        .and(SCHOOL_ROLE_PERIOD.PERIOD_ID.eq(periodId))
-        .and(SCHOOL_ROLE_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
-        .and(SCHOOL_USER_PERIOD.PERIOD_ID.eq(periodId))
-        .and(SCHOOL_USER_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
-        .fetchAny()?.let {
-            val schoolUserRole = schoolUserRolesService.mapToModel(it)
-            mapUserRecordToOneRoleModel(it.into(UserRecord::class.java), schoolUserRole)
-        } ?: error("User with role id $roleId does not exist in period id $periodId")
 
     fun changeUserProfilePicture(profilePicture: ByteArray, userId: BigDecimal) {
         db.selectFrom(USER).where(USER.ID.eq(userId))
