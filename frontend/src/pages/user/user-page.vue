@@ -219,6 +219,7 @@ let userRolesFilteredBySelectedPeriod = $ref<SchoolUserRole[]>(user?.roles?.filt
 watch(props, async () => {
     databaseUser = await fetchUserWithAllItsRolesById(props.id, props.periodId, props.schoolId)
     user = cloneDeep(databaseUser)
+    userRolesFilteredBySelectedPeriod = user?.roles?.filter(role => role.period.id == selectedPeriod?.id)
 })
 
 watch(() => selectedPeriod, () => {

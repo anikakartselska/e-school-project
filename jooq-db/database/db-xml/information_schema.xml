@@ -726,7 +726,7 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>SCHOOL_CLASS</table_name>
-            <column_name>MAIN_TEACHER</column_name>
+            <column_name>SCHOOL_ID</column_name>
             <data_type>numeric</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
@@ -739,7 +739,7 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>SCHOOL_CLASS</table_name>
-            <column_name>SCHOOL_ID</column_name>
+            <column_name>SCHOOL_PERIOD_ID</column_name>
             <data_type>numeric</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
@@ -752,7 +752,7 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>SCHOOL_CLASS</table_name>
-            <column_name>SCHOOL_PERIOD_ID</column_name>
+            <column_name>MAIN_TEACHER_ROLE_ID</column_name>
             <data_type>numeric</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
@@ -1767,6 +1767,16 @@
         <table_constraint>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>SYS_C0012773</constraint_name>
+            <constraint_type>FOREIGN KEY</constraint_type>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_CLASS</table_name>
+            <enforced>true</enforced>
+        </table_constraint>
+        <table_constraint>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
             <constraint_name>SYS_C0012393</constraint_name>
             <constraint_type>FOREIGN KEY</constraint_type>
             <table_catalog></table_catalog>
@@ -2067,6 +2077,16 @@
             <table_name>PARENT_STUDENT</table_name>
         </key_column_usage>
         <key_column_usage>
+            <column_name>MAIN_TEACHER_ROLE_ID</column_name>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>SYS_C0012773</constraint_name>
+            <ordinal_position>1</ordinal_position>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_CLASS</table_name>
+        </key_column_usage>
+        <key_column_usage>
             <column_name>SCHOOL_USER_ROLE_ID</column_name>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
@@ -2108,6 +2128,14 @@
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
             <constraint_name>SYS_C0012431</constraint_name>
+            <unique_constraint_catalog></unique_constraint_catalog>
+            <unique_constraint_schema>DEMO_PROJECT</unique_constraint_schema>
+            <unique_constraint_name>PK_SCHOOL_USER_ROLE</unique_constraint_name>
+        </referential_constraint>
+        <referential_constraint>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>SYS_C0012773</constraint_name>
             <unique_constraint_catalog></unique_constraint_catalog>
             <unique_constraint_schema>DEMO_PROJECT</unique_constraint_schema>
             <unique_constraint_name>PK_SCHOOL_USER_ROLE</unique_constraint_name>

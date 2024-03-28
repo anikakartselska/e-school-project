@@ -6,8 +6,7 @@ import com.nevexis.backend.schoolManagement.users.SchoolRole
 import com.nevexis.backend.schoolManagement.users.UserService
 import com.nevexis.backend.schoolManagement.users.UserView
 import com.nevexis.`demo-project`.jooq.tables.records.SchoolClassRecord
-import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_CLASS
-import com.nevexis.`demo-project`.jooq.tables.references.USER
+import com.nevexis.`demo-project`.jooq.tables.references.*
 import org.jooq.DSLContext
 import org.jooq.Record
 import org.springframework.beans.factory.annotation.Autowired
@@ -54,17 +53,29 @@ class SchoolClassService : BaseService() {
 
 
     private fun recordSelectOnConditionStep(dsl: DSLContext = db) =
-        dsl.select(SCHOOL_CLASS.asterisk(), USER.asterisk()).from(SCHOOL_CLASS).leftJoin(USER).on(
-            SCHOOL_CLASS.MAIN_TEACHER.eq(
-                USER.ID
-            )
+        dsl.select(
+            SCHOOL_CLASS.asterisk(), USER.asterisk(), SCHOOL_USER_ROLE.asterisk(), SCHOOL_USER.asterisk(),
+            SCHOOL_USER_PERIOD.asterisk()
         )
+            .from(SCHOOL_CLASS)
+            .leftJoin(SCHOOL_USER_ROLE)
+            .on(SCHOOL_CLASS.MAIN_TEACHER_ROLE_ID.eq(SCHOOL_USER_ROLE.ID))
+            .leftJoin(USER).on(
+                SCHOOL_USER_ROLE.USER_ID.eq(
+                    USER.ID
+                )
+            ).leftJoin(SCHOOL_USER)
+            .on(SCHOOL_USER.USER_ID.eq(USER.ID))
+            .leftJoin(SCHOOL_USER_PERIOD)
+            .on(SCHOOL_USER_PERIOD.SCHOOL_USER_ID.eq(SCHOOL_USER.ID))
 
 
-    fun mapRecordToInternalModel(it: Record) =
-        it.into(SchoolClassRecord::class.java).mapToInternalModel(
-            mainTeacher = userService.mapToUserView(it, listOf(SchoolRole.TEACHER))
+    fun mapRecordToInternalModel(it: Record): SchoolClass {
+        val role = SchoolRole.valueOf(it.get(SCHOOL_USER_ROLE.ROLE)!!)
+        return it.into(SchoolClassRecord::class.java).mapToInternalModel(
+            mainTeacher = userService.mapToUserView(it, listOf(role))
         )
+    }
 
     private fun SchoolClassRecord.mapToInternalModel(mainTeacher: UserView) = SchoolClass(
         id = id!!.toInt(),

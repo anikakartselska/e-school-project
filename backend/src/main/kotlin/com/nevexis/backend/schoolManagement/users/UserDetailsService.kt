@@ -111,6 +111,9 @@ class UserDetailsService : BaseService() {
         db.select(
             SCHOOL_CLASS.asterisk(),
             USER.asterisk(),
+            SCHOOL_USER.asterisk(),
+            SCHOOL_USER_PERIOD.asterisk(),
+            SCHOOL_USER_ROLE.asterisk(),
             STUDENT_SCHOOL_CLASS.ID,
             STUDENT_SCHOOL_CLASS_PERIOD.NUMBER_IN_CLASS
         ).from(
@@ -120,9 +123,14 @@ class UserDetailsService : BaseService() {
                 STUDENT_SCHOOL_CLASS_PERIOD.STUDENT_SCHOOL_CLASS_ID.eq(
                     STUDENT_SCHOOL_CLASS.ID
                 )
-            )
+            ).leftJoin(SCHOOL_USER_ROLE)
+            .on(SCHOOL_USER_ROLE.ID.eq(SCHOOL_CLASS.MAIN_TEACHER_ROLE_ID))
             .leftJoin(USER)
-            .on(SCHOOL_CLASS.MAIN_TEACHER.eq(USER.ID)) //TODO main teacher id should be connected to SCHOOL_USER_ROLE
+            .on(SCHOOL_USER_ROLE.USER_ID.eq(USER.ID)) //TODO main teacher id should be connected to SCHOOL_USER_ROLE
+            .leftJoin(SCHOOL_USER)
+            .on(SCHOOL_USER.USER_ID.eq(USER.ID))
+            .leftJoin(SCHOOL_USER_PERIOD)
+            .on(SCHOOL_USER_PERIOD.SCHOOL_USER_ID.eq(SCHOOL_USER.ID))
             .where(STUDENT_SCHOOL_CLASS.STUDENT_SCHOOL_USER_ROLE_ID.`in`(schoolUserRoles.map { it.id }))
             .and(SCHOOL_CLASS.SCHOOL_PERIOD_ID.eq(periodId))
             .fetch().map {
