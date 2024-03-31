@@ -1,12 +1,12 @@
-import {OneRoleUser, User, UserView} from "./User";
+import {User, UserView} from "./User";
 import {RequestStatus} from "./RequestStatus";
 
-export type Request = RoleRequest | RegistrationRequest
+export type RequestValue = UserRegistration | Role
 
-export class RegistrationRequest {
+export class Request {
     id: number
     requestedByUser: UserView
-    requestValue: User
+    requestValue: RequestValue
     requestDate: Date
     requestStatus: RequestStatus
     resolvedByUser: UserView | null
@@ -24,22 +24,22 @@ export class RegistrationRequest {
 
 }
 
-export class RoleRequest {
-    id: number
-    requestedByUser: UserView
-    requestValue: OneRoleUser
-    requestDate: Date
-    requestStatus: RequestStatus
-    resolvedByUser: UserView | null
-    resolvedDate: Date | null
+export class UserRegistration {
+    user: User
+    status: RequestStatus | null
 
-    constructor(id, requestedByUser, requestValue, requestDate, requestStatus, resolvedByUser, resolvedDate) {
-        this.id = id
-        this.requestedByUser = requestedByUser
-        this.requestValue = requestValue
-        this.requestDate = requestDate
-        this.requestStatus = requestStatus
-        this.resolvedByUser = resolvedByUser
-        this.resolvedDate = resolvedDate
+    constructor(user, status) {
+        this.user = user
+        this.status = status
+    }
+}
+
+export class Role {
+    oneRoleUser: User
+    status: RequestStatus | null
+
+    constructor(oneRoleUser, status) {
+        this.oneRoleUser = oneRoleUser
+        this.status = status
     }
 }

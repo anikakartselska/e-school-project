@@ -29,6 +29,7 @@ data class Request(
 
 data class AdditionalRequestInformation(
     val valueId: BigDecimal,
+    val status: RequestStatus? = null,
     val schoolId: BigDecimal,
     val periodId: BigDecimal
 )
@@ -36,10 +37,12 @@ data class AdditionalRequestInformation(
 sealed class RequestValue {
     data class UserRegistration(
         val user: User,
+        val status: RequestStatus? = null
     ) : RequestValue()
 
     data class Role(
-        val oneRoleUser: OneRoleUser
+        val oneRoleUser: OneRoleUser,
+        val status: RequestStatus? = null
     ) : RequestValue()
 }
 
@@ -48,11 +51,13 @@ sealed class RequestValueJson {
     @Serializable
     data class UserRegistration(
         val schoolUserPeriodId: Int,
+        val status: RequestStatus? = null
     ) : RequestValueJson()
 
     @Serializable
     data class Role(
-        val schoolUserRolePeriodId: Int
+        val schoolUserRolePeriodId: Int,
+        val status: RequestStatus? = null
     ) : RequestValueJson()
 }
 

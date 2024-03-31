@@ -1,5 +1,6 @@
 package com.nevexis.backend.schoolManagement.requests
 
+import com.nevexis.backend.schoolManagement.users.User
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
@@ -19,6 +20,12 @@ class RequestController {
         @RequestParam userId: BigDecimal? = null
     ) = requestService.fetchUserRequestsForSchoolAndPeriod(schoolId, periodId, userId)
 
+    @PostMapping("/create-user")
+    suspend fun createUser(
+        @RequestBody user: User,
+        @RequestParam loggedInUserId: BigDecimal
+    ): BigDecimal? = requestService.createRequests(listOf(user), loggedInUserId).firstOrNull()
+
     @GetMapping("/get-role-requests-by-school-and-period")
     suspend fun getRoleRequestsBySchoolAndPeriod(
         @RequestParam schoolId: BigDecimal,
@@ -32,4 +39,12 @@ class RequestController {
         @RequestParam resolvedByUserId: BigDecimal
     ) = requestService.changeRequestStatus(requestIds.map { it.toBigDecimal() }, requestStatus, resolvedByUserId)
 
+    @PostMapping("/change-user-change-status-request")
+    fun createUserChangeStatusRequest(
+        @RequestParam userId: BigDecimal,
+        @RequestParam newStatus: RequestStatus,
+        @RequestParam periodId: BigDecimal,
+        @RequestParam schoolId: BigDecimal,
+        @RequestParam loggedUserId: BigDecimal
+    ) = requestService.createUserChangeStatusRequest(userId, newStatus, periodId, schoolId, loggedUserId)
 }

@@ -103,16 +103,17 @@ class SchoolRolesService : BaseService() {
     fun getAllUserRoles(userId: BigDecimal, requestStatus: RequestStatus? = null): List<SchoolUserRole> =
         schoolRolesRecordSelectOnConditionStep(db).where(
             SCHOOL_USER_ROLE.USER_ID.eq(userId)
-                .apply {
-                    if (requestStatus != null) {
-                        and(
-                            SCHOOL_ROLE_PERIOD.STATUS.eq(requestStatus.name)
-                        )
-                    }
+        )
+            .apply {
+                if (requestStatus != null) {
+                    and(
+                        SCHOOL_ROLE_PERIOD.STATUS.eq(requestStatus.name)
+                    )
                 }
-        ).fetch().map {
-            mapToModel(it)
-        }
+            }
+            .fetch().map {
+                mapToModel(it)
+            }
 
     fun getAllUserRolesForPeriodAndSchool(
         userId: BigDecimal,

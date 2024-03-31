@@ -1,5 +1,6 @@
 package com.nevexis.backend.schoolManagement.requests
 
+import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.nullIfPrimaryKeyIsNull
 import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.users.User
@@ -197,11 +198,10 @@ class RequestService : BaseService() {
         }
     }
 
-    fun createRequests(users: List<User>, loggedUserId: BigDecimal? = null, dsl: DSLContext = db) {
-        dsl.transaction { transaction ->
-            users.map { user ->
+    fun createRequests(users: List<User>, loggedUserId: BigDecimal? = null, dsl: DSLContext = db): Set<BigDecimal> {
+        return dsl.transactionResult { transaction ->
+            users.associate { user ->
                 val userId = user.id?.toBigDecimal() ?: userSecurityService.createUser(user, transaction.dsl())
-
                 val registrationRequests = schoolUserService.createSchoolUsersFromListOfSchoolUserRoles(
                     userId,
                     user.roles ?: emptyList(),
@@ -234,13 +234,55 @@ class RequestService : BaseService() {
                     )
                 }
 
-                registrationRequests + roleRequests
-            }.also { records ->
-                transaction.dsl().batchInsert(records.flatten()).execute()
-            }
+                userId to registrationRequests + roleRequests
+            }.also { userIdToRequests ->
+                transaction.dsl().batchInsert(userIdToRequests.values.flatten()).execute()
+            }.keys
         }
     }
 
+    fun createUserChangeStatusRequest(
+        userId: BigDecimal,
+        newStatus: RequestStatus,
+        periodId: BigDecimal,
+        schoolId: BigDecimal,
+        loggedUserId: BigDecimal
+    ) {
+        db.transaction { transaction ->
+            val schoolUserPeriodId = schoolUserService.fetchSchoolUserPeriodRecordByUserIdSchoolAndPeriod(
+                userId,
+                schoolId,
+                periodId,
+                transaction.dsl()
+            )?.id!!
+            transaction.dsl().selectFrom(REQUEST).where(REQUEST.REQUEST_STATUS.eq(RequestStatus.PENDING.name))
+                .and(
+                    REQUEST.REQUEST_VALUE.like("%\"schoolUserPeriodId\":${schoolUserPeriodId}%")
+                        .and(REQUEST.REQUEST_VALUE.like("%\"status\":\"${newStatus}\"%"))
+                ).fetchAny()?.also {
+                    throw SMSError(
+                        "ALREADY_EXISTING",
+                        "Вече има създадена заявка за промяна на статуса на текущия потребител.Проверете заявките."
+                    )
+                }
+            transaction.dsl().newRecord(REQUEST).apply {
+                id = getRequestSeqNextVal()
+                requestStatus = RequestStatus.PENDING.name
+                this.periodId = periodId
+                this.schoolId = schoolId
+                requestedByUserId = loggedUserId
+                requestValue =
+                    Json.encodeToString(
+                        RequestValueJson.UserRegistration(
+                            schoolUserPeriodId.toInt(),
+                            newStatus
+                        )
+                    )
+                requestDate = LocalDateTime.now()
+
+            }.insert()
+        }
+    }
 
     fun getRequestSeqNextVal(): BigDecimal =
         db.select(DSL.field("REQUEST_SEQ.nextval")).from("DUAL")

@@ -7,25 +7,24 @@
           <div class="row">
             <div class="col-8">
               <q-tabs dense>
-                  <q-route-tab label="Учители" to="teachers"/>
-                  <q-route-tab label="Ученици" to="students"/>
-                  <q-route-tab label="Родители" to="parents"/>
-                  <q-route-tab label="Админи" to="admins"/>
+                  <q-route-tab label="Всички потребители" to="all"/>
+                  <q-route-tab label="Добавяне на потребители" to="import-users"/>
               </q-tabs>
             </div>
             <div class="col-12">
-              <router-view v-slot="{ Component }"
-                           v-model:users="users">
-                <template v-if="Component">
-                  <suspense>
-                    <component :is="Component">
-                    </component>
-                    <template #fallback>
-                      <div class="centered-div">
-                        <q-spinner
-                                :thickness="2"
-                                color="primary"
-                                size="5.5em"
+                <router-view v-slot="{ Component }"
+                             :periodId="props.periodId"
+                             :schoolId="props.schoolId">
+                    <template v-if="Component">
+                        <suspense>
+                            <component :is="Component">
+                            </component>
+                            <template #fallback>
+                                <div class="centered-div">
+                                    <q-spinner
+                                            :thickness="2"
+                                            color="primary"
+                                            size="5.5em"
                         />
                       </div>
                     </template>
@@ -45,29 +44,26 @@
 import {watch} from "vue";
 import {useRouter} from "vue-router";
 import {periodId, schoolId} from "../../model/constants";
-import {$ref} from "vue/macros";
-import {getAllUsersBySchoolIdAndPeriodId} from "../../services/RequestService";
-import {UserView} from "../../model/User";
 
 const props = defineProps<{
-  periodId: number,
-  schoolId: number
+    periodId: number,
+    schoolId: number
 }>()
 
 
 const route = useRouter()
-let users: UserView[] = $ref(await getAllUsersBySchoolIdAndPeriodId(props.schoolId, props.periodId))
 
+schoolId.value = props.schoolId.toString()
+periodId.value = props.periodId.toString()
 
 watch(() => [schoolId.value, periodId.value], () => {
-  const currentRouterFullPathSplit = route.currentRoute.value.fullPath.split("/");
-  route.push({path: `/users/${periodId.value}/${schoolId.value}/${currentRouterFullPathSplit[currentRouterFullPathSplit.length - 1]}`})
+    const currentRouterFullPathSplit = route.currentRoute.value.fullPath.split("/");
+    route.push({path: `/users/${periodId.value}/${schoolId.value}/${currentRouterFullPathSplit[currentRouterFullPathSplit.length - 1]}`})
 })
 
 watch(props, async () => {
-          periodId.value = props.periodId.toString()
-          schoolId.value = props.schoolId.toString()
-          users = await getAllUsersBySchoolIdAndPeriodId(props.schoolId, props.periodId)
+            periodId.value = props.periodId.toString()
+            schoolId.value = props.schoolId.toString()
         }
 )
 

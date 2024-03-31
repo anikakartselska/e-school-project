@@ -7,6 +7,7 @@ import {SchoolClass} from "../model/SchoolClass";
 import {School} from "../model/School";
 import {SchoolUserRole} from "../model/SchoolUserRole";
 import {SchoolPeriod, SchoolPeriodWithSchoolIds} from "../model/SchoolPeriod";
+import {Request} from "../model/Request";
 
 export const login = async (email: string, password: string): Promise<AxiosResponse> =>
         await axios.post<string>(`/authenticate`, {username: email, password}, {
@@ -222,3 +223,30 @@ export const getUserProfilePicture = async (userId): Promise<File | null> =>
         }).then(async response =>
                 response.data?.size !== 0 ? new File([response.data], "profilePicture") : null
         )
+
+export const createUser = async (user, loggedInUserId): Promise<User> => {
+    const response: AxiosResponse<number> = await api.post<number>(`/create-user`, user, {
+        params: {loggedInUserId: loggedInUserId},
+        headers: {'Content-Type': 'application/json'}
+    })
+
+    return (<User>{
+                ...user, id: response.data
+            }
+    )
+}
+export const createUserChangeStatusRequest = async (userId,
+                                                    newStatus,
+                                                    periodId,
+                                                    schoolId,
+                                                    loggedUserId): Promise<any> =>
+        await api.post<any>(`/change-user-change-status-request`, null, {
+            params: {
+                userId: userId,
+                newStatus: newStatus,
+                periodId: periodId,
+                schoolId: schoolId,
+                loggedUserId: loggedUserId
+            },
+            headers: {'Content-Type': 'application/json'}
+        })

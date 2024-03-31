@@ -49,6 +49,7 @@ const onResponseError = (quasar: QVueGlobals) => (error: AxiosError): Promise<Ax
 };
 
 const onErrorAction = async (error: AxiosError, quasar: QVueGlobals) => {
+    debugger
     if (error.config.url && notificationQueue.get(error.config.url) && notificationQueue.get(error.config.url)?.isNotEmpty()) {
         // @ts-ignore
         notificationQueue.get(error.config.url).pop()(failedNotification(error))
@@ -110,6 +111,7 @@ const failedNotification = (error: AxiosError) => ({
 });
 
 const handleBusinessError = (businessError: SmsError, quasar: QVueGlobals) => {
+
     quasar.dialog({
         title: businessError.errorType,
         message: businessError.message,

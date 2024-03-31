@@ -1,7 +1,7 @@
 <template>
-  <div class="row q-col-gutter-lg bg-sms">
+    <div class="row q-col-gutter-lg bg-sms">
     <div class="col-1"></div>
-    <div class="col-10">
+        <div class="col-10">
       <q-page class="page-content" padding>
         <div class="row">
           <div class="text-h4 q-mb-md">Информация за потребителя</div>
@@ -16,88 +16,107 @@
         <q-separator/>
         <div class="row q-col-gutter-sm q-ma-xs" style="margin-top: 30px;">
           <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-            <q-card class="col-6" style="height: 70vh">
-              <q-card-section horizontal>
-                <q-card-section class="col-8">
-                  <span class="text-h4">Лична информация</span>
-                    <q-input v-model="user.firstName" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
-                             label="Име"/>
-                    <q-input v-model="user.middleName" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
-                             label="Презиме"/>
-                    <q-input v-model="user.lastName" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
-                             label="Фамилия"/>
-                    <q-input v-model="user.personalNumber" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
-                             label="ЕГН"/>
-                    <q-input v-model="user.email" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
-                             label="Имейл"/>
-                    <q-input v-model="user.address" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
-                             label="Адрес"/>
-                    <q-input v-model="user.username" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
-                             label="Потребителско име"/>
-                    <q-select v-model="user.gender" :option-label="option=>translationOfGender[option]"
-                              :options="Object.keys(Gender)"
-                              :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
-                              label="Пол"/>
+            <q-card class="col-6" style="height: 78vh">
+                <q-card-section horizontal>
+                    <q-card-section class="col-8">
+                        <span class="text-h4">Лична информация</span>
+                        <q-input v-model="user.firstName" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
+                                 label="Име"/>
+                        <q-input v-model="user.middleName" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
+                                 label="Презиме"/>
+                        <q-input v-model="user.lastName" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
+                                 label="Фамилия"/>
+                        <q-input v-model="user.personalNumber" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
+                                 label="ЕГН"/>
+                        <q-input v-model="user.email" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
+                                 label="Имейл"/>
+                        <q-input v-model="user.address" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
+                                 label="Адрес"/>
+                        <q-input v-model="user.username" :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
+                                 label="Потребителско име"/>
+                        <q-select v-model="user.gender" :option-label="option=>translationOfGender[option]"
+                                  :options="Object.keys(Gender)"
+                                  :readonly="isNotCurrentUserAndNotAdmin" class="q-pa-sm"
+                                  label="Пол"/>
+                    </q-card-section>
+                    <q-card-section class="col">
+                        <div>
+                            <q-avatar v-if="imageUrl!==''" font-size="155x" size="180px" square
+                                      text-color="white">
+                                <q-img
+                                        :src="imageUrl"
+                                        fit="contain"
+                                        ratio="1"
+                                        spinner-color="white"
+                                ></q-img>
+                            </q-avatar>
+                            <q-avatar v-else color="cyan-2" font-size="155x" size="180px" square
+                                      text-color="white">
+                                {{ user.firstName[0] }}{{ user.lastName[0] }}
+                            </q-avatar>
+                        </div>
+                        <div>
+                            <q-file v-model="profilePictureFile"
+
+                                    accept="image/*"
+                                    dense
+                                    display-value="Смени снимка"
+                                    outlined
+                                    @update:model-value="handleUpload()"
+                            >
+                                <template v-slot:prepend>
+                                    <q-icon name="attach_file"/>
+                                </template>
+                            </q-file>
+                        </div>
+                    </q-card-section>
                 </q-card-section>
-                  <q-card-section class="col">
-                      <div>
-                          <q-avatar v-if="imageUrl!==''" font-size="155x" size="180px" square
-                                    text-color="white">
-                              <q-img
-                                      :src="imageUrl"
-                                      fit="contain"
-                                      ratio="1"
-                                      spinner-color="white"
-                              ></q-img>
-                          </q-avatar>
-                          <q-avatar v-else color="cyan-2" font-size="155x" size="180px" square
-                                    text-color="white">
-                              {{ getCurrentUser().firstName[0] }}{{ getCurrentUser().lastName[0] }}
-                          </q-avatar>
-                      </div>
-                      <div>
-                          <q-file v-model="profilePictureFile"
+                <q-separator/>
+                <div class="q-pa-sm q-pl-lg text-h6 row">
+                    Статус:<span :class="getRequestStatusColorClass(user.status)">{{
+                    translationOfRequestStatus[user.status].slice(0, -1).toUpperCase()
+                    }}</span><br/>
 
-                                  @update:model-value="handleUpload()"
-                                  accept="image/*"
-                                  dense
-                                  display-value="Смени снимка"
-                                  outlined
-                          >
-                              <template v-slot:prepend>
-                                  <q-icon name="attach_file"/>
-                              </template>
-                          </q-file>
-                      </div>
-                  </q-card-section>
-              </q-card-section>
+                    <q-space/>
+                    <div v-if="isAdminAndNotCurrentUser">
+                        <q-btn v-if="user.status===RequestStatus.REJECTED" class="float-right"
+                               color="secondary" icon="done"
+                               label="Активирай потребител"
+                               outline rounded
+                               @click="createRequestForStatusChange(RequestStatus.APPROVED)"/>
+                        <q-btn v-if="user.status===RequestStatus.APPROVED" class="float-right"
+                               color="negative" icon="cancel"
+                               label="Деактивирай потребител"
+                               outline rounded
+                               @click="createRequestForStatusChange(RequestStatus.REJECTED)"/>
+                    </div>
+                </div>
 
-              <q-separator/>
             </q-card>
           </div>
           <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-            <q-card>
-              <q-card-section>
-                <div class="row">
-                  <div class="col-4">
-                    <span class="text-h4">Роли</span>
-                  </div>
-                    <div class="col-3">
-                        <q-select v-if="isCurrentUser"
-                                  v-model="selectedPeriod"
-                                  :option-label="(option:SchoolPeriod) => `${option.startYear.substring(0,4)}/${option.endYear.substring(0,4)}`"
-                                  :options="allSchoolPeriods"
-                                  dense
-                                  label="Учебна година"/>
-                    </div>
+              <q-card style="height: 78vh">
+                  <q-card-section>
+                      <div class="row">
+                          <div class="col-4">
+                              <span class="text-h4">Роли</span>
+                          </div>
+                          <div class="col-3">
+                              <q-select v-if="isCurrentUser"
+                                        v-model="selectedPeriod"
+                                        :option-label="(option:SchoolPeriod) => `${option.startYear.substring(0,4)}/${option.endYear.substring(0,4)}`"
+                                        :options="allSchoolPeriods"
+                                        dense
+                                        label="Учебна година"/>
+                          </div>
 
-                    <div class="col-5">
-                        <q-btn v-if="!isNotCurrentUserAndNotAdmin" class="float-right" color="primary" icon="add"
-                               label="Заяви нова роля"
-                               outline rounded
-                               @click="addNewRole()"/>
-                    </div>
-                </div>
+                          <div class="col-5">
+                              <q-btn v-if="!isNotCurrentUserAndNotAdmin" class="float-right" color="primary" icon="add"
+                                     label="Заяви нова роля"
+                                     outline rounded
+                                     @click="addNewRole()"/>
+                          </div>
+                      </div>
               </q-card-section>
               <q-scroll-area style="height: 62vh" visible>
                 <div v-for="role in userRolesFilteredBySelectedPeriod"
@@ -176,6 +195,7 @@
 
 <script lang="ts" setup>
 import {
+    createUserChangeStatusRequest,
     fetchUserWithAllItsRolesById,
     findStudentByPhoneNumberPeriodAndSchoolClass,
     getAllSchoolClasses,
@@ -186,16 +206,17 @@ import {
     updateUserProfilePicture
 } from "../../services/RequestService";
 import {$ref} from "vue/macros";
-import {DetailsForParent, DetailsForStudent, Gender, SchoolRole, UserView} from "../../model/User";
+import {DetailsForParent, DetailsForStudent, Gender, SchoolRole} from "../../model/User";
 import {onUnmounted, watch} from "vue";
 import {useRouter} from "vue-router";
-import {translationOfGender} from "../../utils";
+import {getRequestStatusColorClass, translationOfGender, translationOfRequestStatus} from "../../utils";
 import AddRoleDialog from "../add-role-dialog.vue";
 import {constructSchoolUserRoleMessage, SchoolUserRole} from "../../model/SchoolUserRole";
 import {QFile, useQuasar} from "quasar";
 import {getCurrentUser, updateOneRoleUserInLocalStorage} from "../../services/LocalStorageService";
 import {SchoolPeriod} from "../../model/SchoolPeriod";
 import {cloneDeep} from "lodash-es";
+import {RequestStatus} from "../../model/RequestStatus";
 
 const props = defineProps<{
   id: number,
@@ -313,33 +334,27 @@ const updateRole = async (role) => {
         }
       })
     }
-    userRolesFilteredBySelectedPeriod = user?.roles?.filter(role => role.period.id == selectedPeriod?.id)
-  })
-}
-const openUser = async (row: UserView) => {
-  await router.push({
-    name: "user",
-    params: {
-      id: row.id,
-      periodId: props.periodId,
-      schoolId: props.schoolId,
-    }
+      userRolesFilteredBySelectedPeriod = user?.roles?.filter(role => role.period.id == selectedPeriod?.id)
   })
 }
 const reset = () => {
-  user = cloneDeep(databaseUser)
-  userRolesFilteredBySelectedPeriod = user?.roles?.filter(role => role.period.id == selectedPeriod?.id)
+    user = cloneDeep(databaseUser)
+    userRolesFilteredBySelectedPeriod = user?.roles?.filter(role => role.period.id == selectedPeriod?.id)
+}
+
+const createRequestForStatusChange = async (status: RequestStatus) => {
+    await createUserChangeStatusRequest(user.id, status, props.periodId, props.schoolId, currentUser.id)
 }
 const columns = [
-  {name: 'edit'},
-  {
-    name: "firstName",
-    label: "Име",
-    align: "left",
-    field: 'firstName',
-    sortable: true
-  },
-  {
+    {name: 'edit'},
+    {
+        name: "firstName",
+        label: "Име",
+        align: "left",
+        field: 'firstName',
+        sortable: true
+    },
+    {
     name: "middleName",
     align: "left",
     label: "Презиме",

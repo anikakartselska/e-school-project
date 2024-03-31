@@ -1,7 +1,8 @@
 import axios from 'axios'
 import {setupApiInterceptorsTo} from "../interceptors/ApiInterceptors";
-import {QVueGlobals} from "quasar";
+import {QVueGlobals, useQuasar} from "quasar";
 
+const quasar = useQuasar()
 const api = axios.create({baseURL: '/api'})
 const auth = axios.create({baseURL: '/auth'})
 

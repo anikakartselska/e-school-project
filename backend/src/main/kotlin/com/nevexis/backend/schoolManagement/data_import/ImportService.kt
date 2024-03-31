@@ -154,7 +154,6 @@ class ImportService : BaseService() {
                             lastName = DataFormatter().formatCellValue(row.getCell(5)),
                             username = DataFormatter().formatCellValue(row.getCell(6)),
                             address = DataFormatter().formatCellValue(row.getCell(7)),
-                            password = phoneNumber,
                             gender = getTranslationFromBulgarianToEnglish(
                                 DataFormatter().formatCellValue(
                                     row.getCell(

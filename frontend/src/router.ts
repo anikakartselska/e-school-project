@@ -20,10 +20,8 @@ import RequestsPage from "./pages/requests/requests-page.vue";
 import {periodId, schoolId} from "./model/constants";
 import UserRequestsTab from "./pages/requests/user-requests-tab.vue";
 import RoleRequestsTab from "./pages/requests/role-requests-tab.vue";
-import AdminsTab from "./pages/user/admins-tab.vue";
-import TeachersTab from "./pages/user/teachers-tab.vue";
-import StudentsTab from "./pages/user/students-tab.vue";
-import ParentsTab from "./pages/user/parents-tab.vue";
+import UsersTab from "./pages/user/users-tab.vue";
+import ImportUsersTab from "./pages/user/import-users-tab.vue";
 import SchoolClassesPage from "./pages/school-class/school-classes-page.vue";
 import SchoolClassPage from "./pages/school-class/school-class-page.vue";
 
@@ -53,20 +51,12 @@ const routes = [
                 props: true,
                 children: [
                     {
-                        path: 'admins',
-                        component: AdminsTab
+                        path: 'all',
+                        component: UsersTab
                     },
                     {
-                        path: 'teachers',
-                        component: TeachersTab
-                    },
-                    {
-                        path: 'students',
-                        component: StudentsTab
-                    },
-                    {
-                        path: 'parents',
-                        component: ParentsTab
+                        path: 'import-users',
+                        component: ImportUsersTab
                     },
                 ],
             },

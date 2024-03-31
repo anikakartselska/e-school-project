@@ -29,7 +29,7 @@ class UserBaseService : BaseService() {
         val newUserId = getUserSeqNextVal()
         dsl.newRecord(USER, user).apply {
             id = newUserId
-            password = passwordEncoder.encode(user.password)
+            password = passwordEncoder.encode(user.password ?: user.phoneNumber)
             gender = user.gender.name
         }.insert()
 

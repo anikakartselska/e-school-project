@@ -19,7 +19,7 @@ data class User(
     val phoneNumber: String,
     val address: String,
     val password: String? = null,
-    val status: RequestStatus? = null,
+    val status: RequestStatus,
     val roles: List<SchoolUserRole>? = null
 )
 

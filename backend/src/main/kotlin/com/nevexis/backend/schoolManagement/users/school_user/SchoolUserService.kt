@@ -125,11 +125,33 @@ class SchoolUserService : BaseService() {
         .on(SCHOOL.ID.eq(SCHOOL_USER.SCHOOL_ID))
 
 
-//    fun getSchoolUserById(schoolUserId: BigDecimal, dsl: DSLContext): SchoolUser {
-//        return recordSelectOnConditionStep(dsl)
-//            .where(SCHOOL_USER.ID.eq(schoolUserId))
-//            .fetchAny()?.mapIntoModel(dsl) ?: error("There is no record in SCHOOL_USER with id: $schoolUserId")
-//    }
+    fun updateUserStatus(
+        userId: BigDecimal,
+        status: RequestStatus,
+        periodId: BigDecimal,
+        schoolId: BigDecimal,
+        dsl: DSLContext = db
+    ): BigDecimal {
+        val schoolUserPeriodRecord =
+            fetchSchoolUserPeriodRecordByUserIdSchoolAndPeriod(userId, schoolId, periodId, dsl)!!
+        schoolUserPeriodRecord.apply {
+            this.status = status.name
+        }.update()
+        return schoolUserPeriodRecord.id!!
+    }
+
+    fun fetchSchoolUserPeriodRecordByUserIdSchoolAndPeriod(
+        userId: BigDecimal,
+        schoolId: BigDecimal,
+        periodId: BigDecimal,
+        dsl: DSLContext = db,
+    ) = dsl.selectFrom(SCHOOL_USER_PERIOD).where(
+        SCHOOL_USER_PERIOD.SCHOOL_USER_ID.eq(
+            dsl.select(SCHOOL_USER.ID).from(SCHOOL_USER).where(SCHOOL_USER.USER_ID.eq(userId))
+                .and(SCHOOL_USER.SCHOOL_ID.eq(schoolId))
+        ).and(SCHOOL_USER_PERIOD.PERIOD_ID.eq(periodId))
+    ).fetchOne()
+
 
     private fun recordSelectOnConditionStep(dsl: DSLContext) =
         dsl.select(SCHOOL_USER.asterisk(), SCHOOL_USER_PERIOD.asterisk())

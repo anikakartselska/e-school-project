@@ -33,7 +33,7 @@ class UserService : UserBaseService() {
                     phoneNumber = user.phoneNumber
                     address = user.address
                 }?.update()
-            requestService.createRequests(listOf(user), loggedUserId, transaction.dsl())
+            requestService.createRequests(users = listOf(user), loggedUserId, transaction.dsl())
         }
     }
 
@@ -102,7 +102,11 @@ class UserService : UserBaseService() {
         schoolRolePeriodIds: List<BigDecimal>,
         dsl: DSLContext = db
     ): Map<BigDecimal, OneRoleUser> = recordSelectOnConditionStepJoinedWithUserRoles(dsl)
-        .where(SCHOOL_ROLE_PERIOD.ID.`in`(schoolRolePeriodIds))
+        .apply {
+            if (schoolRolePeriodIds.isNotEmpty()) {
+                where(SCHOOL_ROLE_PERIOD.ID.`in`(schoolRolePeriodIds))
+            }
+        }
         .fetch().associate {
             val schoolUserRole = schoolUserRolesService.mapToModel(it)
             it.get(SCHOOL_ROLE_PERIOD.ID)!! to

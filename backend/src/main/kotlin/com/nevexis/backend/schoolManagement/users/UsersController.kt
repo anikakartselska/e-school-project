@@ -27,6 +27,7 @@ class UsersController {
         @RequestParam periodId: BigDecimal
     ): List<UserView> = userService.getAllUserViewsBySchool(schoolId, periodId)
 
+
     @GetMapping("/get-user-with-all-roles")
     fun fetchUserWithAllItsRolesById(
         @RequestParam id: BigDecimal,
@@ -67,16 +68,5 @@ class UsersController {
                 .body(resource)
         }
     }
-//    @GetMapping("/get-user-by-id")
-//    fun getUserDetailsById(
-//        @RequestParam userId: BigDecimal,
-//        @RequestParam periodId: BigDecimal,
-//        @RequestParam schoolId: BigDecimal
-//    ) = userService.getUserWithDetailsByUserIdAndSchoolId(userId, periodId, schoolId)
 
-//    @GetMapping("/get-all-students-from-class")
-//    fun fetchUsersFromClass(
-//        @RequestParam schoolClassId: BigDecimal,
-//        @RequestParam periodId: BigDecimal
-//    ) = userService.getAllStudentsInSchoolClass(schoolClassId, periodId)
 }
