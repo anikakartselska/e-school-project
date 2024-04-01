@@ -6,10 +6,14 @@
         <div style="margin-top: 30px;">
           <div class="row">
             <div class="col-8">
-              <q-tabs dense>
-                <q-route-tab label="Заявки за регистрация" to="user-requests"/>
-                <q-route-tab label="Заявки за роля" to="role-requests"/>
-              </q-tabs>
+                <q-tabs v-model="selectedTab" dense>
+                    <q-route-tab label="Регистрации" name="user-requests" to="user-requests"/>
+                    <q-route-tab label="Роли" name="role-requests" to="role-requests"/>
+                    <q-route-tab label="Промяна на потребителски статус" name="user-status-change-request"
+                                 to="user-status-change-request"/>
+                    <q-route-tab label="Промяна на ролеви статус" name="role-status-change-request"
+                                 to="role-status-change-request"/>
+                </q-tabs>
             </div>
             <div class="col-2">
               <q-select
@@ -32,6 +36,7 @@
               <router-view v-slot="{ Component }"
                            v-model:roleRequests="filteredRoleRequests"
                            v-model:userRequests="filteredUserRequests"
+                           :isStatusChange="selectedTab.includes('status-change')"
               >
                 <template v-if="Component">
                   <suspense>
@@ -83,15 +88,17 @@ import {RequestStatus} from "../../model/RequestStatus";
 import {constructSchoolUserRoleMessage} from "../../model/SchoolUserRole";
 
 const props = defineProps<{
-  periodId: number,
-  schoolId: number
+    periodId: number,
+    schoolId: number
 }>()
 const filter = $ref(<string[]>[])
 
 const route = useRouter()
 const requestStatusFilters = $ref([RequestStatus.PENDING,
-  RequestStatus.REJECTED,
-  RequestStatus.APPROVED])
+    RequestStatus.REJECTED,
+    RequestStatus.APPROVED])
+
+const selectedTab = $ref('user-requests')
 
 let roleRequests = $ref(await getRoleRequestsBySchoolAndPeriod(props.periodId, props.schoolId))
 let userRequests = $ref(await getUserRequestsBySchoolAndPeriod(props.periodId, props.schoolId))
@@ -99,8 +106,8 @@ let filteredRoleRequests = $ref([...roleRequests])
 let filteredUserRequests = $ref([...userRequests])
 
 watch(() => [requestStatusFilters, roleRequests, userRequests, filter], () => {
-  filteredRoleRequests = roleRequests.filter(value => requestStatusFilters.includes(value.requestStatus) && (filter.length == 0 || filter.find(fil => stringifyRoleRequest(value).includes(fil.toLowerCase()))))
-  filteredUserRequests = userRequests.filter(value => requestStatusFilters.includes(value.requestStatus) && (filter.length == 0 || filter.find(fil => stringifyUserRequest(value).includes(fil.toLowerCase()))))
+    filteredRoleRequests = roleRequests.filter(value => requestStatusFilters.includes(value.requestStatus) && (filter.length == 0 || filter.find(fil => stringifyRoleRequest(value).includes(fil.toLowerCase()))))
+    filteredUserRequests = userRequests.filter(value => requestStatusFilters.includes(value.requestStatus) && (filter.length == 0 || filter.find(fil => stringifyUserRequest(value).includes(fil.toLowerCase()))))
 })
 
 const stringifyRoleRequest = (request) => JSON.stringify(request).concat(constructSchoolUserRoleMessage(request.requestValue.oneRoleUser.role).toLowerCase())

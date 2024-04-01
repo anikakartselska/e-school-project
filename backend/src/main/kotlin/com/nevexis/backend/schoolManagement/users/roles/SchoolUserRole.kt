@@ -14,7 +14,7 @@ data class SchoolUserRole(
     val period: SchoolPeriod,
     val school: School,
     val role: SchoolRole,
-    val status: RequestStatus = RequestStatus.PENDING,
+    val status: RequestStatus,
     val detailsForUser: DetailsForUser? = null,
 ) {
     override fun equals(other: Any?): Boolean {

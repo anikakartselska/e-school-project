@@ -240,9 +240,25 @@ export const createUserChangeStatusRequest = async (userId,
                                                     periodId,
                                                     schoolId,
                                                     loggedUserId): Promise<any> =>
-        await api.post<any>(`/change-user-change-status-request`, null, {
+        await api.post<any>(`/create-user-change-status-request`, null, {
             params: {
                 userId: userId,
+                newStatus: newStatus,
+                periodId: periodId,
+                schoolId: schoolId,
+                loggedUserId: loggedUserId
+            },
+            headers: {'Content-Type': 'application/json'}
+        })
+
+export const createRoleChangeStatusRequest = async (roleId,
+                                                    newStatus,
+                                                    periodId,
+                                                    schoolId,
+                                                    loggedUserId): Promise<any> =>
+        await api.post<any>(`/create-role-change-status-request`, null, {
+            params: {
+                roleId: roleId,
                 newStatus: newStatus,
                 periodId: periodId,
                 schoolId: schoolId,

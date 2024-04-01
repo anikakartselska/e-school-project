@@ -39,7 +39,7 @@ class RequestController {
         @RequestParam resolvedByUserId: BigDecimal
     ) = requestService.changeRequestStatus(requestIds.map { it.toBigDecimal() }, requestStatus, resolvedByUserId)
 
-    @PostMapping("/change-user-change-status-request")
+    @PostMapping("/create-user-change-status-request")
     fun createUserChangeStatusRequest(
         @RequestParam userId: BigDecimal,
         @RequestParam newStatus: RequestStatus,
@@ -47,4 +47,13 @@ class RequestController {
         @RequestParam schoolId: BigDecimal,
         @RequestParam loggedUserId: BigDecimal
     ) = requestService.createUserChangeStatusRequest(userId, newStatus, periodId, schoolId, loggedUserId)
+
+    @PostMapping("/create-role-change-status-request")
+    fun createRoleChangeStatusRequest(
+        @RequestParam roleId: BigDecimal,
+        @RequestParam newStatus: RequestStatus,
+        @RequestParam periodId: BigDecimal,
+        @RequestParam schoolId: BigDecimal,
+        @RequestParam loggedUserId: BigDecimal
+    ) = requestService.createRoleChangeStatusRequest(roleId, newStatus, periodId, schoolId, loggedUserId)
 }

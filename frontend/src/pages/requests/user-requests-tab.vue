@@ -1,12 +1,12 @@
 <template>
-  <div class="row">
-    <div class="col-1"></div>
+    <div class="row">
+        <div class="col-1"></div>
     <div class="col">
       <q-page class="page-content" padding>
-        <div style="margin-top: 30px;">
+          <div style="margin-top: 30px;">
           <div class="row">
             <div class="text-h4 q-mb-md">
-              Заявки за регистрация
+                {{ props.isStatusChange ? 'Заявки за промяна на статус на потребител' : 'Заявки за регистрация' }}
             </div>
             <q-space/>
             <div class="q-pb-lg q-gutter-sm">
@@ -28,22 +28,22 @@
                               <div :class="`text-h5 q-pl-lg ${getRequestStatusColorClass(request.requestStatus)}`">
                                 {{ translationOfRequestStatus[request.requestStatus] }}
                               </div>
-                              <div class="absolute-top-right q-pt-sm q-pr-sm">
-                                <q-btn :disable="getCurrentUser().id === request.requestedByUser?.id || request.requestStatus !== RequestStatus.PENDING"
-                                       color="positive"
-                                       flat
-                                       label="Одобри"
-                                       @click="resolveRequest(request,RequestStatus.APPROVED)"
-                                />
-                                <q-tooltip v-if="getCurrentUser().id === request.requestedByUser.id">
-                                  Не може да одобрите ваша заявка
-                                </q-tooltip>
-                                <q-tooltip v-else-if="request.requestStatus !== RequestStatus.PENDING">
-                                  Заявката вече е {{ translationOfRequestStatus[request.requestStatus] }}
-                                </q-tooltip>
+                                <div class="absolute-top-right q-pt-sm q-pr-sm">
+                                    <q-btn
+                                            color="positive"
+                                            flat
+                                            label="Одобри"
+                                            @click="resolveRequest(request,RequestStatus.APPROVED)"
+                                    />
+                                    <q-tooltip v-if="getCurrentUser().id === request.requestedByUser.id">
+                                        Не може да одобрите ваша заявка
+                                    </q-tooltip>
+                                    <q-tooltip v-else-if="request.requestStatus !== RequestStatus.PENDING">
+                                        Заявката вече е {{ translationOfRequestStatus[request.requestStatus] }}
+                                    </q-tooltip>
 
-                                <q-btn :disable="request.requestStatus !== RequestStatus.PENDING"
-                                       color="negative"
+                                    <q-btn :disable="request.requestStatus !== RequestStatus.PENDING"
+                                           color="negative"
                                        flat
                                        label="Отхвърли"
                                        @click="resolveRequest(request,RequestStatus.REJECTED)"/>
@@ -55,20 +55,30 @@
                           </q-card-actions>
                           <q-separator/>
                           <q-card-section>
-                            <div class="q-pl-md q-pb-none">
+                              <div class="q-pl-md q-pb-none">
                                 <span class="text-h5 text-negative">
                       Информация за потребителя:
                       </span><br>
-                              Име:<span class="text-primary">{{
-                                request.requestValue.user.firstName
-                              }} {{ request.requestValue.user.middleName }} {{
-                                request.requestValue.user.lastName
-                              }}</span><br>
-                              Потребителско име:<span class="text-primary">{{
-                                request.requestValue.user.username
-                              }}</span><br>
-                              ЕГН:<span class="text-primary">{{
-                                request.requestValue.user.personalNumber
+                                  <div v-if="isStatusChange">
+                        <span class="text-negative">
+                      Нов статус:
+                      </span>
+                                      <span :class="getRequestStatusColorClass(request.requestValue.status)">{{
+                                          translationOfRequestStatusForUser[request.requestValue.status]
+                                          }}
+                                </span>
+                                      <br>
+                                  </div>
+                                  Име:<span class="text-primary">{{
+                                  request.requestValue.user.firstName
+                                  }} {{ request.requestValue.user.middleName }} {{
+                                  request.requestValue.user.lastName
+                                  }}</span><br>
+                                  Потребителско име:<span class="text-primary">{{
+                                  request.requestValue.user.username
+                                  }}</span><br>
+                                  ЕГН:<span class="text-primary">{{
+                                  request.requestValue.user.personalNumber
                               }}</span><br>
                               Телефонен номер:<span class="text-primary">{{
                                 request.requestValue.user.phoneNumber
@@ -130,16 +140,19 @@ import {
     formatToBulgarian,
     getRequestStatusColorClass,
     translationOfGender,
-    translationOfRequestStatus
+    translationOfRequestStatus,
+    translationOfRequestStatusForUser
 } from "../../utils";
 import {watch} from "vue";
 import {useQuasar} from "quasar";
 import RoleRequestsDialog from "./role-requests-dialog.vue";
+import {Request, Role, UserRegistration} from "../../model/Request";
 
 
 const props = defineProps<{
-  userRequests: Request[],
-  roleRequests: Request[]
+    userRequests: Request[],
+    roleRequests: Request[],
+    isStatusChange?: boolean
 }>()
 
 const emits = defineEmits<{
@@ -147,27 +160,27 @@ const emits = defineEmits<{
   (e: 'update:roleRequests', value: Request[]): void
 }>();
 
-let filteredRequests = $ref([...props.userRequests])
+let filteredRequests = $ref([...props.userRequests].filter(request => (props.isStatusChange && (<UserRegistration>request.requestValue).status != null) || (!props.isStatusChange && (<UserRegistration>request.requestValue).status == null)))
 
 watch(props, async () => {
-  filteredRequests = [...props.userRequests]
+    filteredRequests = [...props.userRequests].filter(request => (props.isStatusChange && (<UserRegistration>request.requestValue).status != null) || (!props.isStatusChange && (<UserRegistration>request.requestValue).status == null))
 })
 const quasar = useQuasar()
-const resolveRequest = async (request, requestStatus) => {
-  if (requestStatus == RequestStatus.REJECTED) {
-    const userRoleRequests = props.roleRequests.filter(req => req.requestedByUser.id === request.requestedByUser.id)
+const resolveRequest = async (request: Request, requestStatus: RequestStatus) => {
+    if (requestStatus == RequestStatus.REJECTED) {
+        const userRoleRequests = props.roleRequests.filter(req => (req.requestValue as Role).oneRoleUser.id === (request.requestValue as UserRegistration).user.id)
 
-    if (userRoleRequests.length > 0) {
-      quasar.dialog({
-                component: RoleRequestsDialog,
-                componentProps: {
-                  requests: userRoleRequests
-                },
-              }
-      ).onOk(async e => {
+        if (userRoleRequests.length > 0 && !props.isStatusChange) {
+            quasar.dialog({
+                        component: RoleRequestsDialog,
+                        componentProps: {
+                            requests: userRoleRequests
+                        },
+                    }
+            ).onOk(async e => {
                 await changeRequestStatus(userRoleRequests.map(it => it.id), requestStatus, getCurrentUserAsUserView().id).then(e => {
-                  const updatedRoleRequests = [...props.roleRequests].map(
-                          req => {
+                    const updatedRoleRequests = [...props.roleRequests].map(
+                            req => {
                             const userRoleRequest = userRoleRequests.find(it => it.id === req.id)
                             if (userRoleRequest) {
                               return {

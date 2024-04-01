@@ -99,29 +99,48 @@ class UserService : UserBaseService() {
 
 
     fun findUsersByTheirSchoolRolePeriodIds(
-        schoolRolePeriodIds: List<BigDecimal>,
+        requestIdToSchoolRolePeriodIdToStatus: Map<BigDecimal, Pair<BigDecimal, RequestStatus?>>,
         dsl: DSLContext = db
-    ): Map<BigDecimal, OneRoleUser> = recordSelectOnConditionStepJoinedWithUserRoles(dsl)
-        .apply {
-            if (schoolRolePeriodIds.isNotEmpty()) {
-                where(SCHOOL_ROLE_PERIOD.ID.`in`(schoolRolePeriodIds))
+    ): Map<BigDecimal, Pair<OneRoleUser, RequestStatus?>> {
+        val records = recordSelectOnConditionStepJoinedWithUserRoles(dsl)
+            .apply {
+                if (requestIdToSchoolRolePeriodIdToStatus.isNotEmpty()) {
+                    where(SCHOOL_ROLE_PERIOD.ID.`in`(requestIdToSchoolRolePeriodIdToStatus.values.map { it.first }))
+                }
             }
+            .fetch()
+        val schoolRolePeriodIdToOneRoleUserMap = records.associate { record ->
+            val schoolUserRole = schoolUserRolesService.mapToModel(record)
+            val schoolRolePeriodId = record.get(SCHOOL_ROLE_PERIOD.ID)!!
+            schoolRolePeriodId to mapUserRecordToOneRoleModel(
+                record.into(UserRecord::class.java),
+                schoolUserRole
+            )
         }
-        .fetch().associate {
-            val schoolUserRole = schoolUserRolesService.mapToModel(it)
-            it.get(SCHOOL_ROLE_PERIOD.ID)!! to
-                    mapUserRecordToOneRoleModel(it.into(UserRecord::class.java), schoolUserRole)
+        return requestIdToSchoolRolePeriodIdToStatus.mapValues { (_, schoolRolePeriodIdToOneRoleUser) ->
+            schoolRolePeriodIdToOneRoleUserMap[schoolRolePeriodIdToOneRoleUser.first]!! to schoolRolePeriodIdToOneRoleUser.second
         }
+    }
 
     fun findUsersByTheirSchoolUserPeriodIds(
-        schoolUserPeriodIds: List<BigDecimal>,
+        requestIdToSchoolUserPeriodIdToStatus: Map<BigDecimal, Pair<BigDecimal, RequestStatus?>>,
         dsl: DSLContext
-    ): Map<BigDecimal, User> = recordSelectOnConditionStepJoinedWithUserRoles(dsl)
-        .where(SCHOOL_USER_PERIOD.ID.`in`(schoolUserPeriodIds))
-        .fetch().associate {
-            it.get(SCHOOL_USER_PERIOD.ID)!! to
-                    mapUserRecordToUserModel(it, emptyList())
+    ): Map<BigDecimal, Pair<User, RequestStatus?>> {
+        val records = recordSelectOnConditionStepJoinedWithUserRoles(dsl)
+            .where(SCHOOL_USER_PERIOD.ID.`in`(requestIdToSchoolUserPeriodIdToStatus.values.map { it.first }))
+            .fetch()
+
+        val schoolUserPeriodIdToUserMap = records.associate { record ->
+            val schoolUserPeriodId = record.get(SCHOOL_USER_PERIOD.ID)!!
+            schoolUserPeriodId to mapUserRecordToUserModel(
+                record,
+                emptyList()
+            )
         }
+        return requestIdToSchoolUserPeriodIdToStatus.mapValues { (_, schoolRolePeriodIdToOneRoleUser) ->
+            schoolUserPeriodIdToUserMap[schoolRolePeriodIdToOneRoleUser.first]!! to schoolRolePeriodIdToOneRoleUser.second
+        }
+    }
 
     fun findApprovedUsersByItsRoleIdsAndPeriodId(
         roleIds: List<BigDecimal>,

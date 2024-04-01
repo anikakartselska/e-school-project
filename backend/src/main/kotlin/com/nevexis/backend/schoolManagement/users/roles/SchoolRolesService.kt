@@ -85,6 +85,14 @@ class SchoolRolesService : BaseService() {
         }
     }
 
+    fun getSchoolRolePeriodRecordByRoleId(roleId: BigDecimal, periodId: BigDecimal, dsl: DSLContext = db) =
+        dsl.selectFrom(SCHOOL_ROLE_PERIOD).where(
+            SCHOOL_ROLE_PERIOD.SCHOOL_USER_ROLE_ID.eq(roleId).and(
+                SCHOOL_ROLE_PERIOD.PERIOD_ID.eq(periodId)
+            )
+        ).fetchAny()
+
+
     fun getUserSchoolRoleByIdAndPeriodId(id: BigDecimal, periodId: BigDecimal, dsl: DSLContext) =
         schoolRolesRecordSelectOnConditionStep(dsl)
             .where(

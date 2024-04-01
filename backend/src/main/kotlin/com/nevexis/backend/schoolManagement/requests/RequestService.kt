@@ -60,14 +60,14 @@ class RequestService : BaseService() {
                 .orderBy(REQUEST.REQUEST_DATE.desc())
                 .fetch()
         val requestType = RequestValueJson.UserRegistration::class
-        val requestValuesIdsToValue = mapRequestValues(
+        val requestIdToRequestValue = mapRequestValues(
             registrationRequests.map { it.into(RequestRecord::class.java) },
             requestType
         )
 
         return mapRecordToRequestsModel(
             registrationRequests,
-            requestValuesIdsToValue,
+            requestIdToRequestValue,
             RequestValueJson.UserRegistration::class
         )
     }
@@ -80,19 +80,26 @@ class RequestService : BaseService() {
 
             requests.map { request ->
                 when (val decodedRequestValue = decodeRequestValueJson(request?.requestValue!!)) {
-                    is RequestValueJson.Role -> schoolRolesService.changeSchoolUserRolePeriodStatus(
-                        decodedRequestValue,
-                        requestStatus,
-                        transaction.dsl()
-                    )
+                    is RequestValueJson.Role -> {
+                        if (decodedRequestValue.status == null || requestStatus != RequestStatus.REJECTED) {
+                            schoolRolesService.changeSchoolUserRolePeriodStatus(
+                                decodedRequestValue,
+                                decodedRequestValue.status ?: requestStatus,
+                                transaction.dsl()
+                            )
+                        }
+                    }
 
-                    is RequestValueJson.UserRegistration -> schoolUserService.changeSchoolUserPeriodStatus(
-                        decodedRequestValue,
-                        requestStatus,
-                        transaction.dsl()
-                    )
+                    is RequestValueJson.UserRegistration -> {
+                        if (decodedRequestValue.status == null || requestStatus != RequestStatus.REJECTED) {
+                            schoolUserService.changeSchoolUserPeriodStatus(
+                                decodedRequestValue,
+                                decodedRequestValue.status ?: requestStatus,
+                                transaction.dsl()
+                            )
+                        }
+                    }
                 }
-
                 request.apply {
                     this.requestStatus = requestStatus.name
                     this.resolvedDate = LocalDateTime.now()
@@ -113,14 +120,14 @@ class RequestService : BaseService() {
                 .orderBy(REQUEST.REQUEST_DATE.desc())
                 .fetch()
         val requestType = RequestValueJson.Role::class
-        val requestValuesIdsToValue = mapRequestValues(
+        val requestIdToRequestValue = mapRequestValues(
             registrationRequests.map { it.into(RequestRecord::class.java) },
             requestType
         )
 
         return mapRecordToRequestsModel(
             registrationRequests,
-            requestValuesIdsToValue,
+            requestIdToRequestValue,
             RequestValueJson.Role::class
         )
 
@@ -133,15 +140,14 @@ class RequestService : BaseService() {
     ): MutableList<Request> =
         registrationRequests.map { record ->
             record.into(RequestRecord::class.java).let {
-                val requestValueJson = decodeRequestValueJson(it.requestValue!!)
                 Request(
                     id = it.id!!.toInt(),
                     requestedByUser = userService.mapToUserView(record.into(UserRecord::class.java), emptyList()),
                     requestValue = when (type) {
-                        RequestValueJson.UserRegistration::class -> requestValuesIdsToValue[(requestValueJson as RequestValueJson.UserRegistration).schoolUserPeriodId.toBigDecimal()]!!
-                        RequestValueJson.Role::class -> requestValuesIdsToValue[(requestValueJson as RequestValueJson.Role).schoolUserRolePeriodId.toBigDecimal()]!!
+                        RequestValueJson.UserRegistration::class -> requestValuesIdsToValue[it.id!!]!!
+                        RequestValueJson.Role::class -> requestValuesIdsToValue[it.id!!]!!
                         else -> {
-                            error("Unknown Registration Type")
+                            error("Unknown Request Type")
                         }
                     },
                     requestDate = it.requestDate!!,
@@ -170,8 +176,8 @@ class RequestService : BaseService() {
         requestRecords: List<RequestRecord>,
         type: KClass<out RequestValueJson>
     ): Map<BigDecimal, RequestValue> {
-        val requestValues = requestRecords.map {
-            decodeFromString(
+        val requestIdToRequestValue = requestRecords.associate {
+            it.id!! to decodeFromString(
                 RequestValueJson.serializer(),
                 it.requestValue!!
             )
@@ -179,22 +185,31 @@ class RequestService : BaseService() {
         return when (type) {
             RequestValueJson.Role::class -> {
                 userService.findUsersByTheirSchoolRolePeriodIds(
-                    requestValues.map { (it as RequestValueJson.Role).schoolUserRolePeriodId.toBigDecimal() },
+                    requestIdToRequestValue.mapValues { (_, requestValueJson) -> (requestValueJson as RequestValueJson.Role).schoolUserRolePeriodId.toBigDecimal() to requestValueJson.status },
                     db
-                ).mapValues { (_, oneRoleUser) -> RequestValue.Role(oneRoleUser) }
+                ).mapValues { (_, oneRoleUserToRequestStatus) ->
+                    RequestValue.Role(
+                        oneRoleUserToRequestStatus.first,
+                        oneRoleUserToRequestStatus.second
+                    )
+                }
             }
 
             RequestValueJson.UserRegistration::class -> {
                 userService.findUsersByTheirSchoolUserPeriodIds(
-                    requestValues.map { (it as RequestValueJson.UserRegistration).schoolUserPeriodId.toBigDecimal() },
+                    requestIdToRequestValue.mapValues { (_, requestValueJson) -> (requestValueJson as RequestValueJson.UserRegistration).schoolUserPeriodId.toBigDecimal() to requestValueJson.status },
                     db
-                ).mapValues { (_, user) -> RequestValue.UserRegistration(user) }
+                ).mapValues { (_, requestStatusToUserPair) ->
+                    RequestValue.UserRegistration(
+                        requestStatusToUserPair.first,
+                        requestStatusToUserPair.second
+                    )
+                }
             }
 
             else -> {
                 error("Not existing ResultValueJson type")
             }
-
         }
     }
 
@@ -275,6 +290,46 @@ class RequestService : BaseService() {
                     Json.encodeToString(
                         RequestValueJson.UserRegistration(
                             schoolUserPeriodId.toInt(),
+                            newStatus
+                        )
+                    )
+                requestDate = LocalDateTime.now()
+
+            }.insert()
+        }
+    }
+
+    fun createRoleChangeStatusRequest(
+        roleId: BigDecimal,
+        newStatus: RequestStatus,
+        periodId: BigDecimal,
+        schoolId: BigDecimal,
+        loggedUserId: BigDecimal
+    ) {
+        db.transaction { transaction ->
+            val schoolUserRolePeriodId =
+                schoolRolesService.getSchoolRolePeriodRecordByRoleId(roleId, periodId, transaction.dsl())?.id!!
+
+            transaction.dsl().selectFrom(REQUEST).where(REQUEST.REQUEST_STATUS.eq(RequestStatus.PENDING.name))
+                .and(
+                    REQUEST.REQUEST_VALUE.like("%\"schoolUserRolePeriodId\":${schoolUserRolePeriodId}%")
+                        .and(REQUEST.REQUEST_VALUE.like("%\"status\":\"${newStatus}\"%"))
+                ).fetchAny()?.also {
+                    throw SMSError(
+                        "ALREADY_EXISTING",
+                        "Вече има създадена заявка за промяна на статуса на избраната роля.Проверете заявките."
+                    )
+                }
+            transaction.dsl().newRecord(REQUEST).apply {
+                id = getRequestSeqNextVal()
+                requestStatus = RequestStatus.PENDING.name
+                this.periodId = periodId
+                this.schoolId = schoolId
+                requestedByUserId = loggedUserId
+                requestValue =
+                    Json.encodeToString(
+                        RequestValueJson.Role(
+                            schoolUserRolePeriodId.toInt(),
                             newStatus
                         )
                     )

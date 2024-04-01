@@ -18,6 +18,16 @@ export const translationOfRequestStatus = {
     PENDING: "Нерешена",
     REJECTED: "Отхвърлена",
 }
+export const translationOfRequestStatusForUser = {
+    APPROVED: "АКТИВЕН",
+    PENDING: "ИЗЧАКВАЩ",
+    REJECTED: "НЕАКТИВЕН",
+}
+export const translationOfRequestStatusForRole = {
+    APPROVED: "АКТИВНА",
+    PENDING: "ИЗЧАКВАЩА",
+    REJECTED: "НЕАКТИВНА",
+}
 
 export const confirmActionPromiseDialog = (title: string, message: string) => new Promise<void>((resolve) => {
     Dialog.create({

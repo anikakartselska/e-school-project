@@ -70,7 +70,7 @@ class UserBaseService : BaseService() {
             username = userRecord.username!!,
             address = userRecord.address!!,
             roles = schoolUserRoles,
-            status = schoolUserPeriodRecord.status?.let { RequestStatus.valueOf(it) }
+            status = schoolUserPeriodRecord.status?.let { RequestStatus.valueOf(it) }!!
         )
     }
 

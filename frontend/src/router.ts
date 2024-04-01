@@ -107,6 +107,14 @@ const routes = [
                     {
                         path: 'role-requests',
                         component: RoleRequestsTab
+                    },
+                    {
+                        path: 'user-status-change-request',
+                        component: UserRequestsTab
+                    },
+                    {
+                        path: 'role-status-change-request',
+                        component: RoleRequestsTab
                     }
                 ],
             },

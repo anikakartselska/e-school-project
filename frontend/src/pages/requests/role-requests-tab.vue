@@ -1,12 +1,12 @@
 <template>
-  <div class="row">
-    <div class="col-1"></div>
+    <div class="row">
+        <div class="col-1"></div>
     <div class="col">
       <q-page class="page-content" padding>
-        <div style="margin-top: 30px;">
+          <div style="margin-top: 30px;">
           <div class="row">
             <div class="text-h4 q-mb-md">
-              Заявки за роля
+                {{ props.isStatusChange ? 'Заявки за промяна на статус на роля' : 'Заявки за роля' }}
             </div>
             <q-space/>
             <div class="q-pb-lg q-gutter-sm">
@@ -55,24 +55,34 @@
                           </q-card-actions>
                           <q-separator/>
                           <q-card-section>
-                            <div class="q-pl-md q-pb-none">
+                              <div class="q-pl-md q-pb-none">
                                 <span class="text-h5 text-negative">
                       Информация за ролята:
                       </span><br>
-                              Роля:<span class="text-primary">{{
-                                constructSchoolUserRoleMessage(request.requestValue.oneRoleUser.role)
-                              }}
+                                  Роля:<span class="text-primary">{{
+                                  constructSchoolUserRoleMessage(request.requestValue.oneRoleUser.role)
+                                  }}
                           </span>
-                              <q-separator spaced/>
-                              <span class="text-h5">
+                                  <div v-if="isStatusChange">
+                        <span class="text-negative">
+                      Нов статус:
+                      </span>
+                                      <span :class="getRequestStatusColorClass(request.requestValue.status)">{{
+                                          translationOfRequestStatusForRole[request.requestValue.status]
+                                          }}
+                                </span>
+                                      <br>
+                                  </div>
+                                  <q-separator spaced/>
+                                  <span class="text-h5">
                       Информация за потребителя:
                       </span><br>
-                              Име:<span class="text-primary">{{
-                                request.requestValue.oneRoleUser.firstName
-                              }} {{ request.requestValue.oneRoleUser.middleName }} {{
-                                request.requestValue.oneRoleUser.lastName
-                              }}</span><br>
-                              Потребителско име:<span class="text-primary">{{
+                                  Име:<span class="text-primary">{{
+                                  request.requestValue.oneRoleUser.firstName
+                                  }} {{ request.requestValue.oneRoleUser.middleName }} {{
+                                  request.requestValue.oneRoleUser.lastName
+                                  }}</span><br>
+                                  Потребителско име:<span class="text-primary">{{
                                 request.requestValue.oneRoleUser.username
                               }}</span><br>
                               Телефонен номер:<span class="text-primary">{{
@@ -127,39 +137,47 @@ import {changeRequestStatus} from "../../services/RequestService";
 import {$ref} from "vue/macros";
 import {getCurrentUser, getCurrentUserAsUserView} from "../../services/LocalStorageService";
 import {RequestStatus} from "../../model/RequestStatus";
-import {formatToBulgarian, getRequestStatusColorClass, translationOfRequestStatus} from "../../utils";
+import {
+    formatToBulgarian,
+    getRequestStatusColorClass,
+    translationOfRequestStatus,
+    translationOfRequestStatusForRole
+} from "../../utils";
 import {watch} from "vue";
 import {constructSchoolUserRoleMessage} from "../../model/SchoolUserRole";
 import {useQuasar} from "quasar";
 import UserRequestDialog from "./user-request-dialog.vue";
+import {Request, Role, UserRegistration} from "../../model/Request";
 
 const props = defineProps<{
-  userRequests: Request[],
-  roleRequests: Request[]
+    userRequests: Request[],
+    roleRequests: Request[],
+    isStatusChange?: boolean
 }>()
 
 const emits = defineEmits<{
-  (e: 'update:userRequests', value: Request[]): void
-  (e: 'update:roleRequests', value: Request[]): void
+    (e: 'update:userRequests', value: Request[]): void
+    (e: 'update:roleRequests', value: Request[]): void
 }>();
 
-let filteredRequests = $ref([...props.roleRequests])
 const quasar = useQuasar()
+let filteredRequests = $ref([...props.roleRequests].filter(request => (props.isStatusChange && (<Role>request.requestValue).status != null) || (!props.isStatusChange && (<Role>request.requestValue).status == null)))
+
 watch(props, async () => {
-  filteredRequests = [...props.roleRequests]
+    filteredRequests = [...props.roleRequests].filter(request => (props.isStatusChange && (<Role>request.requestValue).status != null) || (!props.isStatusChange && (<Role>request.requestValue).status == null))
 })
-const resolveRequest = async (request, requestStatus) => {
-  const userRequestForCurrentRole = props.userRequests.find(req => req.requestedByUser.id === request.requestedByUser.id)
-  if (userRequestForCurrentRole) {
-    await quasar.dialog({
-      component: UserRequestDialog,
-      componentProps: {
-        request: userRequestForCurrentRole
-      },
-    }).onOk(async (payload) => {
-      const userRequest = payload.item as Request
-      // @ts-ignore
-      await changeRequestStatus(userRequest.id, userRequest.requestStatus, getCurrentUserAsUserView().id).then(async e => {
+const resolveRequest = async (request: Request, requestStatus: RequestStatus) => {
+    const userRequestForCurrentRole = props.userRequests.find(req => (<UserRegistration>req.requestValue).user.id === (<Role>request.requestValue).oneRoleUser.id)
+    if (userRequestForCurrentRole) {
+        await quasar.dialog({
+            component: UserRequestDialog,
+            componentProps: {
+                request: userRequestForCurrentRole
+            },
+        }).onOk(async (payload) => {
+            const userRequest = payload.item as Request
+            // @ts-ignore
+            await changeRequestStatus(userRequest.id, userRequest.requestStatus, getCurrentUserAsUserView().id).then(async e => {
         emits("update:userRequests",
                 [...props.userRequests].map(
                         req => {
