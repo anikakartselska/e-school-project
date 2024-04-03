@@ -13,6 +13,16 @@ import java.math.BigDecimal
 @Service
 class UserSecurityService : UserBaseService() {
 
+    fun findUserByEmail(email: String) = db.selectFrom(USER).where(USER.EMAIL.eq(email))
+        .fetchAny()
+        ?.into(UserRecord::class.java)
+        ?.mapToUserSecurityModel()
+
+    fun updateUserPassword(email: String, newPassword: String) = db.selectFrom(USER).where(USER.EMAIL.eq(email))
+        .fetchAny()?.apply {
+            password = passwordEncoder.encode(newPassword)
+        }?.update()
+
     fun findUserWithAllApprovedRolesByPhoneNumber(
         phoneNumber: String
     ) = db.selectFrom(USER).where(USER.PHONE_NUMBER.eq(phoneNumber))

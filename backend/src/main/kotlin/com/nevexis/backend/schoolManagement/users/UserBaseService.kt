@@ -24,7 +24,7 @@ class UserBaseService : BaseService() {
 
     @Autowired
     @Lazy
-    private lateinit var passwordEncoder: PasswordEncoder
+    lateinit var passwordEncoder: PasswordEncoder
     fun createUser(user: User, dsl: DSLContext): BigDecimal {
         val newUserId = getUserSeqNextVal()
         dsl.newRecord(USER, user).apply {

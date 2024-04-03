@@ -12,19 +12,26 @@
               title="Въвеждане на парола и имейл"
               :done="step > 1"
       >
-        <q-form class="q-gutter-md">
-          <q-input filled v-model="username" label="Потребителско име" lazy-rules/>
-          <q-input
-                  type="password"
-                  filled
-                  v-model="password"
-                  label="Парола"
-                  lazy-rules
-          />
-        </q-form>
-        <q-stepper-navigation>
-          <q-btn @click="loginClick()" color="primary" label="Напред"/>
-        </q-stepper-navigation>
+          <q-form class="q-gutter-md">
+              <q-input v-model="username" filled label="Потребителско име" lazy-rules/>
+              <q-input
+                      v-model="password"
+                      filled
+                      label="Парола"
+                      lazy-rules
+                      type="password"
+              />
+          </q-form>
+          <br>
+          <router-link
+                  active-class="text-negative q-pt-sm"
+                  class="text-primary q-pt-sm" exact-active-class="text-negative q-pt-sm"
+                  to="/reset-password">
+              Забравена парола
+          </router-link>
+          <q-stepper-navigation>
+              <q-btn color="primary" label="Напред" @click="loginClick()"/>
+          </q-stepper-navigation>
       </q-step>
 
       <q-step

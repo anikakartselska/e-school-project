@@ -24,6 +24,7 @@ import UsersTab from "./pages/user/users-tab.vue";
 import ImportUsersTab from "./pages/user/import-users-tab.vue";
 import SchoolClassesPage from "./pages/school-class/school-classes-page.vue";
 import SchoolClassPage from "./pages/school-class/school-class-page.vue";
+import ResetPasswordPage from "./pages/reset-password-page.vue";
 
 const routes = [
     {
@@ -31,7 +32,10 @@ const routes = [
         children: [
             {path: '/login', component: LoginTab, name: "login"},
             {path: '/sign-in', component: SignInTab, name: "sign-in"},
-        ]
+        ],
+    },
+    {
+        path: '/reset-password', component: ResetPasswordPage
     },
     {
         path: '/',
