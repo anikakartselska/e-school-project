@@ -266,3 +266,23 @@ export const createRoleChangeStatusRequest = async (roleId,
             },
             headers: {'Content-Type': 'application/json'}
         })
+
+export const resetPasswordRequest = async (email): Promise<AxiosResponse<boolean>> =>
+        await auth.post<boolean>(`/reset-password-request`, null, {
+            params: {
+                email: email
+            },
+            headers: {'Content-Type': 'application/json'},
+            baseURL: "/auth",
+        })
+export const updatePassword = async (newPassword,
+                                     passwordResetToken): Promise<any> =>
+        await auth.post<any>(`/update-password`, null, {
+            params: {
+                newPassword: newPassword,
+                passwordResetToken: passwordResetToken
+            },
+            headers: {'Content-Type': 'application/json'},
+            baseURL: "/auth",
+        })
+

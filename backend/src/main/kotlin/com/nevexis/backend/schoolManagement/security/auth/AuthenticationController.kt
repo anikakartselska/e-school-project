@@ -9,6 +9,7 @@ import com.nevexis.backend.schoolManagement.schoolClass.SchoolClassService
 import com.nevexis.backend.schoolManagement.school_period.SchoolPeriod
 import com.nevexis.backend.schoolManagement.school_period.SchoolPeriodService
 import com.nevexis.backend.schoolManagement.security.JwtService
+import com.nevexis.backend.schoolManagement.security.reset_password.PasswordResetService
 import com.nevexis.backend.schoolManagement.users.User
 import com.nevexis.backend.schoolManagement.users.roles.SchoolRolesService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
@@ -152,6 +153,21 @@ class AuthenticationController {
     fun createRequests(
         @RequestBody user: User,
     ) = requestService.createRequests(listOf(user))
+
+    @Autowired
+    private lateinit var passwordResetService: PasswordResetService
+
+    @PostMapping("/reset-password-request")
+    suspend fun resetPasswordRequest(
+        @RequestParam email: String
+    ): Boolean = passwordResetService.resetPassword(email)
+
+    @PostMapping("/update-password")
+    suspend fun updatePassword(
+        @RequestParam newPassword: String,
+        @RequestParam passwordResetToken: String
+    ) = userSecurityService.updateUserPassword(newPassword, passwordResetToken)
+
 
     private fun generateCookie(token: String, cookieName: String) = ResponseCookie.from(cookieName, token)
         .path("/")

@@ -1,5 +1,6 @@
 package com.nevexis.backend.schoolManagement.users.user_security
 
+import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.requests.RequestStatus
 import com.nevexis.backend.schoolManagement.security.SMSUserDetails
 import com.nevexis.backend.schoolManagement.users.OneRoleUser
@@ -9,6 +10,7 @@ import com.nevexis.`demo-project`.jooq.tables.records.UserRecord
 import com.nevexis.`demo-project`.jooq.tables.references.*
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 @Service
 class UserSecurityService : UserBaseService() {
@@ -18,10 +20,18 @@ class UserSecurityService : UserBaseService() {
         ?.into(UserRecord::class.java)
         ?.mapToUserSecurityModel()
 
-    fun updateUserPassword(email: String, newPassword: String) = db.selectFrom(USER).where(USER.EMAIL.eq(email))
-        .fetchAny()?.apply {
-            password = passwordEncoder.encode(newPassword)
-        }?.update()
+    fun updateUserPassword(newPassword: String, passwordResetToken: String) {
+        val passwordResetTokenRecord =
+            db.selectFrom(PASSWORD_RESET_TOKEN).where(PASSWORD_RESET_TOKEN.TOKEN.eq(passwordResetToken))
+                .fetchAny()
+        if (passwordResetTokenRecord?.expiryDate?.isBefore(LocalDateTime.now()) == true) {
+            throw SMSError("RESET_PASSWORD_TOKEN_ERROR", "Reset password token expired")
+        }
+        db.selectFrom(USER).where(USER.ID.eq(passwordResetTokenRecord?.userId!!))
+            .fetchAny()?.apply {
+                password = passwordEncoder.encode(newPassword)
+            }?.update()
+    }
 
     fun findUserWithAllApprovedRolesByPhoneNumber(
         phoneNumber: String

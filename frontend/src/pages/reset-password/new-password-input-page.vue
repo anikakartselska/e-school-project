@@ -20,12 +20,16 @@
             $q.platform.is.mobile ? { width: '80%' } : { width: '30%' }"
         >
           <div class="col-12">
-            <q-form class="q-gutter-md">
+            <q-form class="q-gutter-md" @submit="updatePasswordRequest()">
               <div class="q-ma-xl">
-                <span class="text-primary text-h6">Въведете имейл, на който да изпратим заявката за промяна на паролата</span>
-                <q-input v-model="email" filled label="Имайл" lazy-rules/>
-                <q-btn :disable="!email" class="q-mt-md q-mb-md float-right" color="primary" label="Изпрати"
-                       @click="resetPassword()"/>
+                <span class="text-primary text-h6">Въведете нова парола:</span>
+                <q-input v-model="newPassword" :rules="[val=>val !== null && val !== '' || 'Задължително поле']" class="q-pb-lg" filled label="Нова парола" lazy-rules
+                         type="password"/>
+                <q-input v-model="confirmNewPassword" :rules="[val=> val===newPassword || 'Паролите не съвпадат',val=>val !== null && val !== '' || 'Задължително поле']" filled label="Потвърди нова парола"
+                         type="password"/>
+                <q-btn class="q-mt-md q-mb-md float-right"
+                       color="primary" label="Промени парола"
+                       type="Submit"/>
               </div>
             </q-form>
           </div>
@@ -37,12 +41,21 @@
 
 <script lang="ts" setup>
 
-
 import {$ref} from "vue/macros";
+import {updatePassword} from "../../services/RequestService";
+import {useRouter} from "vue-router";
 
-const email = $ref('')
-const resetPassword = () => {
-
+const props = defineProps<{
+  token: string
+}>()
+const newPassword = $ref('')
+const confirmNewPassword = $ref('')
+const router = useRouter()
+const updatePasswordRequest = async () => {
+  await updatePassword(newPassword,
+          props.token).then(async e =>
+          await router.push("/login")
+  )
 }
 </script>
 

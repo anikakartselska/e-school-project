@@ -8,6 +8,5 @@ import org.springframework.boot.context.properties.ConstructorBinding
 data class MailServerConfig(
     val host: String,
     val port: Int,
-    val sender: String,
-
-    )
+    val sender: String
+)

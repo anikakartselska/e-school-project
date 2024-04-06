@@ -24,7 +24,8 @@ import UsersTab from "./pages/user/users-tab.vue";
 import ImportUsersTab from "./pages/user/import-users-tab.vue";
 import SchoolClassesPage from "./pages/school-class/school-classes-page.vue";
 import SchoolClassPage from "./pages/school-class/school-class-page.vue";
-import ResetPasswordPage from "./pages/reset-password-page.vue";
+import ResetPasswordPage from "./pages/reset-password/reset-password-page.vue";
+import NewPasswordInputPage from "./pages/reset-password/new-password-input-page.vue";
 
 const routes = [
     {
@@ -36,6 +37,9 @@ const routes = [
     },
     {
         path: '/reset-password', component: ResetPasswordPage
+    },
+    {
+        path: '/new-password/:token', component: NewPasswordInputPage, props: true,
     },
     {
         path: '/',
