@@ -21,7 +21,6 @@ class ImportController {
         @RequestParam schoolRole: SchoolRole,
         @RequestParam schoolClassId: BigDecimal? = null,
         @RequestParam userId: BigDecimal
-    ) {
-        importService.createRequestsFromUsersExcel(file, periodId, schoolId, schoolRole, schoolClassId, userId)
-    }
+    ) = importService.createRequestsFromUsersExcel(file, periodId, schoolId, schoolRole, schoolClassId, userId)
+
 }

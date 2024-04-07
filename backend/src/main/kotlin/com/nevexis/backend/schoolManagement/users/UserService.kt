@@ -41,14 +41,14 @@ class UserService : UserBaseService() {
         id: BigDecimal,
         schoolId: BigDecimal,
         periodId: BigDecimal,
-        username: String
+        principalName: String
     ) = recordSelectOnConditionStep(db).where(
         SCHOOL_USER.SCHOOL_ID.eq(schoolId).and(
             SCHOOL_USER_PERIOD.PERIOD_ID.eq(periodId)
         ).and(USER.ID.eq(id))
     ).fetchAny()?.let { record ->
-        val userUsername = record.get(USER.USERNAME)
-        val allUserRoles = if (userUsername?.equals(username) == true) {
+        val userId = record.get(USER.ID)
+        val allUserRoles = if (userId?.equals(principalName.toBigDecimal()) == true) {
             schoolUserRolesService.getAllUserRoles(id)
         } else {
             schoolUserRolesService.getAllUserRolesForPeriodAndSchool(id, schoolId, periodId)
@@ -69,6 +69,21 @@ class UserService : UserBaseService() {
         }
     }
 
+    fun getAllTeachersWhichDoNotHaveSchoolClassForSchoolAndPeriod(schoolId: BigDecimal, periodId: BigDecimal) =
+        recordSelectOnConditionStepJoinedWithUserRoles().where(SCHOOL_ROLE_PERIOD.PERIOD_ID.eq(periodId))
+            .and(SCHOOL_ROLE_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
+            .and(SCHOOL_USER_PERIOD.PERIOD_ID.eq(periodId))
+            .and(SCHOOL_USER_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
+            .and(SCHOOL_USER.SCHOOL_ID.eq(schoolId))
+            .and(SCHOOL_USER_ROLE.SCHOOL_ID.eq(schoolId))
+            .and(SCHOOL_USER_ROLE.ROLE.eq(SchoolRole.TEACHER.name))
+            .andNot(
+                SCHOOL_USER_ROLE.ID.`in`(
+                    db.select(SCHOOL_CLASS.MAIN_TEACHER_ROLE_ID).from(SCHOOL_CLASS)
+                        .where(SCHOOL_CLASS.SCHOOL_ID.eq(schoolId))
+                        .and(SCHOOL_CLASS.SCHOOL_PERIOD_ID.eq(periodId))
+                )
+            ).fetch().distinctBy { it.get(USER.ID) }.map { mapToUserView(it, emptyList()) }
 
     fun getAllStudentsInSchoolClass(
         schoolClassId: BigDecimal,

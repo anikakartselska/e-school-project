@@ -33,6 +33,17 @@ class UserSecurityService : UserBaseService() {
             }?.update()
     }
 
+    fun changeUserPassword(userId: BigDecimal, newPassword: String, oldPassword: String) {
+        val userRecord = db.selectFrom(USER).where(USER.ID.eq(userId))
+            .fetchAny() ?: throw SMSError("NOT_FOUND", "User with id $userId was not found")
+        if (!passwordEncoder.matches(oldPassword, userRecord.password)) {
+            throw SMSError("WRONG_PASSWORD", "Your old password is not correct!")
+        }
+        userRecord.apply {
+            password = passwordEncoder.encode(newPassword)
+        }.update()
+    }
+
     fun findUserWithAllApprovedRolesByPhoneNumber(
         phoneNumber: String
     ) = db.selectFrom(USER).where(USER.PHONE_NUMBER.eq(phoneNumber))
@@ -63,6 +74,18 @@ class UserSecurityService : UserBaseService() {
         roleId: BigDecimal? = null
     ): SMSUserDetails? =
         userRecordSelectOnConditionStep().where(USER.USERNAME.eq(username))
+            .and(SCHOOL_USER_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
+            .fetchAny()
+            ?.into(UserRecord::class.java)
+            ?.mapToUserSecurityModel(roleId, periodId)
+            ?.let { SMSUserDetails(it) }
+
+    fun findActiveUserById(
+        id: BigDecimal,
+        periodId: BigDecimal? = null,
+        roleId: BigDecimal? = null
+    ): SMSUserDetails? =
+        userRecordSelectOnConditionStep().where(USER.ID.eq(id))
             .and(SCHOOL_USER_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
             .fetchAny()
             ?.into(UserRecord::class.java)

@@ -31,18 +31,19 @@
           </q-td>
         </template>
         <template v-slot:top-right="props">
-          <q-btn class="q-mr-xs" color="primary" label="Добави нов" outline/>
-
-          <q-input v-model="filter" debounce="300" dense outlined placeholder="Търсене">
-            <template v-slot:append>
-              <q-icon name="search"/>
-            </template>
-          </q-input>
-          <q-btn
-                  color="primary"
-                  icon-right="archive"
-                  label="Export to csv"
-                  no-caps
+            <q-btn class="q-ml-md" color="primary" icon="person_add" outline round @click="addNewSchoolClass()">
+                <q-tooltip>Добави нов</q-tooltip>
+            </q-btn>
+            <q-input v-model="filter" debounce="300" dense outlined placeholder="Търсене">
+                <template v-slot:append>
+                    <q-icon name="search"/>
+                </template>
+            </q-input>
+            <q-btn
+                    color="primary"
+                    icon-right="archive"
+                    label="Export to csv"
+                    no-caps
           />
         </template>
       </q-table>
@@ -52,33 +53,32 @@
 
 <script lang="ts" setup>
 import {$ref} from "vue/macros";
-import {UserView} from "../../model/User";
 import {useRouter} from "vue-router";
-import {getSchoolClassesFromSchool} from "../../services/RequestService";
+import {getAllTeachersThatDoNotHaveSchoolClass, getSchoolClassesFromSchool} from "../../services/RequestService";
 import {SchoolClass} from "../../model/SchoolClass";
 import {periodId} from "../../model/constants";
 
 const props = defineProps<{
-  periodId: number,
-  schoolId: number
+    periodId: number,
+    schoolId: number
 }>()
 
 const router = useRouter()
 const schoolClasses = $ref(await getSchoolClassesFromSchool(props.schoolId, props.periodId))
-
+const teachersWithoutClasses = $ref(await getAllTeachersThatDoNotHaveSchoolClass(props.schoolId, props.periodId))
+console.log(teachersWithoutClasses)
 const openSchoolClass = (schoolClass: SchoolClass) => {
-  router.push({
-    name: "school-class",
-    params: {
-      periodId: props.periodId,
-      schoolId: props.schoolId,
-      schoolClassId: schoolClass.id
-    }
-  })
+    router.push({
+        name: "school-class",
+        params: {
+            periodId: props.periodId,
+            schoolId: props.schoolId,
+            schoolClassId: schoolClass.id
+        }
+    })
 }
 
-const openUser = (user: UserView) => {
-  //TODO()
+const addNewSchoolClass = () => {
 }
 
 const filter = $ref('')

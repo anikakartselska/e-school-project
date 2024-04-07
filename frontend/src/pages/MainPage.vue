@@ -12,33 +12,39 @@
             :class="$q.dark.isActive ? 'header_dark' : 'header_normal'"
     >
       <q-toolbar>
-          <q-btn
-                  class="q-mr-sm"
-                  dense
-                  flat
-                  icon="menu"
-                  round
-                  @click="left = !left"
-          />
-          <q-toolbar-title>Електронен дневник</q-toolbar-title>
-          <q-btn :label="`${getCurrentUser().role.period.startYear.substring(0,4)}/${getCurrentUser().role.period.endYear.substring(0,4)}`"
-                 dense flat
-                 icon="switch_account">
-              <q-menu>
-                  <div class="row no-wrap q-pa-md">
-                      <div class="column">
-                          <div class="text-h6 q-mb-md">Смяна на роля</div>
-                          <q-select v-model="selectedPeriod"
-                                    :option-label="(option:SchoolPeriod) => `${option.startYear.substring(0,4)}/${option.endYear.substring(0,4)}`"
-                                    :options="schoolPeriods"
-                                    label="Учебна година"/>
-                          <q-select v-model="selectedRole" :disable="selectedPeriod==null"
+        <q-btn
+                class="q-mr-sm"
+                dense
+                flat
+                icon="menu"
+                round
+                @click="left = !left"
+        />
+        <q-toolbar-title>Електронен дневник</q-toolbar-title>
+        <q-btn :label="`${getCurrentUser().role.period.startYear.substring(0,4)}/${getCurrentUser().role.period.endYear.substring(0,4)}`"
+               dense flat
+               icon="switch_account">
+          <q-menu>
+            <div class="row no-wrap q-pa-md">
+              <div class="column">
+                <div class="text-h6 q-mb-md">Смяна на роля</div>
+                <q-select v-model="selectedPeriod"
+                          :option-label="(option:SchoolPeriod) => `${option.startYear.substring(0,4)}/${option.endYear.substring(0,4)}`"
+                          :options="schoolPeriods"
+                          label="Учебна година"/>
+                <q-select v-model="selectedRole" :disable="selectedPeriod==null"
                           :option-label="option => constructSchoolUserRoleMessage(option)"
                           :options="userRolesFilteredBySelectedPeriod"
                           label="Роля"/>
                 <q-item>
                   <q-item-section>
                     <q-btn color="primary" dense flat label="Промени роля" @click="changeUserRole()"/>
+                  </q-item-section>
+                </q-item>
+                <q-separator/>
+                <q-item>
+                  <q-item-section>
+                    <q-btn color="primary" dense flat label="Промени парола" @click="resetUserPassword()"/>
                   </q-item-section>
                 </q-item>
               </div>
@@ -74,18 +80,18 @@
               class="full-height drawer_normal"
       >
         <div style="height: calc(100% - 117px);padding:10px;">
-            <q-toolbar>
-                <q-avatar v-if="currentUserFile!=null"
-                          text-color="white">
-                    <q-img
-                            :src="imageUrl"
-                    ></q-img>
-                </q-avatar>
-                <q-avatar v-else color="cyan-2" text-color="white">
-                    {{ getCurrentUser().firstName[0] }}{{ getCurrentUser().lastName[0] }}
-                </q-avatar>
-                <q-toolbar-title>{{ currentUser.firstName }} {{ currentUser.lastName }}</q-toolbar-title>
-            </q-toolbar>
+          <q-toolbar>
+            <q-avatar v-if="currentUserFile!=null"
+                      text-color="white">
+              <q-img
+                      :src="imageUrl"
+              ></q-img>
+            </q-avatar>
+            <q-avatar v-else color="cyan-2" text-color="white">
+              {{ getCurrentUser().firstName[0] }}{{ getCurrentUser().lastName[0] }}
+            </q-avatar>
+            <q-toolbar-title>{{ currentUser.firstName }} {{ currentUser.lastName }}</q-toolbar-title>
+          </q-toolbar>
           <hr/>
           <q-scroll-area style="height:100%;">
             <q-list v-for="page in pages" padding>
@@ -147,13 +153,16 @@ import {SchoolPeriod} from "../model/SchoolPeriod";
 import {confirmActionPromiseDialogWithCancelButton} from "../utils";
 import {AuthenticationResponse, Success} from "../model/AuthenticationResponse";
 import {periodId, schoolId} from "../model/constants";
+import {useQuasar} from "quasar";
+import PasswordChangeDialog from "./reset-password/password-change-dialog.vue";
 
 const router = useRouter();
+const quasar = useQuasar()
 const onLogoutClick = async () => {
-    await logout().then(async r => {
-        clearUserStorage()
-        await router.push('/login')
-    })
+  await logout().then(async r => {
+    clearUserStorage()
+    await router.push('/login')
+  })
 }
 
 let currentUser = getCurrentUser();
@@ -162,18 +171,18 @@ let imageUrl = $ref<string | null>(null)
 let userRoles = $ref(<SchoolUserRole[]>[]);
 let schoolPeriods = $ref(<SchoolPeriod[]>[]);
 onBeforeMount(async () => {
-    currentUser = getCurrentUser()
-    await load()
-    imageUrl = currentUserFile ? window.URL.createObjectURL(currentUserFile) : ''
-    console.log(currentUserFile)
+  currentUser = getCurrentUser()
+  await load()
+  imageUrl = currentUserFile ? window.URL.createObjectURL(currentUserFile) : ''
+  console.log(currentUserFile)
 
 })
 
 const load = async () => {
   userRoles = await getAllUserRoles(currentUser.id)
   schoolPeriods = await getAllSchoolPeriods()
-    userRolesFilteredBySelectedPeriod = userRoles.filter(role => role.period.id == selectedPeriod?.id)
-    currentUserFile = await getUserProfilePicture(currentUser.id)
+  userRolesFilteredBySelectedPeriod = userRoles.filter(role => role.period.id == selectedPeriod?.id)
+  currentUserFile = await getUserProfilePicture(currentUser.id)
 }
 
 let userRolesFilteredBySelectedPeriod = $ref<SchoolUserRole[]>([])
@@ -192,6 +201,13 @@ const changeUserRole = async () => {
             await router.push({path: '/'})
           }
   )
+}
+const resetUserPassword = () => {
+  quasar.dialog({
+    component: PasswordChangeDialog,
+  }).onOk(async (payload) => {
+
+  })
 }
 const left = $ref(true)
 const pages = [{to: `/users/${periodId.value}/${schoolId.value}/all`, label: "Потребители", show: true},

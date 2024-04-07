@@ -1,19 +1,21 @@
 <template>
     <div class="row">
         <div class="col-1"></div>
-    <div class="col">
-      <q-page class="page-content" padding>
-          <div style="margin-top: 30px;">
-          <div class="row">
-            <div class="text-h4 q-mb-md">
-                {{ props.isStatusChange ? 'Заявки за промяна на статус на потребител' : 'Заявки за регистрация' }}
-            </div>
-            <q-space/>
-            <div class="q-pb-lg q-gutter-sm">
-              <slot name="toggleSlot"></slot>
-            </div>
-          </div>
-          <q-separator/>
+        <div class="col">
+            <q-page class="page-content" padding>
+                <div style="margin-top: 30px;">
+                    <div class="row">
+                        <div class="text-h4 q-mb-md">
+                            {{
+                            props.isStatusChange ? 'Заявки за промяна на статус на потребител' : 'Заявки за регистрация'
+                            }}
+                        </div>
+                        <q-space/>
+                        <div class="q-pb-lg q-gutter-sm">
+                            <slot name="toggleSlot"></slot>
+                        </div>
+                    </div>
+                    <q-separator/>
           <div class="row">
             <div class="col">
               <div class="q-pa-md q-gutter-md">
@@ -24,33 +26,33 @@
                            :key="request" class="col-6 q-pa-md">
                         <q-card>
                           <q-card-actions>
-                            <div class="row">
-                              <div :class="`text-h5 q-pl-lg ${getRequestStatusColorClass(request.requestStatus)}`">
-                                {{ translationOfRequestStatus[request.requestStatus] }}
-                              </div>
-                                <div class="absolute-top-right q-pt-sm q-pr-sm">
-                                    <q-btn
-                                            color="positive"
-                                            flat
-                                            label="Одобри"
-                                            @click="resolveRequest(request,RequestStatus.APPROVED)"
-                                    />
-                                    <q-tooltip v-if="getCurrentUser().id === request.requestedByUser.id">
-                                        Не може да одобрите ваша заявка
-                                    </q-tooltip>
-                                    <q-tooltip v-else-if="request.requestStatus !== RequestStatus.PENDING">
-                                        Заявката вече е {{ translationOfRequestStatus[request.requestStatus] }}
-                                    </q-tooltip>
+                              <div class="row">
+                                  <div :class="`text-h5 q-pl-lg ${getRequestStatusColorClass(request.requestStatus)}`">
+                                      {{ translationOfRequestStatus[request.requestStatus] }}
+                                  </div>
+                                  <div class="absolute-top-right q-pt-sm q-pr-sm">
+                                      <q-btn
+                                              color="positive"
+                                              flat
+                                              label="Одобри"
+                                              @click="resolveRequest(request,RequestStatus.APPROVED)"
+                                      />
+                                      <q-tooltip v-if="getCurrentUser().id === request.requestedByUser.id">
+                                          Не може да одобрите ваша заявка
+                                      </q-tooltip>
+                                      <q-tooltip v-else-if="request.requestStatus !== RequestStatus.PENDING">
+                                          Заявката вече е {{ translationOfRequestStatus[request.requestStatus] }}
+                                      </q-tooltip>
 
-                                    <q-btn :disable="request.requestStatus !== RequestStatus.PENDING"
-                                           color="negative"
-                                       flat
-                                       label="Отхвърли"
-                                       @click="resolveRequest(request,RequestStatus.REJECTED)"/>
-                                <q-tooltip v-if="request.requestStatus !== RequestStatus.PENDING">
-                                  Заявката вече е {{ translationOfRequestStatus[request.requestStatus] }}
-                                </q-tooltip>
-                              </div>
+                                      <q-btn :disable="request.requestStatus !== RequestStatus.PENDING"
+                                             color="negative"
+                                             flat
+                                             label="Отхвърли"
+                                             @click="resolveRequest(request,RequestStatus.REJECTED)"/>
+                                      <q-tooltip v-if="request.requestStatus !== RequestStatus.PENDING">
+                                          Заявката вече е {{ translationOfRequestStatus[request.requestStatus] }}
+                                      </q-tooltip>
+                                  </div>
                             </div>
                           </q-card-actions>
                           <q-separator/>
@@ -69,26 +71,29 @@
                                 </span>
                                       <br>
                                   </div>
-                                  Име:<span class="text-primary">{{
-                                  request.requestValue.user.firstName
-                                  }} {{ request.requestValue.user.middleName }} {{
-                                  request.requestValue.user.lastName
-                                  }}</span><br>
-                                  Потребителско име:<span class="text-primary">{{
-                                  request.requestValue.user.username
-                                  }}</span><br>
+                                  Име:
+                                  <router-link :to="`/user/${request.requestValue.user.id}/${periodId}/${schoolId}`"
+                                               active-class="text-negative" class="text-primary"
+                                               exact-active-class="text-negative">
+                                      {{
+                                      request.requestValue.user.firstName
+                                      }} {{ request.requestValue.user.middleName }} {{
+                                      request.requestValue.user.lastName
+                                      }}
+                                  </router-link>
+                                  <br>
                                   ЕГН:<span class="text-primary">{{
                                   request.requestValue.user.personalNumber
-                              }}</span><br>
-                              Телефонен номер:<span class="text-primary">{{
-                                request.requestValue.user.phoneNumber
-                              }}</span><br>
-                              Пол:<span class="text-primary">{{
-                                translationOfGender[request.requestValue.user.gender]
-                              }}</span><br>
-                              Адрес:<span class="text-primary">{{ request.requestValue.user.address }}</span>
-                              <q-separator spaced/>
-                              <span class="text-h5">
+                                  }}</span><br>
+                                  Телефонен номер:<span class="text-primary">{{
+                                  request.requestValue.user.phoneNumber
+                                  }}</span><br>
+                                  Пол:<span class="text-primary">{{
+                                  translationOfGender[request.requestValue.user.gender]
+                                  }}</span><br>
+                                  Адрес:<span class="text-primary">{{ request.requestValue.user.address }}</span>
+                                  <q-separator spaced/>
+                                  <span class="text-h5">
                       Информация за заявката:
                       </span><br>
                               <span class="text-h6">Създадена от:</span><br>
@@ -147,6 +152,8 @@ import {watch} from "vue";
 import {useQuasar} from "quasar";
 import RoleRequestsDialog from "./role-requests-dialog.vue";
 import {Request, Role, UserRegistration} from "../../model/Request";
+import {useRouter} from "vue-router";
+import {periodId, schoolId} from "../../model/constants";
 
 
 const props = defineProps<{
@@ -156,8 +163,8 @@ const props = defineProps<{
 }>()
 
 const emits = defineEmits<{
-  (e: 'update:userRequests', value: Request[]): void
-  (e: 'update:roleRequests', value: Request[]): void
+    (e: 'update:userRequests', value: Request[]): void
+    (e: 'update:roleRequests', value: Request[]): void
 }>();
 
 let filteredRequests = $ref([...props.userRequests].filter(request => (props.isStatusChange && (<UserRegistration>request.requestValue).status != null) || (!props.isStatusChange && (<UserRegistration>request.requestValue).status == null)))
@@ -166,6 +173,15 @@ watch(props, async () => {
     filteredRequests = [...props.userRequests].filter(request => (props.isStatusChange && (<UserRegistration>request.requestValue).status != null) || (!props.isStatusChange && (<UserRegistration>request.requestValue).status == null))
 })
 const quasar = useQuasar()
+const router = useRouter()
+const openUser = (userId: number) => {
+    router.push({
+        name: "user",
+        params: {
+            id: userId
+        }
+    })
+}
 const resolveRequest = async (request: Request, requestStatus: RequestStatus) => {
     if (requestStatus == RequestStatus.REJECTED) {
         const userRoleRequests = props.roleRequests.filter(req => (req.requestValue as Role).oneRoleUser.id === (request.requestValue as UserRegistration).user.id)
@@ -181,16 +197,16 @@ const resolveRequest = async (request: Request, requestStatus: RequestStatus) =>
                 await changeRequestStatus(userRoleRequests.map(it => it.id), requestStatus, getCurrentUserAsUserView().id).then(e => {
                     const updatedRoleRequests = [...props.roleRequests].map(
                             req => {
-                            const userRoleRequest = userRoleRequests.find(it => it.id === req.id)
-                            if (userRoleRequest) {
-                              return {
-                                ...userRoleRequest,
-                                requestStatus: RequestStatus.REJECTED,
-                                resolvedByUser: getCurrentUserAsUserView(),
-                                resolvedDate: new Date()
-                              }
-                            } else {
-                              return req
+                                const userRoleRequest = userRoleRequests.find(it => it.id === req.id)
+                                if (userRoleRequest) {
+                                    return {
+                                        ...userRoleRequest,
+                                        requestStatus: RequestStatus.REJECTED,
+                                        resolvedByUser: getCurrentUserAsUserView(),
+                                        resolvedDate: new Date()
+                                    }
+                                } else {
+                                    return req
                             }
                           }
                   )

@@ -118,6 +118,19 @@ class UserBaseService : BaseService() {
         )
     }
 
+    fun mapUserToUserView(user: User): UserView {
+        return UserView(
+            id = user.id!!.toInt(),
+            email = user.email,
+            firstName = user.firstName,
+            middleName = user.middleName,
+            lastName = user.lastName,
+            username = user.username,
+            roles = user.roles?.map { it.role } ?: emptyList(),
+            status = user.status
+        )
+    }
+
     fun mapUserRecordToOneRoleModel(userRecord: UserRecord, schoolUserRole: SchoolUserRole): OneRoleUser {
         return OneRoleUser(
             id = userRecord.id!!.toInt(),

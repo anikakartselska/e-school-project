@@ -1,19 +1,19 @@
 <template>
     <div class="row">
         <div class="col-1"></div>
-    <div class="col">
-      <q-page class="page-content" padding>
-          <div style="margin-top: 30px;">
-          <div class="row">
-            <div class="text-h4 q-mb-md">
-                {{ props.isStatusChange ? 'Заявки за промяна на статус на роля' : 'Заявки за роля' }}
-            </div>
-            <q-space/>
-            <div class="q-pb-lg q-gutter-sm">
-              <slot name="toggleSlot"></slot>
-            </div>
-          </div>
-          <q-separator/>
+        <div class="col">
+            <q-page class="page-content" padding>
+                <div style="margin-top: 30px;">
+                    <div class="row">
+                        <div class="text-h4 q-mb-md">
+                            {{ props.isStatusChange ? 'Заявки за промяна на статус на роля' : 'Заявки за роля' }}
+                        </div>
+                        <q-space/>
+                        <div class="q-pb-lg q-gutter-sm">
+                            <slot name="toggleSlot"></slot>
+                        </div>
+                    </div>
+                    <q-separator/>
           <div class="row">
             <div class="col">
               <div class="q-pa-md q-gutter-md">
@@ -77,22 +77,29 @@
                                   <span class="text-h5">
                       Информация за потребителя:
                       </span><br>
-                                  Име:<span class="text-primary">{{
-                                  request.requestValue.oneRoleUser.firstName
-                                  }} {{ request.requestValue.oneRoleUser.middleName }} {{
-                                  request.requestValue.oneRoleUser.lastName
-                                  }}</span><br>
+                                  Име:
+                                  <router-link
+                                          :to="`/user/${request.requestValue.oneRoleUser.id}/${periodId}/${schoolId}`"
+                                          active-class="text-negative" class="text-primary"
+                                          exact-active-class="text-negative">
+                                      {{
+                                      request.requestValue.oneRoleUser.firstName
+                                      }} {{ request.requestValue.oneRoleUser.middleName }} {{
+                                      request.requestValue.oneRoleUser.lastName
+                                      }}
+                                  </router-link>
+                                  <br>
                                   Потребителско име:<span class="text-primary">{{
-                                request.requestValue.oneRoleUser.username
-                              }}</span><br>
-                              Телефонен номер:<span class="text-primary">{{
-                                request.requestValue.oneRoleUser.phoneNumber
-                              }}</span><br>
-                              <q-separator/>
-                              <span class="text-h5">
+                                  request.requestValue.oneRoleUser.username
+                                  }}</span><br>
+                                  Телефонен номер:<span class="text-primary">{{
+                                  request.requestValue.oneRoleUser.phoneNumber
+                                  }}</span><br>
+                                  <q-separator/>
+                                  <span class="text-h5">
                       Информация за заявката:
                       </span><br>
-                              <span class="text-h6">Създадена от:</span><br>
+                                  <span class="text-h6">Създадена от:</span><br>
                               Име:<span class="text-primary">{{ request.requestedByUser.firstName }} {{
                                 request.requestedByUser.lastName
                               }}</span><br>
@@ -148,6 +155,7 @@ import {constructSchoolUserRoleMessage} from "../../model/SchoolUserRole";
 import {useQuasar} from "quasar";
 import UserRequestDialog from "./user-request-dialog.vue";
 import {Request, Role, UserRegistration} from "../../model/Request";
+import {periodId, schoolId} from "../../model/constants";
 
 const props = defineProps<{
     userRequests: Request[],
@@ -178,16 +186,16 @@ const resolveRequest = async (request: Request, requestStatus: RequestStatus) =>
             const userRequest = payload.item as Request
             // @ts-ignore
             await changeRequestStatus(userRequest.id, userRequest.requestStatus, getCurrentUserAsUserView().id).then(async e => {
-        emits("update:userRequests",
-                [...props.userRequests].map(
-                        req => {
-                          if (req.id == userRequest.id) {
-                            return {
-                              ...userRequest,
-                              requestStatus: userRequest.requestStatus,
-                              resolvedByUser: getCurrentUserAsUserView(),
-                              resolvedDate: new Date()
-                            }
+                emits("update:userRequests",
+                        [...props.userRequests].map(
+                                req => {
+                                    if (req.id == userRequest.id) {
+                                        return {
+                                            ...userRequest,
+                                            requestStatus: userRequest.requestStatus,
+                                            resolvedByUser: getCurrentUserAsUserView(),
+                                            resolvedDate: new Date()
+                                        }
                           } else {
                             return req
                           }

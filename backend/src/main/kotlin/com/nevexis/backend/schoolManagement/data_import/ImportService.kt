@@ -7,10 +7,7 @@ import com.nevexis.backend.schoolManagement.requests.RequestStatus
 import com.nevexis.backend.schoolManagement.school.SchoolService
 import com.nevexis.backend.schoolManagement.schoolClass.SchoolClassService
 import com.nevexis.backend.schoolManagement.school_period.SchoolPeriodService
-import com.nevexis.backend.schoolManagement.users.DetailsForUser
-import com.nevexis.backend.schoolManagement.users.SchoolRole
-import com.nevexis.backend.schoolManagement.users.User
-import com.nevexis.backend.schoolManagement.users.getTranslationFromBulgarianToEnglish
+import com.nevexis.backend.schoolManagement.users.*
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
 import com.nevexis.backend.schoolManagement.users.user_security.UserSecurityService
 import org.apache.poi.ss.usermodel.DataFormatter
@@ -46,7 +43,7 @@ class ImportService : BaseService() {
         schoolRole: SchoolRole,
         schoolClassId: BigDecimal? = null,
         userId: BigDecimal
-    ) = db.transaction { transaction ->
+    ): List<UserView> = db.transactionResult { transaction ->
         mapExcelToListOfUsers(
             byteArray,
             periodId,
@@ -54,9 +51,9 @@ class ImportService : BaseService() {
             schoolRole,
             schoolClassId,
             transaction.dsl()
-        ).let { users ->
+        ).also { users ->
             requestService.createRequests(users, userId, transaction.dsl())
-        }
+        }.map { userSecurityService.mapUserToUserView(it) }
     }
 
     private fun mapExcelToListOfUsers(

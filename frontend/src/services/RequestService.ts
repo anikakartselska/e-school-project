@@ -188,10 +188,10 @@ export const getSchoolClassById = async (schoolClassId, periodId): Promise<Schoo
 export const uploadUsersExcelFile = async (file, periodId,
                                            schoolId,
                                            schoolRole,
-                                           userId, schoolClassId: number | null = null) => {
+                                           userId, schoolClassId: number | null = null): Promise<AxiosResponse<UserView[]>> => {
     const bodyFormData = new FormData()
     bodyFormData.append('file', file)
-    return await api.post(`/import-user-excel`, bodyFormData, {
+    return await api.post<UserView[]>(`/import-user-excel`, bodyFormData, {
         params: {
             periodId: periodId,
             schoolId: schoolId,
@@ -286,3 +286,19 @@ export const updatePassword = async (newPassword,
             baseURL: "/auth",
         })
 
+export const changeUserPasswordWithOldPasswordProvided = async (newPassword, oldPassword): Promise<any> =>
+        await api.post<any>(`/change-user-password`, null, {
+            params: {
+                newPassword: newPassword,
+                oldPassword: oldPassword
+            },
+            headers: {'Content-Type': 'application/json'}
+        })
+
+
+export const getAllTeachersThatDoNotHaveSchoolClass = async (schoolId, periodId): Promise<UserView[]> =>
+        await api.get<UserView[]>('/get-all-teachers-that-do-not-have-school-class', {
+            params: {
+                schoolId, periodId
+            }
+        }).then(p => p.data)

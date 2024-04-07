@@ -12,7 +12,7 @@ class SMSUserDetails(var user: UserSecurity) : UserDetails {
 
     override fun getPassword(): String = user.password!!
 
-    override fun getUsername(): String = user.username
+    override fun getUsername(): String = user.id.toString()
 
     override fun isAccountNonExpired(): Boolean = false
 

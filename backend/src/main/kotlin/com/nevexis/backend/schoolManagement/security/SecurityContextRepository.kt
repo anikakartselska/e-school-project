@@ -38,7 +38,8 @@ class SecurityContextRepository(private val authenticationManager: Authenticatio
             authenticationManager.authenticate(auth).switchIfEmpty(
                 authenticationManager.authenticate(UsernamePasswordAuthenticationToken(refreshToken, refreshToken))
                     .map { authentication ->
-                        val userDetails = userService.findActiveUserByUsername(authentication.principal.toString())!!
+                        val userDetails =
+                            userService.findActiveUserById(authentication.principal.toString().toBigDecimal())!!
                         val newAccessToken = jwtService.generateToken(userDetails)
                         val newRefreshToken = jwtService.generateRefreshToken(userDetails)
                         swe.response.addCookie(generateCookie(newAccessToken, "token"))
