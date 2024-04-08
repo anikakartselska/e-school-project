@@ -10,6 +10,7 @@ import com.nevexis.`demo-project`.jooq.tables.records.SchoolClassRecord
 import com.nevexis.`demo-project`.jooq.tables.references.*
 import org.jooq.DSLContext
 import org.jooq.Record
+import org.jooq.SelectOnConditionStep
 import org.jooq.impl.DSL
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
@@ -45,13 +46,28 @@ class SchoolClassService : BaseService() {
         return schoolClassId
     }
 
+    fun synchronizeNumbersInClass(schoolClassId: BigDecimal) {
+        db.transaction { transaction ->
+            transaction.dsl().batchUpdate(studentSchoolClassRoleRecordSelectOnConditionStep(transaction.dsl())
+                .where(STUDENT_SCHOOL_CLASS.SCHOOL_CLASS_ID.eq(schoolClassId))
+                .orderBy(USER.FIRST_NAME, USER.MIDDLE_NAME, USER.LAST_NAME)
+                .fetchInto(STUDENT_SCHOOL_CLASS)
+                .mapIndexed { index, studentSchoolClassRecord ->
+                    studentSchoolClassRecord.apply {
+                        numberInClass = (index + 1).toBigDecimal()
+                    }
+                }).execute()
+        }
+
+    }
+
     fun getSchoolClassById(schoolClassId: BigDecimal, dsl: DSLContext = db) =
-        recordSelectOnConditionStep(dsl).where(SCHOOL_CLASS.ID.eq(schoolClassId)).fetchAny()?.map {
+        studentSchoolClassRecordSelectOnConditionStep(dsl).where(SCHOOL_CLASS.ID.eq(schoolClassId)).fetchAny()?.map {
             mapRecordToInternalModel(it)
         } ?: error("School class with id:${schoolClassId} does not exist")
 
     fun getSchoolClassByNameSchoolAndPeriod(name: String, schoolId: BigDecimal, periodId: BigDecimal, dsl: DSLContext) =
-        recordSelectOnConditionStep(dsl).where(
+        studentSchoolClassRecordSelectOnConditionStep(dsl).where(
             SCHOOL_CLASS.NAME.eq(name),
             SCHOOL_CLASS.SCHOOL_ID.eq(schoolId),
             SCHOOL_CLASS.SCHOOL_PERIOD_ID.eq(periodId)
@@ -60,14 +76,14 @@ class SchoolClassService : BaseService() {
         } ?: throw SMSError("NOT_FOUND", "School class $name does not exist")
 
     fun getSchoolClasses(dsl: DSLContext = db): List<SchoolClass> =
-        recordSelectOnConditionStep(dsl).orderBy(SCHOOL_CLASS.NAME)
+        studentSchoolClassRecordSelectOnConditionStep(dsl).orderBy(SCHOOL_CLASS.NAME)
             .fetch().map {
                 mapRecordToInternalModel(it)
             }
 
 
     fun getAllSchoolClassesFromSchoolAndPeriod(schoolId: BigDecimal, periodId: BigDecimal) =
-        recordSelectOnConditionStep().where(
+        studentSchoolClassRecordSelectOnConditionStep().where(
             SCHOOL_CLASS.SCHOOL_PERIOD_ID.eq(periodId).and(SCHOOL_CLASS.SCHOOL_ID.eq(schoolId))
         )
             .orderBy(SCHOOL_CLASS.NAME).map {
@@ -75,7 +91,7 @@ class SchoolClassService : BaseService() {
             }
 
 
-    private fun recordSelectOnConditionStep(dsl: DSLContext = db) =
+    private fun studentSchoolClassRecordSelectOnConditionStep(dsl: DSLContext = db) =
         dsl.select(
             SCHOOL_CLASS.asterisk(), USER.asterisk(), SCHOOL_USER_ROLE.asterisk(), SCHOOL_USER.asterisk(),
             SCHOOL_USER_PERIOD.asterisk()
@@ -92,6 +108,16 @@ class SchoolClassService : BaseService() {
             .leftJoin(SCHOOL_USER_PERIOD)
             .on(SCHOOL_USER_PERIOD.SCHOOL_USER_ID.eq(SCHOOL_USER.ID))
 
+    private fun studentSchoolClassRoleRecordSelectOnConditionStep(dsl: DSLContext): SelectOnConditionStep<Record> {
+        return dsl.select(
+            STUDENT_SCHOOL_CLASS.asterisk(), SCHOOL_USER_ROLE.asterisk(), USER.asterisk()
+        )
+            .from(STUDENT_SCHOOL_CLASS)
+            .leftJoin(SCHOOL_USER_ROLE)
+            .on(SCHOOL_USER_ROLE.ID.eq(STUDENT_SCHOOL_CLASS.STUDENT_SCHOOL_USER_ROLE_ID))
+            .leftJoin(USER)
+            .on(USER.ID.eq(SCHOOL_USER_ROLE.USER_ID))
+    }
 
     fun mapRecordToInternalModel(it: Record): SchoolClass {
         val role = SchoolRole.valueOf(it.get(SCHOOL_USER_ROLE.ROLE)!!)

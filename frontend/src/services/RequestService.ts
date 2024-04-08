@@ -307,3 +307,9 @@ export const saveSchoolClass = async (schoolClass): Promise<AxiosResponse<number
         await api.post<number>(`/save-school-class`, schoolClass, {
             headers: {'Content-Type': 'application/json'}
         })
+
+export const syncNumbersInClass = async (schoolClassId): Promise<any> =>
+        await api.post<any>(`/sync-numbers-in-class`, null, {
+            params: {schoolClassId: schoolClassId},
+            headers: {'Content-Type': 'application/json'}
+        })

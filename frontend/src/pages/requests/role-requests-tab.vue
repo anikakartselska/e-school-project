@@ -14,16 +14,16 @@
                         </div>
                     </div>
                     <q-separator/>
-          <div class="row">
-            <div class="col">
-              <div class="q-pa-md q-gutter-md">
-                <q-scroll-area style="height: 70vh;">
-                  <div class="row">
-                    <transition-group name="list">
-                      <div v-for="request in filteredRequests"
-                           :key="request" class="col-6 q-pa-md">
-                        <q-card>
-                          <q-card-actions>
+                    <div class="row">
+                        <div class="col">
+                            <div class="q-pa-md q-gutter-md">
+                                <q-scroll-area style="height: 70vh;">
+                                    <div class="row">
+                                        <transition-group name="list">
+                                            <div v-for="request in filteredRequests"
+                                                 :key="request" class="col-6 q-pa-md">
+                                                <q-card>
+                                                    <q-card-actions>
                             <div class="row">
                               <div :class="`text-h5 q-pl-lg ${getRequestStatusColorClass(request.requestStatus)}`">
                                 {{ translationOfRequestStatus[request.requestStatus] }}
@@ -100,15 +100,15 @@
                       Информация за заявката:
                       </span><br>
                                   <span class="text-h6">Създадена от:</span><br>
-                              Име:<span class="text-primary">{{ request.requestedByUser.firstName }} {{
-                                request.requestedByUser.lastName
-                              }}</span><br>
-                              Имейл: <span class="text-primary">
+                                  Име:<span class="text-primary">{{ request.requestedByUser.firstName }} {{
+                                  request.requestedByUser.lastName
+                                  }}</span><br>
+                                  Имейл: <span class="text-primary">
                             {{ request.requestedByUser.email }}
                             </span> <br>
-                              Потребителско име: <span class="text-primary">
+                                  Потребителско име: <span class="text-primary">
                             {{ request.requestedByUser.username }}</span> <br>
-                              Дата на създаване: <span class="text-primary">
+                                  Дата на създаване: <span class="text-primary">
                             {{ formatToBulgarian(request.requestDate) }}</span> <br>
                               <span class="text-h6">Разрешена от:</span><br>
                               Име:<span class="text-primary">{{ request?.resolvedByUser?.firstName }} {{
@@ -175,7 +175,8 @@ watch(props, async () => {
     filteredRequests = [...props.roleRequests].filter(request => (props.isStatusChange && (<Role>request.requestValue).status != null) || (!props.isStatusChange && (<Role>request.requestValue).status == null))
 })
 const resolveRequest = async (request: Request, requestStatus: RequestStatus) => {
-    const userRequestForCurrentRole = props.userRequests.find(req => (<UserRegistration>req.requestValue).user.id === (<Role>request.requestValue).oneRoleUser.id)
+    const userRequestForCurrentRole = props.userRequests.find(req => (<UserRegistration>req.requestValue).user.id === (<Role>request.requestValue).oneRoleUser.id && (<UserRegistration>req.requestValue).status == RequestStatus.PENDING)
+    console.log(userRequestForCurrentRole)
     if (userRequestForCurrentRole) {
         await quasar.dialog({
             component: UserRequestDialog,
@@ -196,16 +197,16 @@ const resolveRequest = async (request: Request, requestStatus: RequestStatus) =>
                                             resolvedByUser: getCurrentUserAsUserView(),
                                             resolvedDate: new Date()
                                         }
-                          } else {
-                            return req
-                          }
-                        }
+                                    } else {
+                                        return req
+                                    }
+                                }
+                        )
                 )
-        )
-        if (userRequest.requestStatus == RequestStatus.APPROVED) {
-          await changeRequestStatus(request.id, requestStatus, getCurrentUserAsUserView().id).then(e => {
-                    emits("update:roleRequests",
-                            [...props.roleRequests].map(
+                if (userRequest.requestStatus == RequestStatus.APPROVED) {
+                    await changeRequestStatus(request.id, requestStatus, getCurrentUserAsUserView().id).then(e => {
+                        emits("update:roleRequests",
+                                [...props.roleRequests].map(
                                     req => {
                                       if (req.id == request.id) {
                                         return {

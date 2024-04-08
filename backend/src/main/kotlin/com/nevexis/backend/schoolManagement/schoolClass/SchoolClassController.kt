@@ -43,5 +43,9 @@ class SchoolClassController {
         @RequestBody schoolClass: SchoolClass,
     ) = schoolClassService.saveUpdateSchoolClass(schoolClass)
 
+    @PostMapping("/sync-numbers-in-class")
+    suspend fun syncNumbersInClass(@RequestParam schoolClassId: BigDecimal) =
+        schoolClassService.synchronizeNumbersInClass(schoolClassId)
+
 
 }

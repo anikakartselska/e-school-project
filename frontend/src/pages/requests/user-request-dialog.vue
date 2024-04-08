@@ -115,14 +115,12 @@ const props = defineProps<{
 }>()
 
 const resolveRequest = (request, requestStatus) => {
-  const resolveRequest = (request, requestStatus) => {
     onDialogOK({
-      item: {
-        ...request, requestStatus: requestStatus, resolvedByUser: getCurrentUserAsUserView(),
-        resolvedDate: new Date()
-      }
+        item: {
+            ...request, requestStatus: requestStatus, resolvedByUser: getCurrentUserAsUserView(),
+            resolvedDate: new Date()
+        }
     })
-  }
 }
 </script>
 

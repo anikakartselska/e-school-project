@@ -5,10 +5,10 @@ import com.nevexis.backend.schoolManagement.schoolClass.SchoolClassService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolRolesService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
 import com.nevexis.`demo-project`.jooq.tables.records.ParentStudentRecord
+import com.nevexis.`demo-project`.jooq.tables.records.StudentSchoolClassRecord
 import com.nevexis.`demo-project`.jooq.tables.references.*
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
-import org.jooq.impl.UpdatableRecordImpl
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
@@ -37,39 +37,27 @@ class UserDetailsService : BaseService() {
             when (it.role) {
                 SchoolRole.ADMIN, SchoolRole.TEACHER -> null
                 SchoolRole.STUDENT -> createStudentClassRecordForSchoolUserRole(it, dsl)
-                SchoolRole.PARENT -> listOf(createParentStudentRecordForSchoolUserRole(it, dsl))
+                SchoolRole.PARENT -> createParentStudentRecordForSchoolUserRole(it, dsl)
             }
-        }.apply { dsl.batchStore(this.flatten()).execute() }
+        }.apply { dsl.batchStore(this).execute() }
     }
 
     private fun createStudentClassRecordForSchoolUserRole(
         schoolUserRole: SchoolUserRole,
         dsl: DSLContext
-    ): List<UpdatableRecordImpl<*>?> {
+    ): StudentSchoolClassRecord {
         if (schoolUserRole.detailsForUser !is DetailsForUser.DetailsForStudent) {
             error("User with ${schoolUserRole.userId} does not have student details")
         }
         return dsl.selectFrom(STUDENT_SCHOOL_CLASS).where(
             STUDENT_SCHOOL_CLASS.STUDENT_SCHOOL_USER_ROLE_ID
                 .eq(schoolUserRole.id?.toBigDecimal())
-        ).fetchOne()?.let {
-            listOf(
-                it, dsl.selectFrom(STUDENT_SCHOOL_CLASS_PERIOD).where(
-                    STUDENT_SCHOOL_CLASS_PERIOD.STUDENT_SCHOOL_CLASS_ID.eq(it.id)
-                        .and(STUDENT_SCHOOL_CLASS_PERIOD.PERIOD_ID.eq(schoolUserRole.period.id.toBigDecimal()))
-                ).fetchOne()
-            )
-        } ?: dsl.newRecord(STUDENT_SCHOOL_CLASS).apply {
+                .and(STUDENT_SCHOOL_CLASS.SCHOOL_CLASS_ID.eq(schoolUserRole.detailsForUser.schoolClass.id!!.toBigDecimal()))
+        ).fetchOne() ?: dsl.newRecord(STUDENT_SCHOOL_CLASS).apply {
             id = getStudentSchoolClassSeqNextVal()
-            schoolClassId = schoolUserRole.detailsForUser.schoolClass.id!!.toBigDecimal()
+            schoolClassId = schoolUserRole.detailsForUser.schoolClass.id.toBigDecimal()
             studentSchoolUserRoleId = schoolUserRole.id?.toBigDecimal()
-        }.let {
-            listOf(it, dsl.newRecord(STUDENT_SCHOOL_CLASS_PERIOD).apply {
-                this.id = getStudentSchoolClassPeriodSeqNextVal()
-                this.studentSchoolClassId = it.id
-                this.periodId = schoolUserRole.period.id.toBigDecimal()
-                numberInClass = schoolUserRole.detailsForUser.numberInClass?.toBigDecimal()
-            })
+            numberInClass = schoolUserRole.detailsForUser.numberInClass?.toBigDecimal()
         }
     }
 
@@ -115,18 +103,14 @@ class UserDetailsService : BaseService() {
             SCHOOL_USER_PERIOD.asterisk(),
             SCHOOL_USER_ROLE.asterisk(),
             STUDENT_SCHOOL_CLASS.ID,
-            STUDENT_SCHOOL_CLASS_PERIOD.NUMBER_IN_CLASS
+            STUDENT_SCHOOL_CLASS.NUMBER_IN_CLASS
         ).from(
             SCHOOL_CLASS
         ).leftJoin(STUDENT_SCHOOL_CLASS).on(SCHOOL_CLASS.ID.eq(STUDENT_SCHOOL_CLASS.SCHOOL_CLASS_ID))
-            .leftJoin(STUDENT_SCHOOL_CLASS_PERIOD).on(
-                STUDENT_SCHOOL_CLASS_PERIOD.STUDENT_SCHOOL_CLASS_ID.eq(
-                    STUDENT_SCHOOL_CLASS.ID
-                )
-            ).leftJoin(SCHOOL_USER_ROLE)
+            .leftJoin(SCHOOL_USER_ROLE)
             .on(SCHOOL_USER_ROLE.ID.eq(SCHOOL_CLASS.MAIN_TEACHER_ROLE_ID))
             .leftJoin(USER)
-            .on(SCHOOL_USER_ROLE.USER_ID.eq(USER.ID)) //TODO main teacher id should be connected to SCHOOL_USER_ROLE
+            .on(SCHOOL_USER_ROLE.USER_ID.eq(USER.ID))
             .leftJoin(SCHOOL_USER)
             .on(SCHOOL_USER.USER_ID.eq(USER.ID))
             .leftJoin(SCHOOL_USER_PERIOD)
@@ -169,10 +153,6 @@ class UserDetailsService : BaseService() {
             else -> null
         }
     }.flatten()
-
-    fun getStudentSchoolClassPeriodSeqNextVal(): BigDecimal =
-        db.select(DSL.field("STUDENT_SCHOOL_CLASS_PER_SEQ.nextval")).from("DUAL")
-            .fetchOne()!!.map { it.into(BigDecimal::class.java) }
 
     fun getStudentSchoolClassSeqNextVal(): BigDecimal =
         db.select(DSL.field("STUDENT_SCHOOL_CLASS_SEQ.nextval")).from("DUAL")

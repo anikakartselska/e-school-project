@@ -40,11 +40,16 @@
             </template>
           </q-input>
           <q-btn
-                  color="primary"
-                  icon-right="archive"
-                  label="Export to csv"
-                  no-caps
-          />
+              color="primary"
+              flat
+              icon-right="sync"
+              no-caps
+              @click="syncSchoolClassNumbersInClass"
+          >
+            <q-tooltip>
+              Синхронизирай номерата на учениците
+            </q-tooltip>
+          </q-btn>
         </template>
       </q-table>
     </q-card>
@@ -57,7 +62,8 @@ import {
     getAllStudentsFromSchoolClass,
     getAllTeachersThatDoNotHaveSchoolClass,
     getSchoolClassById,
-    saveSchoolClass
+    saveSchoolClass,
+    syncNumbersInClass
 } from "../../services/RequestService";
 import {StudentView, UserView} from "../../model/User";
 import {useRouter} from "vue-router";
@@ -65,46 +71,51 @@ import {useQuasar} from "quasar";
 import ChangeMainTeacherDialog from "./change-main-teacher-dialog.vue";
 
 const props = defineProps<{
-    periodId: number,
-    schoolId: number,
-    schoolClassId: number
+  periodId: number,
+  schoolId: number,
+  schoolClassId: number
 }>()
-const schoolClass = $ref(await getSchoolClassById(props.schoolClassId, props.schoolClassId))
-const studentsFromSchoolClass = $ref(await getAllStudentsFromSchoolClass(props.schoolClassId, props.periodId))
+const schoolClass = $ref(await getSchoolClassById(props.schoolClassId, props.periodId))
+let studentsFromSchoolClass = $ref(await getAllStudentsFromSchoolClass(props.schoolClassId, props.periodId))
 const router = useRouter()
 const quasar = useQuasar()
 
 const filter = $ref('')
 const openUser = (row: UserView) => {
-    router.push({
-        name: "user",
-        params: {
-            id: row.id
-        }
-    })
+  router.push({
+    name: "user",
+    params: {
+      id: row.id
+    }
+  })
 }
 const updateMainTeacher = async () =>
         quasar.dialog({
-            component: ChangeMainTeacherDialog,
-            componentProps: {
-                title: `Смяна на класен ръководител на ${schoolClass.name} клас`,
-                mainTeacher: schoolClass.mainTeacher,
-                teacherOptions: await getAllTeachersThatDoNotHaveSchoolClass(props.schoolId, props.periodId)
-            },
+          component: ChangeMainTeacherDialog,
+          componentProps: {
+            title: `Смяна на класен ръководител на ${schoolClass.name} клас`,
+            mainTeacher: schoolClass.mainTeacher,
+            teacherOptions: await getAllTeachersThatDoNotHaveSchoolClass(props.schoolId, props.periodId)
+          },
         }).onOk(async (payload) => {
-            schoolClass.mainTeacher = payload.item as UserView
-            await saveSchoolClass(schoolClass)
+          schoolClass.mainTeacher = payload.item as UserView
+          await saveSchoolClass(schoolClass)
         })
+
+const syncSchoolClassNumbersInClass = async () => {
+  await syncNumbersInClass(props.schoolClassId).then(async e =>
+      studentsFromSchoolClass = await getAllStudentsFromSchoolClass(props.schoolClassId, props.periodId))
+}
 const columns = [
-    {name: 'edit'},
-    {
-        name: "firstName",
-        align: "left",
-        label: "Име",
-        field: (row: StudentView) => row.firstName,
-        sortable: true
-    },
-    {
+  {name: 'edit'},
+  {
+    name: "firstName",
+    align: "left",
+    label: "Име",
+    field: (row: StudentView) => row.firstName,
+    sortable: true
+  },
+  {
     name: "middleName",
     align: "left",
     label: "Презиме",
@@ -126,10 +137,10 @@ const columns = [
     sortable: true
   },
   {
-    name: "numberInCass",
+    name: "numberInClass",
     align: "left",
     label: "Номер в клас",
-    field: (row: StudentView) => row.numberInCass,
+    field: (row: StudentView) => row.numberInClass,
     sortable: true
   },
   {

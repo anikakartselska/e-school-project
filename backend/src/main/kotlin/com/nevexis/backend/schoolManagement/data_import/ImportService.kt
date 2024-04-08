@@ -120,7 +120,7 @@ class ImportService : BaseService() {
                                             DataFormatter().formatCellValue(
                                                 row.getCell(10)
                                             ), schoolId, periodId, transaction.dsl()
-                                        ).id.toBigDecimal())
+                                        ).id!!.toBigDecimal())
                                         .let { schoolClass ->
                                             val childPhoneNumber = DataFormatter().formatCellValue(
                                                 row.getCell(9)

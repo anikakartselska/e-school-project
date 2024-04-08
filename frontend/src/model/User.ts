@@ -33,7 +33,7 @@ export interface StudentView {
     middleName: string,
     lastName: string,
     username: string,
-    numberInCass: number | null,
+    numberInClass: number | null,
 }
 
 export interface User {
