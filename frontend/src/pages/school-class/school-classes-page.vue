@@ -23,29 +23,29 @@
           <q-td :props="props">
             <router-link :to="`/user/${props.value.id}/${periodId}/${schoolId}`"
                          active-class="text-negative" class="text-primary" exact-active-class="text-negative">
-              {{ props.value.firstName }} {{ props.value.lastName }}
+                {{ props.value.firstName }} {{ props.value.lastName }}
+                <q-tooltip>
+                    Кликни за повече детайли
+                </q-tooltip>
             </router-link>
-            <q-tooltip>
-              Кликни за повече детайли
-            </q-tooltip>
           </q-td>
         </template>
-        <template v-slot:top-right="props">
-            <q-btn class="q-ml-md" color="primary" icon="person_add" outline round @click="addNewSchoolClass()">
-                <q-tooltip>Добави нов</q-tooltip>
-            </q-btn>
-            <q-input v-model="filter" debounce="300" dense outlined placeholder="Търсене">
-                <template v-slot:append>
-                    <q-icon name="search"/>
-                </template>
-            </q-input>
-            <q-btn
-                    color="primary"
-                    icon-right="archive"
-                    label="Export to csv"
-                    no-caps
-          />
-        </template>
+          <template v-slot:top-right="props">
+              <q-btn class="q-ml-md" color="primary" icon="person_add" outline round @click="addNewSchoolClass">
+                  <q-tooltip>Добави нов</q-tooltip>
+              </q-btn>
+              <q-input v-model="filter" debounce="300" dense outlined placeholder="Търсене">
+                  <template v-slot:append>
+                      <q-icon name="search"/>
+                  </template>
+              </q-input>
+              <q-btn
+                      color="primary"
+                      icon-right="archive"
+                      label="Export to csv"
+                      no-caps
+              />
+          </template>
       </q-table>
     </q-card>
   </q-page>
@@ -54,19 +54,24 @@
 <script lang="ts" setup>
 import {$ref} from "vue/macros";
 import {useRouter} from "vue-router";
-import {getAllTeachersThatDoNotHaveSchoolClass, getSchoolClassesFromSchool} from "../../services/RequestService";
+import {
+    getAllTeachersThatDoNotHaveSchoolClass,
+    getSchoolClassesFromSchool,
+    saveSchoolClass
+} from "../../services/RequestService";
 import {SchoolClass} from "../../model/SchoolClass";
 import {periodId} from "../../model/constants";
+import {useQuasar} from "quasar";
+import SchoolClassAddDialog from "./school-class-add-dialog.vue";
 
 const props = defineProps<{
     periodId: number,
     schoolId: number
 }>()
-
+const quasar = useQuasar()
 const router = useRouter()
 const schoolClasses = $ref(await getSchoolClassesFromSchool(props.schoolId, props.periodId))
-const teachersWithoutClasses = $ref(await getAllTeachersThatDoNotHaveSchoolClass(props.schoolId, props.periodId))
-console.log(teachersWithoutClasses)
+
 const openSchoolClass = (schoolClass: SchoolClass) => {
     router.push({
         name: "school-class",
@@ -78,8 +83,23 @@ const openSchoolClass = (schoolClass: SchoolClass) => {
     })
 }
 
-const addNewSchoolClass = () => {
-}
+const addNewSchoolClass = async () =>
+        quasar.dialog({
+            component: SchoolClassAddDialog,
+            componentProps: {
+                schoolClass: <SchoolClass>{schoolPeriodId: props.periodId, schoolId: props.schoolId},
+                alreadyExistingSchoolClasses: schoolClasses,
+                teacherOptions: await getAllTeachersThatDoNotHaveSchoolClass(props.schoolId, props.periodId)
+            },
+        }).onOk(async (payload) => {
+            const schoolClass = payload.item as SchoolClass
+            await saveSchoolClass(schoolClass).then(e => {
+                        schoolClass.id = e.data
+                        schoolClasses.push(schoolClass)
+                    }
+            )
+
+        })
 
 const filter = $ref('')
 const columns = [

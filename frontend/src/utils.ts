@@ -28,6 +28,8 @@ export const translationOfRequestStatusForRole = {
     PENDING: "ИЗЧАКВАЩА",
     REJECTED: "НЕАКТИВНА",
 }
+export const getRangeOf = (start, stop, step) => Array.from({length: ((stop - start) / step) + 1}, (_, i) => start + (i * step))
+
 
 export const confirmActionPromiseDialog = (title: string, message: string) => new Promise<void>((resolve) => {
     Dialog.create({

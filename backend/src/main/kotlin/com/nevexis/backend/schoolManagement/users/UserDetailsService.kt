@@ -61,7 +61,7 @@ class UserDetailsService : BaseService() {
             )
         } ?: dsl.newRecord(STUDENT_SCHOOL_CLASS).apply {
             id = getStudentSchoolClassSeqNextVal()
-            schoolClassId = schoolUserRole.detailsForUser.schoolClass.id.toBigDecimal()
+            schoolClassId = schoolUserRole.detailsForUser.schoolClass.id!!.toBigDecimal()
             studentSchoolUserRoleId = schoolUserRole.id?.toBigDecimal()
         }.let {
             listOf(it, dsl.newRecord(STUDENT_SCHOOL_CLASS_PERIOD).apply {

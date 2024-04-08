@@ -29,6 +29,7 @@
                          active-class="text-negative" class="text-primary" exact-active-class="text-negative">
               {{ schoolClass.mainTeacher.firstName }} {{ schoolClass.mainTeacher.lastName }}
             </router-link>
+            <q-btn class="q-mr-xs" color="primary" flat icon="edit" round @click="updateMainTeacher"/>
           </div>
         </template>
         <template v-slot:top-right="props">
@@ -52,39 +53,58 @@
 
 <script lang="ts" setup>
 import {$ref} from "vue/macros";
-import {getAllStudentsFromSchoolClass, getSchoolClassById} from "../../services/RequestService";
+import {
+    getAllStudentsFromSchoolClass,
+    getAllTeachersThatDoNotHaveSchoolClass,
+    getSchoolClassById,
+    saveSchoolClass
+} from "../../services/RequestService";
 import {StudentView, UserView} from "../../model/User";
 import {useRouter} from "vue-router";
+import {useQuasar} from "quasar";
+import ChangeMainTeacherDialog from "./change-main-teacher-dialog.vue";
 
 const props = defineProps<{
-  periodId: number,
-  schoolId: number,
-  schoolClassId: number
+    periodId: number,
+    schoolId: number,
+    schoolClassId: number
 }>()
-console.log(props)
 const schoolClass = $ref(await getSchoolClassById(props.schoolClassId, props.schoolClassId))
 const studentsFromSchoolClass = $ref(await getAllStudentsFromSchoolClass(props.schoolClassId, props.periodId))
 const router = useRouter()
+const quasar = useQuasar()
 
 const filter = $ref('')
 const openUser = (row: UserView) => {
-  router.push({
-    name: "user",
-    params: {
-      id: row.id
-    }
-  })
+    router.push({
+        name: "user",
+        params: {
+            id: row.id
+        }
+    })
 }
+const updateMainTeacher = async () =>
+        quasar.dialog({
+            component: ChangeMainTeacherDialog,
+            componentProps: {
+                title: `Смяна на класен ръководител на ${schoolClass.name} клас`,
+                mainTeacher: schoolClass.mainTeacher,
+                teacherOptions: await getAllTeachersThatDoNotHaveSchoolClass(props.schoolId, props.periodId)
+            },
+        }).onOk(async (payload) => {
+            schoolClass.mainTeacher = payload.item as UserView
+            await saveSchoolClass(schoolClass)
+        })
 const columns = [
-  {name: 'edit'},
-  {
-    name: "firstName",
-    align: "left",
-    label: "Име",
-    field: (row: StudentView) => row.firstName,
-    sortable: true
-  },
-  {
+    {name: 'edit'},
+    {
+        name: "firstName",
+        align: "left",
+        label: "Име",
+        field: (row: StudentView) => row.firstName,
+        sortable: true
+    },
+    {
     name: "middleName",
     align: "left",
     label: "Презиме",

@@ -302,3 +302,8 @@ export const getAllTeachersThatDoNotHaveSchoolClass = async (schoolId, periodId)
                 schoolId, periodId
             }
         }).then(p => p.data)
+
+export const saveSchoolClass = async (schoolClass): Promise<AxiosResponse<number>> =>
+        await api.post<number>(`/save-school-class`, schoolClass, {
+            headers: {'Content-Type': 'application/json'}
+        })

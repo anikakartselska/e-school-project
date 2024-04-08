@@ -38,5 +38,10 @@ class SchoolClassController {
         return schoolClassService.getSchoolClassById(schoolClassId)
     }
 
+    @PostMapping("/save-school-class")
+    suspend fun saveSchoolClass(
+        @RequestBody schoolClass: SchoolClass,
+    ) = schoolClassService.saveUpdateSchoolClass(schoolClass)
+
 
 }

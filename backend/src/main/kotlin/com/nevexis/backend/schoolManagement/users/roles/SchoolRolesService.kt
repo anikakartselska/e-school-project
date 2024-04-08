@@ -85,6 +85,16 @@ class SchoolRolesService : BaseService() {
         }
     }
 
+    fun getTeacherRoleId(teacherId: BigDecimal, periodId: BigDecimal, schoolId: BigDecimal) =
+        db.select(SCHOOL_USER_ROLE.ID).from(SCHOOL_USER_ROLE)
+            .leftJoin(SCHOOL_ROLE_PERIOD)
+            .on(SCHOOL_ROLE_PERIOD.SCHOOL_USER_ROLE_ID.eq(SCHOOL_USER_ROLE.ID))
+            .where(
+                SCHOOL_USER_ROLE.USER_ID.eq(teacherId).and(SCHOOL_ROLE_PERIOD.PERIOD_ID.eq(periodId)).and(
+                    SCHOOL_USER_ROLE.SCHOOL_ID.eq(schoolId)
+                ).and(SCHOOL_USER_ROLE.ROLE.eq(SchoolRole.TEACHER.name))
+            ).fetchAnyInto(BigDecimal::class.java)
+
     fun getSchoolRolePeriodRecordByRoleId(roleId: BigDecimal, periodId: BigDecimal, dsl: DSLContext = db) =
         dsl.selectFrom(SCHOOL_ROLE_PERIOD).where(
             SCHOOL_ROLE_PERIOD.SCHOOL_USER_ROLE_ID.eq(roleId).and(

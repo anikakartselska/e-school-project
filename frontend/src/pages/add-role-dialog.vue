@@ -105,16 +105,16 @@ import {SchoolPeriodWithSchoolIds} from "../model/SchoolPeriod";
 
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
-const props = defineProps<{
-  role: SchoolUserRole,
-  schoolOptions: School[],
-  schoolPeriodsWithSchoolIds: SchoolPeriodWithSchoolIds[],
-  allSchoolClassesOptions: SchoolClass[],
-  disablePeriodAndSchoolSelections?: boolean,
-}>()
-
 const quasar = useQuasar()
 defineEmits([...useDialogPluginComponent.emits])
+
+const props = defineProps<{
+    role: SchoolUserRole,
+    schoolOptions: School[],
+    schoolPeriodsWithSchoolIds: SchoolPeriodWithSchoolIds[],
+    allSchoolClassesOptions: SchoolClass[],
+    disablePeriodAndSchoolSelections?: boolean,
+}>()
 
 const roleOptions = Object.keys(SchoolRole)
 const schoolUserRole = $ref(<SchoolUserRole>{...props.role, status: RequestStatus.PENDING})

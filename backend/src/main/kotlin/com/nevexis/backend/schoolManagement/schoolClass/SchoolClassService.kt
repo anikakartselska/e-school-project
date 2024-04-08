@@ -5,10 +5,12 @@ import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.users.SchoolRole
 import com.nevexis.backend.schoolManagement.users.UserService
 import com.nevexis.backend.schoolManagement.users.UserView
+import com.nevexis.backend.schoolManagement.users.roles.SchoolRolesService
 import com.nevexis.`demo-project`.jooq.tables.records.SchoolClassRecord
 import com.nevexis.`demo-project`.jooq.tables.references.*
 import org.jooq.DSLContext
 import org.jooq.Record
+import org.jooq.impl.DSL
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
@@ -21,6 +23,27 @@ class SchoolClassService : BaseService() {
     @Lazy
     private lateinit var userService: UserService
 
+    @Autowired
+    @Lazy
+    private lateinit var schoolRolesService: SchoolRolesService
+
+    fun saveUpdateSchoolClass(schoolClass: SchoolClass): BigDecimal {
+        val schoolClassId = schoolClass.id?.toBigDecimal() ?: getSchoolClassSeqNextVal()
+        (db.selectFrom(SCHOOL_CLASS).where(SCHOOL_CLASS.ID.eq(schoolClassId)).fetchAny() ?: db.newRecord(SCHOOL_CLASS))
+            .apply {
+                id = schoolClassId
+                name = schoolClass.name
+                schoolId = schoolClass.schoolId.toBigDecimal()
+                schoolPeriodId = schoolClass.schoolPeriodId.toBigDecimal()
+                mainTeacherRoleId =
+                    schoolRolesService.getTeacherRoleId(
+                        schoolClass.mainTeacher?.id!!.toBigDecimal(),
+                        schoolClass.schoolPeriodId.toBigDecimal(),
+                        schoolClass.schoolId.toBigDecimal()
+                    )
+            }.store()
+        return schoolClassId
+    }
 
     fun getSchoolClassById(schoolClassId: BigDecimal, dsl: DSLContext = db) =
         recordSelectOnConditionStep(dsl).where(SCHOOL_CLASS.ID.eq(schoolClassId)).fetchAny()?.map {
@@ -78,10 +101,15 @@ class SchoolClassService : BaseService() {
     }
 
     private fun SchoolClassRecord.mapToInternalModel(mainTeacher: UserView) = SchoolClass(
-        id = id!!.toInt(),
+        id = id?.toInt(),
         name = name!!,
         mainTeacher = mainTeacher,
         schoolId = schoolId!!.toInt(),
         schoolPeriodId = schoolPeriodId!!.toInt()
     )
+
+    fun getSchoolClassSeqNextVal(): BigDecimal =
+        db.select(DSL.field("SCHOOL_CLASS_SEQ.nextval")).from("DUAL")
+            .fetchOne()!!.map { it.into(BigDecimal::class.java) }
+
 }
