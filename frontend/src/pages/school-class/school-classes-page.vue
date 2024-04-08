@@ -20,15 +20,15 @@
           </q-td>
         </template>
         <template v-slot:body-cell-main-teacher="props">
-          <q-td :props="props">
-            <router-link :to="`/user/${props.value.id}/${periodId}/${schoolId}`"
-                         active-class="text-negative" class="text-primary" exact-active-class="text-negative">
-                {{ props.value.firstName }} {{ props.value.lastName }}
-                <q-tooltip>
-                    Кликни за повече детайли
-                </q-tooltip>
-            </router-link>
-          </q-td>
+            <q-td :props="props">
+                <router-link :to="`/user/${props.value.id}/${periodId}/${schoolId}`"
+                             active-class="text-negative" class="text-primary" exact-active-class="text-negative">
+                    {{ props.value.firstName }} {{ props.value.lastName }}
+                    <q-tooltip>
+                        Кликни за повече детайли
+                    </q-tooltip>
+                </router-link>
+            </q-td>
         </template>
           <template v-slot:top-right="props">
               <q-btn class="q-ml-md" color="primary" icon="person_add" outline round @click="addNewSchoolClass">
@@ -71,7 +71,6 @@ const props = defineProps<{
 const quasar = useQuasar()
 const router = useRouter()
 const schoolClasses = $ref(await getSchoolClassesFromSchool(props.schoolId, props.periodId))
-
 const openSchoolClass = (schoolClass: SchoolClass) => {
     router.push({
         name: "school-class",
@@ -92,10 +91,10 @@ const addNewSchoolClass = async () =>
                 teacherOptions: await getAllTeachersThatDoNotHaveSchoolClass(props.schoolId, props.periodId)
             },
         }).onOk(async (payload) => {
-            const schoolClass = payload.item as SchoolClass
-            await saveSchoolClass(schoolClass).then(e => {
-                        schoolClass.id = e.data
-                        schoolClasses.push(schoolClass)
+            const schoolClassToStudentsFile = payload.item as Pair<SchoolClass, Blob>
+            await saveSchoolClass(schoolClassToStudentsFile.first, schoolClassToStudentsFile.second).then(e => {
+                        schoolClassToStudentsFile.first.id = e.data
+                        schoolClasses.push(schoolClassToStudentsFile.first)
                     }
             )
 

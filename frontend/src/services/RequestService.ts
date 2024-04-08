@@ -187,8 +187,7 @@ export const getSchoolClassById = async (schoolClassId, periodId): Promise<Schoo
 
 export const uploadUsersExcelFile = async (file, periodId,
                                            schoolId,
-                                           schoolRole,
-                                           userId, schoolClassId: number | null = null): Promise<AxiosResponse<UserView[]>> => {
+                                           schoolRole, schoolClassId: number | null = null): Promise<AxiosResponse<UserView[]>> => {
     const bodyFormData = new FormData()
     bodyFormData.append('file', file)
     return await api.post<UserView[]>(`/import-user-excel`, bodyFormData, {
@@ -196,8 +195,7 @@ export const uploadUsersExcelFile = async (file, periodId,
             periodId: periodId,
             schoolId: schoolId,
             schoolRole: schoolRole,
-            schoolClassId: schoolClassId,
-            userId: userId,
+            schoolClassId: schoolClassId
         },
         headers: {"Content-Type": "multipart/form-data"},
     })
@@ -303,13 +301,19 @@ export const getAllTeachersThatDoNotHaveSchoolClass = async (schoolId, periodId)
             }
         }).then(p => p.data)
 
-export const saveSchoolClass = async (schoolClass): Promise<AxiosResponse<number>> =>
-        await api.post<number>(`/save-school-class`, schoolClass, {
-            headers: {'Content-Type': 'application/json'}
-        })
+export const saveSchoolClass = async (schoolClass, studentsFromClassFile: Blob | null = null): Promise<AxiosResponse<number>> => {
+    const bodyFormData = new FormData()
+    bodyFormData.append('schoolClass', JSON.stringify(schoolClass))
+    if (studentsFromClassFile) {
+        bodyFormData.append('studentsFromClassFile', studentsFromClassFile)
+    }
+    return await api.post<number>(`/save-school-class`, bodyFormData, {
+        headers: {"Content-Type": "multipart/form-data"}
+    })
+}
 
-export const syncNumbersInClass = async (schoolClassId): Promise<any> =>
+export const syncNumbersInClass = async (schoolClassId, periodId): Promise<any> =>
         await api.post<any>(`/sync-numbers-in-class`, null, {
-            params: {schoolClassId: schoolClassId},
+            params: {schoolClassId: schoolClassId, periodId: periodId},
             headers: {'Content-Type': 'application/json'}
         })

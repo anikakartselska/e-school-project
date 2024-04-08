@@ -42,8 +42,9 @@ class ImportService : BaseService() {
         schoolId: BigDecimal,
         schoolRole: SchoolRole,
         schoolClassId: BigDecimal? = null,
-        userId: BigDecimal
-    ): List<UserView> = db.transactionResult { transaction ->
+        userId: BigDecimal,
+        dslContext: DSLContext = db
+    ): List<UserView> = dslContext.transactionResult { transaction ->
         mapExcelToListOfUsers(
             byteArray,
             periodId,

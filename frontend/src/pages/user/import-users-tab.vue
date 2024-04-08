@@ -92,7 +92,6 @@ import {SchoolRole, UserView} from "../../model/User";
 import {confirmActionPromiseDialogWithCancelButton} from "../../utils";
 import SingleFilePicker from "../common/single-file-picker.vue";
 import {$ref} from "vue/macros";
-import {getCurrentUser} from "../../services/LocalStorageService";
 import {RequestStatus} from "../../model/RequestStatus";
 
 const props = defineProps<{
@@ -104,11 +103,10 @@ let teachersFile = $ref(null)
 let studentsFile = $ref(null)
 let parentsFile = $ref(null)
 
-const currentUserId = getCurrentUser().id
 const router = useRouter()
 let newlyAddedUsers = $ref(<UserView[]>[])
 const uploadExcelFile = async (schoolRole: SchoolRole, file: File) => {
-    await uploadUsersExcelFile(file, periodId.value, schoolId.value, schoolRole, currentUserId).then(async response => {
+    await uploadUsersExcelFile(file, periodId.value, schoolId.value, schoolRole).then(async response => {
         if (response.status == 200) {
             newlyAddedUsers = response.data
             await confirmActionPromiseDialogWithCancelButton("Успешна операция",
@@ -148,16 +146,16 @@ const columns = [
         field: (row: UserView) => row.firstName,
         sortable: true
     },
-  {
-    name: "middleName",
-    align: "left",
-    label: "Презиме",
-    field: (row: UserView) => row.middleName,
-    sortable: true
-  },
-  {
-    name: "lastName",
-    align: "left",
+    {
+        name: "middleName",
+        align: "left",
+        label: "Презиме",
+        field: (row: UserView) => row.middleName,
+        sortable: true
+    },
+    {
+        name: "lastName",
+        align: "left",
     label: "Фамилия",
     field: (row: UserView) => row.lastName,
     sortable: true
@@ -166,16 +164,16 @@ const columns = [
     name: "username",
     align: "left",
     label: "Потребителско име",
-    field: (row: UserView) => row.username,
-    sortable: true
-  },
-  {
-      name: "email",
-      align: "left",
-      label: "Е-майл",
-      field: (row: UserView) => row.email,
+      field: (row: UserView) => row.username,
       sortable: true
   },
+    {
+        name: "email",
+        align: "left",
+        label: "Е-майл",
+        field: (row: UserView) => row.email,
+        sortable: true
+    },
     {
         name: "role",
         align: "left",

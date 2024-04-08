@@ -2,9 +2,12 @@ package com.nevexis.backend.schoolManagement.schoolClass
 
 import com.nevexis.backend.schoolManagement.users.StudentView
 import com.nevexis.backend.schoolManagement.users.UserService
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
+import java.security.Principal
 
 @CrossOrigin("http://localhost:3000/")
 @RestController
@@ -40,12 +43,18 @@ class SchoolClassController {
 
     @PostMapping("/save-school-class")
     suspend fun saveSchoolClass(
-        @RequestBody schoolClass: SchoolClass,
-    ) = schoolClassService.saveUpdateSchoolClass(schoolClass)
+        @RequestPart schoolClass: String,
+        @RequestPart(required = false) studentsFromClassFile: ByteArray? = null,
+        principal: Principal
+    ) = schoolClassService.saveUpdateSchoolClass(
+        Json.decodeFromString(schoolClass),
+        studentsFromClassFile,
+        principal.name.toBigDecimal()
+    )
 
     @PostMapping("/sync-numbers-in-class")
-    suspend fun syncNumbersInClass(@RequestParam schoolClassId: BigDecimal) =
-        schoolClassService.synchronizeNumbersInClass(schoolClassId)
+    suspend fun syncNumbersInClass(@RequestParam schoolClassId: BigDecimal, @RequestParam periodId: BigDecimal) =
+        schoolClassService.synchronizeNumbersInClass(schoolClassId, periodId)
 
 
 }

@@ -94,6 +94,8 @@ class UserService : UserBaseService() {
                 STUDENT_SCHOOL_CLASS.SCHOOL_CLASS_ID.eq(schoolClassId).and(
                     SCHOOL_USER_PERIOD.PERIOD_ID.eq(periodId)
                         .and(SCHOOL_USER_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
+                        .and(SCHOOL_ROLE_PERIOD.PERIOD_ID.eq(periodId))
+                        .and(SCHOOL_ROLE_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
                 )
             ).orderBy(STUDENT_SCHOOL_CLASS.NUMBER_IN_CLASS)
             .fetch()

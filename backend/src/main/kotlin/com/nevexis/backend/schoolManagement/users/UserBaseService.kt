@@ -162,7 +162,7 @@ class UserBaseService : BaseService() {
                 SCHOOL_USER.USER_ID.eq(USER.ID)
             ).leftJoin(SCHOOL_USER_PERIOD).on(SCHOOL_USER_PERIOD.ID.eq(SCHOOL_USER.ID))
 
-    fun studentRecordSelectOnConditionStep() = db.select(
+    fun studentRecordSelectOnConditionStep(dsl: DSLContext = db) = dsl.select(
         USER.asterisk(),
         STUDENT_SCHOOL_CLASS.asterisk(),
         SCHOOL_USER.asterisk(),

@@ -4,6 +4,7 @@ import com.nevexis.backend.schoolManagement.users.SchoolRole
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
+import java.security.Principal
 
 @CrossOrigin("http://localhost:3000/")
 @RestController
@@ -19,8 +20,15 @@ class ImportController {
         @RequestParam periodId: BigDecimal,
         @RequestParam schoolId: BigDecimal,
         @RequestParam schoolRole: SchoolRole,
-        @RequestParam schoolClassId: BigDecimal? = null,
-        @RequestParam userId: BigDecimal
-    ) = importService.createRequestsFromUsersExcel(file, periodId, schoolId, schoolRole, schoolClassId, userId)
+        @RequestParam schoolClassId: BigDecimal,
+        principal: Principal,
+    ) = importService.createRequestsFromUsersExcel(
+        file,
+        periodId,
+        schoolId,
+        schoolRole,
+        schoolClassId,
+        principal.name.toBigDecimal()
+    )
 
 }

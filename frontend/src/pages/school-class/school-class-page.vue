@@ -33,23 +33,29 @@
           </div>
         </template>
         <template v-slot:top-right="props">
-          <q-btn class="q-mr-xs" color="primary" label="Добави нов" outline/>
-          <q-input v-model="filter" debounce="300" dense outlined placeholder="Търсене">
-            <template v-slot:append>
-              <q-icon name="search"/>
-            </template>
-          </q-input>
-          <q-btn
-              color="primary"
-              flat
-              icon-right="sync"
-              no-caps
-              @click="syncSchoolClassNumbersInClass"
-          >
-            <q-tooltip>
-              Синхронизирай номерата на учениците
-            </q-tooltip>
-          </q-btn>
+            <single-file-picker
+                    v-model="studentsFile"
+                    accept-file-format=".xlsx"
+                    class="q-mt-md q-mr-sm"
+                    label="Добави ученици"
+                    @action-button-event="addStudentsWithExcel()"
+            />
+            <q-input v-model="filter" debounce="300" dense outlined placeholder="Търсене">
+                <template v-slot:append>
+                    <q-icon name="search"/>
+                </template>
+            </q-input>
+            <q-btn
+                    color="primary"
+                    flat
+                    icon-right="sync"
+                    no-caps
+                    @click="syncSchoolClassNumbersInClass"
+            >
+                <q-tooltip>
+                    Синхронизирай номерата на учениците
+                </q-tooltip>
+            </q-btn>
         </template>
       </q-table>
     </q-card>
@@ -63,12 +69,14 @@ import {
     getAllTeachersThatDoNotHaveSchoolClass,
     getSchoolClassById,
     saveSchoolClass,
-    syncNumbersInClass
+    syncNumbersInClass,
+    uploadUsersExcelFile
 } from "../../services/RequestService";
-import {StudentView, UserView} from "../../model/User";
+import {SchoolRole, StudentView, UserView} from "../../model/User";
 import {useRouter} from "vue-router";
 import {useQuasar} from "quasar";
 import ChangeMainTeacherDialog from "./change-main-teacher-dialog.vue";
+import SingleFilePicker from "../common/single-file-picker.vue";
 
 const props = defineProps<{
   periodId: number,
@@ -79,7 +87,7 @@ const schoolClass = $ref(await getSchoolClassById(props.schoolClassId, props.per
 let studentsFromSchoolClass = $ref(await getAllStudentsFromSchoolClass(props.schoolClassId, props.periodId))
 const router = useRouter()
 const quasar = useQuasar()
-
+let studentsFile = $ref(null)
 const filter = $ref('')
 const openUser = (row: UserView) => {
   router.push({
@@ -102,9 +110,12 @@ const updateMainTeacher = async () =>
           await saveSchoolClass(schoolClass)
         })
 
+const addStudentsWithExcel = async () => {
+    await uploadUsersExcelFile(studentsFile, props.periodId, props.schoolId, SchoolRole.STUDENT, props.schoolClassId)
+}
 const syncSchoolClassNumbersInClass = async () => {
-  await syncNumbersInClass(props.schoolClassId).then(async e =>
-      studentsFromSchoolClass = await getAllStudentsFromSchoolClass(props.schoolClassId, props.periodId))
+    await syncNumbersInClass(props.schoolClassId, props.periodId).then(async e =>
+            studentsFromSchoolClass = await getAllStudentsFromSchoolClass(props.schoolClassId, props.periodId))
 }
 const columns = [
   {name: 'edit'},

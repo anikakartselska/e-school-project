@@ -2,6 +2,8 @@ package com.nevexis.backend.schoolManagement.schoolClass
 
 import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.BaseService
+import com.nevexis.backend.schoolManagement.data_import.ImportService
+import com.nevexis.backend.schoolManagement.requests.RequestStatus
 import com.nevexis.backend.schoolManagement.users.SchoolRole
 import com.nevexis.backend.schoolManagement.users.UserService
 import com.nevexis.backend.schoolManagement.users.UserView
@@ -10,7 +12,6 @@ import com.nevexis.`demo-project`.jooq.tables.records.SchoolClassRecord
 import com.nevexis.`demo-project`.jooq.tables.references.*
 import org.jooq.DSLContext
 import org.jooq.Record
-import org.jooq.SelectOnConditionStep
 import org.jooq.impl.DSL
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
@@ -28,28 +29,59 @@ class SchoolClassService : BaseService() {
     @Lazy
     private lateinit var schoolRolesService: SchoolRolesService
 
-    fun saveUpdateSchoolClass(schoolClass: SchoolClass): BigDecimal {
+    @Autowired
+    @Lazy
+    private lateinit var importService: ImportService
+
+    fun saveUpdateSchoolClass(
+        schoolClass: SchoolClass,
+        studentsFromClassFile: ByteArray?,
+        userId: BigDecimal
+    ): BigDecimal {
         val schoolClassId = schoolClass.id?.toBigDecimal() ?: getSchoolClassSeqNextVal()
-        (db.selectFrom(SCHOOL_CLASS).where(SCHOOL_CLASS.ID.eq(schoolClassId)).fetchAny() ?: db.newRecord(SCHOOL_CLASS))
-            .apply {
-                id = schoolClassId
-                name = schoolClass.name
-                schoolId = schoolClass.schoolId.toBigDecimal()
-                schoolPeriodId = schoolClass.schoolPeriodId.toBigDecimal()
-                mainTeacherRoleId =
-                    schoolRolesService.getTeacherRoleId(
-                        schoolClass.mainTeacher?.id!!.toBigDecimal(),
-                        schoolClass.schoolPeriodId.toBigDecimal(),
-                        schoolClass.schoolId.toBigDecimal()
-                    )
-            }.store()
+        db.transaction { transaction ->
+            (transaction.dsl().selectFrom(SCHOOL_CLASS).where(SCHOOL_CLASS.ID.eq(schoolClassId)).fetchAny()
+                ?: transaction.dsl().newRecord(
+                    SCHOOL_CLASS
+                ))
+                .apply {
+                    id = schoolClassId
+                    name = schoolClass.name
+                    schoolId = schoolClass.schoolId.toBigDecimal()
+                    schoolPeriodId = schoolClass.schoolPeriodId.toBigDecimal()
+                    mainTeacherRoleId =
+                        schoolRolesService.getTeacherRoleId(
+                            schoolClass.mainTeacher?.id!!.toBigDecimal(),
+                            schoolClass.schoolPeriodId.toBigDecimal(),
+                            schoolClass.schoolId.toBigDecimal()
+                        )
+                }.store()
+            if (studentsFromClassFile != null) {
+                importService.createRequestsFromUsersExcel(
+                    studentsFromClassFile,
+                    schoolClass.schoolPeriodId.toBigDecimal(),
+                    schoolClass.schoolId.toBigDecimal(),
+                    SchoolRole.STUDENT,
+                    schoolClassId,
+                    userId,
+                    transaction.dsl()
+                )
+            }
+        }
         return schoolClassId
     }
 
-    fun synchronizeNumbersInClass(schoolClassId: BigDecimal) {
+    fun synchronizeNumbersInClass(schoolClassId: BigDecimal, periodId: BigDecimal) {
         db.transaction { transaction ->
-            transaction.dsl().batchUpdate(studentSchoolClassRoleRecordSelectOnConditionStep(transaction.dsl())
-                .where(STUDENT_SCHOOL_CLASS.SCHOOL_CLASS_ID.eq(schoolClassId))
+            transaction.dsl().batchUpdate(userService.studentRecordSelectOnConditionStep(transaction.dsl())
+                .where(
+                    STUDENT_SCHOOL_CLASS.SCHOOL_CLASS_ID.eq(schoolClassId).and(
+                        SCHOOL_USER_PERIOD.PERIOD_ID.eq(periodId)
+                            .and(SCHOOL_USER_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
+                            .and(SCHOOL_ROLE_PERIOD.PERIOD_ID.eq(periodId))
+                            .and(SCHOOL_ROLE_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
+                    )
+                )
                 .orderBy(USER.FIRST_NAME, USER.MIDDLE_NAME, USER.LAST_NAME)
                 .fetchInto(STUDENT_SCHOOL_CLASS)
                 .mapIndexed { index, studentSchoolClassRecord ->
@@ -108,16 +140,6 @@ class SchoolClassService : BaseService() {
             .leftJoin(SCHOOL_USER_PERIOD)
             .on(SCHOOL_USER_PERIOD.SCHOOL_USER_ID.eq(SCHOOL_USER.ID))
 
-    private fun studentSchoolClassRoleRecordSelectOnConditionStep(dsl: DSLContext): SelectOnConditionStep<Record> {
-        return dsl.select(
-            STUDENT_SCHOOL_CLASS.asterisk(), SCHOOL_USER_ROLE.asterisk(), USER.asterisk()
-        )
-            .from(STUDENT_SCHOOL_CLASS)
-            .leftJoin(SCHOOL_USER_ROLE)
-            .on(SCHOOL_USER_ROLE.ID.eq(STUDENT_SCHOOL_CLASS.STUDENT_SCHOOL_USER_ROLE_ID))
-            .leftJoin(USER)
-            .on(USER.ID.eq(SCHOOL_USER_ROLE.USER_ID))
-    }
 
     fun mapRecordToInternalModel(it: Record): SchoolClass {
         val role = SchoolRole.valueOf(it.get(SCHOOL_USER_ROLE.ROLE)!!)

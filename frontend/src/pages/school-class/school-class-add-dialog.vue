@@ -28,6 +28,13 @@
                               :options="teacherOptions"
                               :rules="[val=>val !== null && val !== '' || 'Задължително поле']"
                               label="Класен ръководител"/>
+                    <single-file-picker
+                            v-model="studentsFromSchoolFile"
+                            accept-file-format=".xlsx"
+                            class="q-mt-md q-mr-sm"
+                            label="Файл с ученици"
+                            remove-action-button
+                    />
                     <q-card-actions align="right">
                         <q-btn color="primary" label="Добави" @click="submit"/>
                         <q-btn class="q-ml-sm" color="primary" flat label="Отказ" @click="onDialogCancel"/>
@@ -44,6 +51,7 @@ import {SchoolClass} from "../../model/SchoolClass";
 import {UserView} from "../../model/User";
 import {useDialogPluginComponent, useQuasar} from "quasar";
 import {getRangeOf} from "../../utils";
+import SingleFilePicker from "../common/single-file-picker.vue";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
 const quasar = useQuasar()
@@ -60,9 +68,13 @@ const classNumber = $ref<number | null>(null)
 const schoolClassesNumberOptions = getRangeOf(12, 1, -1).map(it => it.toString())
 const classAlpha = $ref<string | null>(null)
 const alreadyExistingSchoolClassesNames = props.alreadyExistingSchoolClasses.map(it => it.name)
+const studentsFromSchoolFile = $ref<File | null>(null)
 const submit = () => {
     onDialogOK({
-        item: {...schoolClass, name: classNumber!! + classAlpha!!}
+        item: <Pair<SchoolClass, Blob>>{
+            first: {...schoolClass, name: classNumber!! + classAlpha!!},
+            second: studentsFromSchoolFile
+        }
     })
 }
 </script>
