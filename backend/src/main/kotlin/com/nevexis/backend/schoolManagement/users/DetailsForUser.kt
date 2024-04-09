@@ -1,7 +1,7 @@
 
 package com.nevexis.backend.schoolManagement.users
 
-import com.nevexis.backend.schoolManagement.schoolClass.SchoolClass
+import com.nevexis.backend.schoolManagement.school_class.SchoolClass
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer

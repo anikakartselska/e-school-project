@@ -4,8 +4,8 @@ import com.nevexis.backend.schoolManagement.requests.RequestService
 import com.nevexis.backend.schoolManagement.requests.RequestStatus
 import com.nevexis.backend.schoolManagement.school.School
 import com.nevexis.backend.schoolManagement.school.SchoolService
-import com.nevexis.backend.schoolManagement.schoolClass.SchoolClass
-import com.nevexis.backend.schoolManagement.schoolClass.SchoolClassService
+import com.nevexis.backend.schoolManagement.school_class.SchoolClass
+import com.nevexis.backend.schoolManagement.school_class.SchoolClassService
 import com.nevexis.backend.schoolManagement.school_period.SchoolPeriod
 import com.nevexis.backend.schoolManagement.school_period.SchoolPeriodService
 import com.nevexis.backend.schoolManagement.security.JwtService

@@ -27,8 +27,6 @@ class SchoolPeriodService : BaseService() {
                 id = it.id!!,
                 startYear = it.startYear!!,
                 endYear = it.endYear!!,
-                firstSemester = it.firstSemester!!,
-                secondSemester = it.secondSemester!!,
                 schoolIds = allSchoolPEriodSchoolGroupedByPeriodId[it.id]?.mapNotNull { it.schoolId } ?: emptyList()
             )
         }

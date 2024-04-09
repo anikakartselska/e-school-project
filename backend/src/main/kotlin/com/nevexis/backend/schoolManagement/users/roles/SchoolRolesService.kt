@@ -199,9 +199,7 @@ class SchoolRolesService : BaseService() {
                 SchoolPeriod(
                     id = schoolPeriodRecord.id!!.toInt(),
                     startYear = schoolPeriodRecord.startYear!!,
-                    endYear = schoolPeriodRecord.endYear!!,
-                    firstSemester = schoolPeriodRecord.firstSemester!!.toInt(),
-                    secondSemester = schoolPeriodRecord.secondSemester!!.toInt()
+                    endYear = schoolPeriodRecord.endYear!!
                 )
             }
             val schoolUserRole = SchoolUserRole(

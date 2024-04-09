@@ -1,4 +1,4 @@
-package com.nevexis.backend.schoolManagement.schoolClass
+package com.nevexis.backend.schoolManagement.school_class
 
 import com.nevexis.backend.schoolManagement.users.StudentView
 import com.nevexis.backend.schoolManagement.users.UserService

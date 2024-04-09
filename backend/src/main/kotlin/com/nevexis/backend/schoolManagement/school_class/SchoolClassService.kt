@@ -1,4 +1,4 @@
-package com.nevexis.backend.schoolManagement.schoolClass
+package com.nevexis.backend.schoolManagement.school_class
 
 import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.BaseService

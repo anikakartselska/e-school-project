@@ -15,16 +15,16 @@ import java.time.LocalDate
 data class SchoolPeriod(
     val id: Int,
     val startYear: LocalDate,
-    val endYear: LocalDate,
-    val firstSemester: Int,
-    val secondSemester: Int
+    val endYear: LocalDate
 )
+
+enum class Semester {
+    FIRST, SECOND
+}
 
 data class SchoolPeriodWithSchoolIds(
     val id: BigDecimal,
     val startYear: LocalDate,
     val endYear: LocalDate,
-    val firstSemester: BigDecimal,
-    val secondSemester: BigDecimal,
     val schoolIds: List<BigDecimal>
 )

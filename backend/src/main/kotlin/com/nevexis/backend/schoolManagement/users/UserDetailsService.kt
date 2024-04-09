@@ -1,7 +1,7 @@
 package com.nevexis.backend.schoolManagement.users
 
 import com.nevexis.backend.schoolManagement.BaseService
-import com.nevexis.backend.schoolManagement.schoolClass.SchoolClassService
+import com.nevexis.backend.schoolManagement.school_class.SchoolClassService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolRolesService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
 import com.nevexis.`demo-project`.jooq.tables.records.ParentStudentRecord
