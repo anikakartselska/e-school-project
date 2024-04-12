@@ -24,6 +24,7 @@
           </q-popup-proxy>
         </q-btn>
       </q-td>
+
     </template>
     <template v-slot:body-cell-average="props">
       <q-td>
@@ -39,9 +40,9 @@
 import {$ref} from "vue/macros";
 import {StudentWithEvaluationDTO} from "../../model/StudentWithEvaluationDTO";
 import {
-  calculateAverageGrade,
-  gradeBackgroundColorMap,
-  gradeMap
+    calculateAverageGrade,
+    gradeBackgroundColorMap,
+    gradeMap
 } from "../../services/helper-services/EvaluationService";
 import {Subject} from "../../model/Subject";
 import {watch} from "vue";

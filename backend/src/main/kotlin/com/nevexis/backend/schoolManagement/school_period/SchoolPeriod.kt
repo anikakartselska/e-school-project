@@ -19,7 +19,7 @@ data class SchoolPeriod(
 )
 
 enum class Semester {
-    FIRST, SECOND
+    FIRST, SECOND, YEARLY
 }
 
 data class SchoolPeriodWithSchoolIds(

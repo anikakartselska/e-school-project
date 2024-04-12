@@ -26,6 +26,9 @@ import SchoolClassesPage from "./pages/school-class/school-classes-page.vue";
 import SchoolClassPage from "./pages/school-class/school-class-page.vue";
 import ResetPasswordPage from "./pages/reset-password/reset-password-page.vue";
 import NewPasswordInputPage from "./pages/reset-password/new-password-input-page.vue";
+import SchoolClassStudentsTab from "./pages/school-class/school-class-students-tab.vue";
+import SchoolClassSubjectsTab from "./pages/school-class/school-class-subjects-tab.vue";
+import SchoolClassGradesTab from "./pages/school-class/school-class-grades-tab.vue";
 
 const routes = [
     {
@@ -81,10 +84,30 @@ const routes = [
                 props: true
             },
             {
-                path: '/school-class/:schoolClassId(\\d+)/:periodId(\\d+)/:schoolId(\\d+)',
+                path: '/school-class/:periodId/:schoolId/:schoolClassId',
                 name: 'school-class',
                 component: SchoolClassPage,
-                props: true
+                props: true,
+                children: [
+                    {
+                        path: 'students',
+                        component: SchoolClassStudentsTab
+                    },
+                    {
+                        path: 'subjects',
+                        component: SchoolClassSubjectsTab
+                    },
+                    {
+                        path: 'grades',
+                        component: SchoolClassGradesTab
+                    }
+                ],
+            },
+            {
+                path: '/school-class',
+                redirect: to => {
+                    return {path: `/school-class/:schoolClassId(\\d+)/:periodId(\\d+)/:schoolId(\\d+)/students`}
+                },
             },
             {
                 path: '/diary/:schoolClassId(\\d+)/:studentId(\\d+)/:periodId(\\d+)/:schoolId(\\d+)',

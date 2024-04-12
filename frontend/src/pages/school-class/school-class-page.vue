@@ -1,167 +1,100 @@
 <template>
-  <q-page class="q-pa-sm bg-sms">
-    <q-card>
-      <q-table
-              :columns="columns"
-              :filter="filter"
-              :pagination="{rowsPerPage:10}"
-              :rows="studentsFromSchoolClass"
-              no-data-label="Няма данни в таблицата"
-              no-results-label="Няма резултати от вашето търсене"
-              row-key="id"
-              rows-per-page-label="Редове на страница"
-              title="Ученици"
-              @row-click.prevent="(_,row,__)=>openUser(row)"
-      >
-        <template v-slot:body-cell-edit="props">
-          <q-td>
-            <q-btn dense flat icon="open_in_new" @click="openUser(props.row)">
-            </q-btn>
-          </q-td>
-        </template>
-        <template v-slot:top-left="props">
-          <div class="text-h4">
-            Клас: {{ schoolClass.name }}
-          </div>
-          <div class="text-h5">
-            Класен ръководител:
-            <router-link :to="`/user/${schoolClass.mainTeacher.id}/${periodId}/${schoolId}`"
-                         active-class="text-negative" class="text-primary" exact-active-class="text-negative">
-              {{ schoolClass.mainTeacher.firstName }} {{ schoolClass.mainTeacher.lastName }}
-            </router-link>
-            <q-btn class="q-mr-xs" color="primary" flat icon="edit" round @click="updateMainTeacher"/>
-          </div>
-        </template>
-        <template v-slot:top-right="props">
-            <single-file-picker
-                    v-model="studentsFile"
-                    accept-file-format=".xlsx"
-                    class="q-mt-md q-mr-sm"
-                    label="Добави ученици"
-                    @action-button-event="addStudentsWithExcel()"
-            />
-            <q-input v-model="filter" debounce="300" dense outlined placeholder="Търсене">
-                <template v-slot:append>
-                    <q-icon name="search"/>
-                </template>
-            </q-input>
-            <q-btn
-                    color="primary"
-                    flat
-                    icon-right="sync"
-                    no-caps
-                    @click="syncSchoolClassNumbersInClass"
-            >
-                <q-tooltip>
-                    Синхронизирай номерата на учениците
-                </q-tooltip>
-            </q-btn>
-        </template>
-      </q-table>
-    </q-card>
-  </q-page>
+    <div class="bg-sms">
+        <div class="col-2"></div>
+        <div class="col-8">
+            <q-page class="page-content" padding>
+                <div style="margin-top: 30px;">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="text-h4">
+                                Клас: {{ schoolClass.name }}
+                            </div>
+                            <div class="text-h5">
+                                Класен ръководител:
+                                <router-link :to="`/user/${schoolClass.mainTeacher.id}/${periodId}/${schoolId}`"
+                                             active-class="text-negative" class="text-primary"
+                                             exact-active-class="text-negative">
+                                    {{ schoolClass.mainTeacher.firstName }} {{ schoolClass.mainTeacher.lastName }}
+                                </router-link>
+                                <q-btn class="q-mr-xs" color="primary" flat icon="edit" round
+                                       @click="updateMainTeacher"/>
+                            </div>
+                            <q-tabs dense>
+                                <q-route-tab label="Ученици" to="students"/>
+                                <q-route-tab label="Предмети" to="subjects"/>
+                                <q-route-tab label="Оценки" to="grades"/>
+                            </q-tabs>
+                        </div>
+                        <div class="col-12">
+                            <router-view v-slot="{ Component }"
+                                         :periodId="props.periodId"
+                                         :schoolClass="schoolClass"
+                                         :schoolId="props.schoolId"
+                                         :studentsFromSchoolClass="studentsFromSchoolClass"
+                                         :subjectsTaughtInSchoolClassForYear="subjectsTaughtInSchoolClass">
+                                <template v-if="Component">
+                                    <suspense>
+                                        <component :is="Component">
+                                        </component>
+                                        <template #fallback>
+                                            <div class="centered-div">
+                                                <q-spinner
+                                                        :thickness="2"
+                                                        color="primary"
+                                                        size="5.5em"
+                                                />
+                                            </div>
+                                        </template>
+                                    </suspense>
+                                </template>
+                            </router-view>
+                        </div>
+                    </div>
+                </div>
+            </q-page>
+        </div>
+    </div>
 </template>
 
 <script lang="ts" setup>
-import {$ref} from "vue/macros";
+
+import ChangeMainTeacherDialog from "./change-main-teacher-dialog.vue";
 import {
     getAllStudentsFromSchoolClass,
+    getAllSubjectsInSchoolClass,
     getAllTeachersThatDoNotHaveSchoolClass,
     getSchoolClassById,
-    saveSchoolClass,
-    syncNumbersInClass,
-    uploadUsersExcelFile
+    saveSchoolClass
 } from "../../services/RequestService";
-import {SchoolRole, StudentView, UserView} from "../../model/User";
-import {useRouter} from "vue-router";
+import {UserView} from "../../model/User";
+import {$ref} from "vue/macros";
 import {useQuasar} from "quasar";
-import ChangeMainTeacherDialog from "./change-main-teacher-dialog.vue";
-import SingleFilePicker from "../common/single-file-picker.vue";
 
 const props = defineProps<{
-  periodId: number,
-  schoolId: number,
-  schoolClassId: number
+    periodId: number,
+    schoolId: number,
+    schoolClassId: number
 }>()
+
 const schoolClass = $ref(await getSchoolClassById(props.schoolClassId, props.periodId))
-let studentsFromSchoolClass = $ref(await getAllStudentsFromSchoolClass(props.schoolClassId, props.periodId))
-const router = useRouter()
 const quasar = useQuasar()
-let studentsFile = $ref(null)
-const filter = $ref('')
-const openUser = (row: UserView) => {
-  router.push({
-    name: "user",
-    params: {
-      id: row.id
-    }
-  })
-}
+let subjectsTaughtInSchoolClass = $ref(await getAllSubjectsInSchoolClass(props.schoolClassId, props.periodId, props.schoolId))
+let studentsFromSchoolClass = $ref(await getAllStudentsFromSchoolClass(props.schoolClassId, props.periodId))
+
 const updateMainTeacher = async () =>
         quasar.dialog({
-          component: ChangeMainTeacherDialog,
-          componentProps: {
-            title: `Смяна на класен ръководител на ${schoolClass.name} клас`,
-            mainTeacher: schoolClass.mainTeacher,
-            teacherOptions: await getAllTeachersThatDoNotHaveSchoolClass(props.schoolId, props.periodId)
-          },
+            component: ChangeMainTeacherDialog,
+            componentProps: {
+                title: `Смяна на класен ръководител на ${schoolClass.name} клас`,
+                mainTeacher: schoolClass.mainTeacher,
+                teacherOptions: await getAllTeachersThatDoNotHaveSchoolClass(props.schoolId, props.periodId)
+            },
         }).onOk(async (payload) => {
           schoolClass.mainTeacher = payload.item as UserView
           await saveSchoolClass(schoolClass)
         })
 
-const addStudentsWithExcel = async () => {
-    await uploadUsersExcelFile(studentsFile, props.periodId, props.schoolId, SchoolRole.STUDENT, props.schoolClassId)
-}
-const syncSchoolClassNumbersInClass = async () => {
-    await syncNumbersInClass(props.schoolClassId, props.periodId).then(async e =>
-            studentsFromSchoolClass = await getAllStudentsFromSchoolClass(props.schoolClassId, props.periodId))
-}
-const columns = [
-  {name: 'edit'},
-  {
-    name: "firstName",
-    align: "left",
-    label: "Име",
-    field: (row: StudentView) => row.firstName,
-    sortable: true
-  },
-  {
-    name: "middleName",
-    align: "left",
-    label: "Презиме",
-    field: (row: StudentView) => row.middleName,
-    sortable: true
-  },
-  {
-    name: "lastName",
-    align: "left",
-    label: "Фамилия",
-    field: (row: StudentView) => row.lastName,
-    sortable: true
-  },
-  {
-    name: "username",
-    align: "left",
-    label: "Потребителско име",
-    field: (row: StudentView) => row.username,
-    sortable: true
-  },
-  {
-    name: "numberInClass",
-    align: "left",
-    label: "Номер в клас",
-    field: (row: StudentView) => row.numberInClass,
-    sortable: true
-  },
-  {
-    name: "email",
-    label: "Имейл",
-    align: "left",
-    field: (row: StudentView) => row.email,
-    sortable: true
-  }
-]
+
 </script>
 
 <style scoped>

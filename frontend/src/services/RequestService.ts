@@ -8,6 +8,7 @@ import {School} from "../model/School";
 import {SchoolUserRole} from "../model/SchoolUserRole";
 import {SchoolPeriod, SchoolPeriodWithSchoolIds} from "../model/SchoolPeriod";
 import {Request} from "../model/Request";
+import {Evaluation} from "../model/Evaluation";
 
 export const login = async (email: string, password: string): Promise<AxiosResponse> =>
         await axios.post<string>(`/authenticate`, {username: email, password}, {
@@ -315,5 +316,11 @@ export const saveSchoolClass = async (schoolClass, studentsFromClassFile: Blob |
 export const syncNumbersInClass = async (schoolClassId, periodId): Promise<any> =>
         await api.post<any>(`/sync-numbers-in-class`, null, {
             params: {schoolClassId: schoolClassId, periodId: periodId},
+            headers: {'Content-Type': 'application/json'}
+        })
+
+export const fetchAllStudentSubjectEvaluationsFromSchoolClass = async (schoolClass, evaluationType): Promise<AxiosResponse<Evaluation[]>> =>
+        await api.post<Evaluation[]>(`/fetch-all-student-subject-evaluations-from-school-class`, schoolClass, {
+            params: {evaluationType: evaluationType},
             headers: {'Content-Type': 'application/json'}
         })

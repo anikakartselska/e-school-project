@@ -35,11 +35,11 @@ export const calculateAbsencesSum = (evaluations: Evaluation[]) => {
 }
 
 export const calculateAverageGrade = (evaluations: Evaluation[]) => {
-    const grades = evaluations.filter(it => it.evaluationType == EvaluationType.GRADE)
-    const sumOfGrades = grades.map(grade => {
+    const grades = evaluations?.filter(it => it.evaluationType == EvaluationType.GRADE && !(it.evaluationValue as GradeValue).finalGrade)
+    const sumOfGrades = grades?.map(grade => {
         return gradeMap.get((grade.evaluationValue as GradeValue).grade)!!
     }).reduce((sum, current) => sum + current, 0)
-    return sumOfGrades / grades.length
+    return (sumOfGrades / grades?.length).toPrecision(2)
 }
 
 export const feedbacksMap = new Map<Feedback, boolean>([

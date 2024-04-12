@@ -5,7 +5,7 @@ export interface SchoolPeriod {
 }
 
 export enum Semester {
-    FIRST, SECOND
+    FIRST = "FIRST", SECOND = "SECOND", YEARLY = "YEARLY"
 }
 
 export interface SchoolPeriodWithSchoolIds {

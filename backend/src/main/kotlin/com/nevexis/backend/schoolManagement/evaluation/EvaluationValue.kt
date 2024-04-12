@@ -20,7 +20,8 @@ sealed class EvaluationValue {
 
     @Serializable
     data class GradeValue(
-        val grade: Grade
+        val grade: Grade,
+        val finalGrade: Boolean? = null
     ) : EvaluationValue()
 }
 

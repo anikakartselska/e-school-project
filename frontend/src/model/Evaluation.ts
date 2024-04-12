@@ -1,13 +1,17 @@
+import {StudentView, UserView} from "./User";
+import {Subject} from "./Subject";
+import {Semester} from "./SchoolPeriod";
+
 export interface Evaluation {
     id: number,
-    studentId: number,
-    subjectId: number,
+    student: StudentView,
+    subject: Subject,
     schoolLessonId: number,
     evaluationDate: Date,
     evaluationType: EvaluationType,
     evaluationValue: EvaluationValue,
-    schoolId: number,
-    schoolPeriodId: number,
+    semester: Semester,
+    createdBy: UserView
 }
 
 export type EvaluationValue = FeedbackValue | AbsenceValue | GradeValue
@@ -31,9 +35,11 @@ export class AbsenceValue {
 
 export class GradeValue {
     grade: Grade
+    finalGrade: boolean | null
 
-    constructor(grade: Grade) {
+    constructor(grade: Grade, finalGrade: boolean | null) {
         this.grade = grade
+        this.finalGrade = finalGrade
     }
 }
 

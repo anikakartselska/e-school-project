@@ -19,6 +19,7 @@ class SchoolClassController {
     @Autowired
     private lateinit var userService: UserService
 
+
     @GetMapping("/get-school-classes-from-school")
     fun getAllSchoolClassesFromSchoolAndPeriod(
         @RequestParam schoolId: BigDecimal,

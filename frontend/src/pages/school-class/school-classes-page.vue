@@ -73,14 +73,10 @@ const router = useRouter()
 const schoolClasses = $ref(await getSchoolClassesFromSchool(props.schoolId, props.periodId))
 const openSchoolClass = (schoolClass: SchoolClass) => {
     router.push({
-        name: "school-class",
-        params: {
-            periodId: props.periodId,
-            schoolId: props.schoolId,
-            schoolClassId: schoolClass.id
-        }
-    })
+        path: `/school-class/${props.periodId}/${props.schoolId}/${schoolClass.id}/students`,
+    });
 }
+
 
 const addNewSchoolClass = async () =>
         quasar.dialog({

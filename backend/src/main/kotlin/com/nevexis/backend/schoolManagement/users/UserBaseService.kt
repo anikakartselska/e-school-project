@@ -41,7 +41,11 @@ class UserBaseService : BaseService() {
         rolesForSchool: List<SchoolRole>
     ): UserView {
         val userRecord = record.into(UserRecord::class.java)
-        val schoolUserPeriodRecord = record.into(SchoolUserPeriodRecord::class.java)
+        val schoolUserPeriodRecord = try {
+            record.into(SchoolUserPeriodRecord::class.java)
+        } catch (e: Exception) {
+            null
+        }
         return UserView(
             id = userRecord.id!!.toInt(),
             email = userRecord.email!!,
@@ -50,7 +54,7 @@ class UserBaseService : BaseService() {
             lastName = userRecord.lastName!!,
             username = userRecord.username!!,
             roles = rolesForSchool,
-            status = schoolUserPeriodRecord.status?.let { RequestStatus.valueOf(it) }
+            status = schoolUserPeriodRecord?.status?.let { RequestStatus.valueOf(it) }
         )
 
     }
