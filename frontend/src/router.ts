@@ -29,6 +29,8 @@ import NewPasswordInputPage from "./pages/reset-password/new-password-input-page
 import SchoolClassStudentsTab from "./pages/school-class/school-class-students-tab.vue";
 import SchoolClassSubjectsTab from "./pages/school-class/school-class-subjects-tab.vue";
 import SchoolClassGradesTab from "./pages/school-class/school-class-grades-tab.vue";
+import SchoolClassRemarksTab from "./pages/school-class/school-class-feedbacks-tab.vue";
+import SchoolClassAbsencesTab from "./pages/school-class/school-class-absences-tab.vue";
 
 const routes = [
     {
@@ -100,7 +102,16 @@ const routes = [
                     {
                         path: 'grades',
                         component: SchoolClassGradesTab
-                    }
+                    },
+                    {
+                        path: 'remarks',
+                        component: SchoolClassRemarksTab
+                    },
+                    {
+                        path: 'absences',
+                        component: SchoolClassAbsencesTab
+                    },
+
                 ],
             },
             {

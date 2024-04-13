@@ -7,8 +7,7 @@
             no-results-label="Няма резултати от вашето търсене"
             row-key="id"
             separator="cell"
-            rows-per-page-label="Редове на страница"
-            title="Ученици"
+            title="Оценки"
             virtual-scroll
     >
         <template v-slot:header-cell-average="props">
@@ -51,7 +50,7 @@
                 <div class="row">
                     <div v-if="semester !== Semester.YEARLY" class="col-6 text-center">
                         <q-btn v-if="!isNaN(props.row.average?.first)"
-                               :class="`q-ma-xs bg-grey-3`"
+                               :class="`q-ma-xs ${getAverageGradeColorClass(props.row.average?.first)}`"
                                :label="props.row.average?.first ? props.row.average?.first : ''"
                                flat
                                rounded>
@@ -63,7 +62,7 @@
                     <q-separator v-if="semester !== Semester.YEARLY" vertical/>
                     <div class="col text-center">
                         <q-btn v-if="!isNaN(props.row.average?.second)"
-                               :class="`q-ma-xs bg-grey-3`"
+                               :class="`q-ma-xs ${getAverageGradeColorClass(props.row.average?.second)}`"
                                :label="props.row.average?.second ? props.row.average?.second : ''"
                                flat
                                rounded>
@@ -79,12 +78,12 @@
                   v-slot:[`body-cell-${column.name}`]="props">
             <q-td :props="props" class="fi">
                 <div v-if="props.row.student?.firstName=== undefined" class="row">
-                    <div class="col-8"/>
-                    <q-separator vertical/>
-                    <div class="col-2">
-                        <q-btn v-if="!isNaN(props.row.average?.first)"
-                               :class="`q-ma-xs bg-grey-3`"
-                               :label="props.row.average?.first ? props.row.average?.first : ''"
+                    <div v-if="semester !== Semester.YEARLY" class="col-8"/>
+                    <q-separator v-if="semester !== Semester.YEARLY" vertical/>
+                    <div v-if="semester !== Semester.YEARLY" class="col-2">
+                        <q-btn v-if="!isNaN(props.row[column.name]?.first)"
+                               :class="`q-ma-xs ${getAverageGradeColorClass(props.row[column.name]?.first)}`"
+                               :label="props.row[column.name]?.first ? props.row[column.name]?.first : ''"
                                flat
                                rounded>
                             <q-tooltip>
@@ -92,11 +91,11 @@
                             </q-tooltip>
                         </q-btn>
                     </div>
-                    <q-separator vertical/>
-                    <div v-if="semester !== Semester.YEARLY" class="col text-center">
-                        <q-btn v-if="!isNaN(props.row.average?.second)"
-                               :class="`q-ma-xs bg-grey-3`"
-                               :label="props.row.average?.second ? props.row.average?.second : ''"
+                    <q-separator v-if="semester !== Semester.YEARLY" vertical/>
+                    <div class="col text-center">
+                        <q-btn v-if="!isNaN(props.row[column.name]?.second)"
+                               :class="`q-ma-xs ${getAverageGradeColorClass(props.row[column.name]?.second)}`"
+                               :label="props.row[column.name]?.second ? props.row[column.name]?.second : ''"
                                flat
                                rounded>
                             <q-tooltip>
@@ -125,8 +124,9 @@
                         </q-btn>
                     </div>
                     <q-separator v-if="semester !== Semester.YEARLY" vertical/>
-                    <div v-if="semester !== Semester.YEARLY" class="col text-center">
-                        <q-btn v-if="!isNaN(calculateAverageGrade(props.row[column.name]))" :class="`q-ma-xs bg-grey-3`"
+                    <div v-if="semester !== Semester.YEARLY" class="col-2 text-center">
+                        <q-btn v-if="!isNaN(calculateAverageGrade(props.row[column.name]))"
+                               :class="`q-ma-xs ${getAverageGradeColorClass(calculateAverageGrade(props.row[column.name]))}`"
                                :label="calculateAverageGrade(props.row[column.name])"
                                flat
                                rounded>
@@ -135,9 +135,9 @@
                             </q-tooltip>
                         </q-btn>
                     </div>
-                    <q-separator vertical/>
-                    <div v-if="semester !== Semester.YEARLY" class="col-2 text-center">
-                        <q-btn v-for="grade in props.row[column.name]?.filter(it=> it.evaluationValue.finalGrade)"
+                    <q-separator v-if="semester!== Semester.YEARLY" vertical/>
+                    <div class="col text-center">
+                        <q-btn v-for="grade in props.row[column.name]?.filter(it=> it.evaluationValue.finalGrade===true)"
                                :class="`q-ma-xs ${gradeBackgroundColorMap.get(grade.evaluationValue.grade)}`"
                                :label="`${gradeMap.get(grade.evaluationValue.grade)?.toString()}`"
                                flat
@@ -163,13 +163,14 @@
 
 import {
     calculateAverageGrade,
+    getAverageGradeColorClass,
     gradeBackgroundColorMap,
     gradeMap
-} from "../../services/helper-services/EvaluationService";
-import {Evaluation} from "../../model/Evaluation";
-import {StudentView} from "../../model/User";
-import {Subject} from "../../model/Subject";
-import {Semester} from "../../model/SchoolPeriod";
+} from "../../../services/helper-services/EvaluationService";
+import {Evaluation} from "../../../model/Evaluation";
+import {StudentView} from "../../../model/User";
+import {Subject} from "../../../model/Subject";
+import {Semester} from "../../../model/SchoolPeriod";
 
 const props = defineProps<{
     students: StudentView[],

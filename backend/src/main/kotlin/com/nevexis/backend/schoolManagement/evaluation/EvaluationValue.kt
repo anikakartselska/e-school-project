@@ -15,7 +15,8 @@ sealed class EvaluationValue {
 
     @Serializable
     data class AbsenceValue(
-        val absence: Absence
+        val absence: Absence,
+        val excused: Boolean
     ) : EvaluationValue()
 
     @Serializable
@@ -87,41 +88,41 @@ enum class Grade(val value: BigDecimal) {
     EXCELLENT(6.toBigDecimal()),
 }
 
-//-Обща похвала - OVERALL_PRAISE
-//-Активно участие - ACTIVE_PARTICIPATION
-//-Отлично представяне - EXCELLENT_PERFORMANCE
-//-Изпълнена задача - TASK_COMPLETION
-//-Любознание - CURIOSITY
-//-Старание - DILIGENCE
-//-Прогрес - PROGRESS
-//-Комуникативност - COMMUNICATIVENESS
-//-Бодър ум - SHARP_MIND
-//-Концентрация - CONCENTRATION
-//-Креативност - CREATIVITY
-//-Работа в екип - TEAMWORK
-//-Лидерство - LEADERSHIP
-//-Родолюбие - PATRIOTISM
-//-Толерантност - TOLERANCE
-//-Емоционална интелигентност - EMOTIONAL_INTELLIGENCE
-//-Презентационни умения - PRESENTATION_SKILLS
-//-Дигитални умения - DIGITAL_SKILLS
-//-Музикална култура - MUSICAL_CULTURE
-//-Двигателна култура - PHYSICAL_EDUCATION
-//-Олимпиец - OLYMPIAN
+//-(Обща похвала) - OVERALL_PRAISE
+//-(Активно участие) - ACTIVE_PARTICIPATION
+//-(Отлично представяне) - EXCELLENT_PERFORMANCE
+//-(Изпълнена задача) - TASK_COMPLETION
+//-(Любознание) - CURIOSITY
+//-(Старание) - DILIGENCE
+//-(Прогрес) - PROGRESS
+//-(Комуникативност) - COMMUNICATIVENESS
+//-(Бодър ум) - SHARP_MIND
+//-(Концентрация) - CONCENTRATION
+//-(Креативност) - CREATIVITY
+//-(Работа в екип) - TEAMWORK
+//-(Лидерство) - LEADERSHIP
+//-(Родолюбие) - PATRIOTISM
+//-(Толерантност) - TOLERANCE
+//-(Емоционална интелигентност) - EMOTIONAL_INTELLIGENCE
+//-(Презентационни умения) - PRESENTATION_SKILLS
+//-(Дигитални умения) - DIGITAL_SKILLS
+//-(Музикална култура) - MUSICAL_CULTURE
+//-(Двигателна култура) - PHYSICAL_EDUCATION
+//-(Олимпиец) - OLYMPIAN
 
-//-Обща забележка - GENERAL_REMARK
-//-Лоша дисциплина - POOR_DISCIPLINE
-//-Липса на внимание - LACK_OF_ATTENTION
-//-Официална забележка - OFFICIAL_NOTE
-//-Неуважение - DISRESPECT
-//-Агресия - AGGRESSION
-//-Отстранен от час - REMOVED_FROM_CLASS
-//-Закъснение - TARDINESS
-//-Отсъствие - ABSENCE
-//-Слабо представяне - WEAK_PERFORMANCE
-//-Без подготовка - UNPREPARED
-//-Без домашна работа - NO_HOMEWORK
-//-Без учебно помагало - NO_STUDY_MATERIALS
-//-Без учебни пособия - NO_TEXTBOOKS
-//-Без екип - NO_TEAM_PARTICIPATION
-//-Без униформа - NO_UNIFORM
+//-(Обща забележка) - GENERAL_REMARK
+//-(Лоша дисциплина) - POOR_DISCIPLINE
+//-(Липса на внимание) - LACK_OF_ATTENTION
+//-(Официална забележка) - OFFICIAL_NOTE
+//-(Неуважение) - DISRESPECT
+//-(Агресия) - AGGRESSION
+//-(Отстранен от час) - REMOVED_FROM_CLASS
+//-(Закъснение) - TARDINESS
+//-(Отсъствие) - ABSENCE
+//-(Слабо представяне) - WEAK_PERFORMANCE
+//-(Без подготовка) - UNPREPARED
+//-(Без домашна работа) - NO_HOMEWORK
+//-(Без учебно помагало) - NO_STUDY_MATERIALS
+//-(Без учебни пособия) - NO_TEXTBOOKS
+//-(Без екип) - NO_TEAM_PARTICIPATION
+//-(Без униформа) - NO_UNIFORM

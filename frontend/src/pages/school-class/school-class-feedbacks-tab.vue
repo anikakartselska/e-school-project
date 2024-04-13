@@ -5,22 +5,22 @@
                               header-class="text-primary"
                               icon="book"
                               label="Първи срок">
-                <grades-table :grades="grades" :semester="Semester.FIRST" :students="studentsFromSchoolClass"
-                              :subjects="subjectsTaughtInSchoolClassForYear"/>
+                <remarks-table :feedbacks="remarks" :semester="Semester.FIRST" :students="studentsFromSchoolClass"
+                               :subjects="subjectsTaughtInSchoolClassForYear"/>
             </q-expansion-item>
             <q-expansion-item v-model="expansionItem[Semester.SECOND]"
                               header-class="text-primary"
                               icon="book"
                               label="Втори срок">
-                <grades-table :grades="grades" :semester="Semester.SECOND" :students="studentsFromSchoolClass"
-                              :subjects="subjectsTaughtInSchoolClassForYear"/>
+                <remarks-table :feedbacks="remarks" :semester="Semester.SECOND" :students="studentsFromSchoolClass"
+                               :subjects="subjectsTaughtInSchoolClassForYear"/>
             </q-expansion-item>
             <q-expansion-item v-model="expansionItem[Semester.YEARLY]"
                               header-class="text-primary"
                               icon="book"
-                              label="Годишни оценки">
-                <grades-table :grades="grades" :semester="Semester.YEARLY" :students="studentsFromSchoolClass"
-                              :subjects="subjectsTaughtInSchoolClassForYear"/>
+                              label="Общ брой забележки за учебната година">
+                <remarks-table :feedbacks="remarks" :semester="Semester.YEARLY" :students="studentsFromSchoolClass"
+                               :subjects="subjectsTaughtInSchoolClassForYear"/>
             </q-expansion-item>
         </q-card>
     </q-page>
@@ -32,9 +32,9 @@ import {fetchAllStudentSubjectEvaluationsFromSchoolClass} from "../../services/R
 import {EvaluationType} from "../../model/Evaluation";
 import {$ref} from "vue/macros";
 import {Semester} from "../../model/SchoolPeriod";
-import GradesTable from "./evaluation-tables/grades-table.vue";
 import {Subject} from "../../model/Subject";
 import {StudentView} from "../../model/User";
+import RemarksTable from "./evaluation-tables/feedbacks-table.vue";
 
 const props = defineProps<{
     periodId: number,
@@ -44,7 +44,7 @@ const props = defineProps<{
     studentsFromSchoolClass: StudentView[]
 }>()
 
-const grades = $ref(await fetchAllStudentSubjectEvaluationsFromSchoolClass(props.schoolClass, EvaluationType.GRADE).then(e => e.data))
+const remarks = $ref(await fetchAllStudentSubjectEvaluationsFromSchoolClass(props.schoolClass, EvaluationType.FEEDBACK).then(e => e.data))
 const expansionItem = $ref({"FIRST": false, "SECOND": false, "YEARLY": false})
 
 </script>

@@ -27,9 +27,11 @@ export class FeedbackValue {
 
 export class AbsenceValue {
     absence: Absence
+    excused: boolean
 
-    constructor(absence: Absence) {
+    constructor(absence: Absence, excused: boolean) {
         this.absence = absence
+        this.excused = excused
     }
 }
 
