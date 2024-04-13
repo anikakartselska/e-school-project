@@ -61,6 +61,9 @@ export const formatToBulgarian = (dateToFormat: string | null) => {
     }
     return date.formatDate(new Date(dateToFormat), 'DD.MM.YYYY');
 };
+export const isNumberArray = (arr: any[]) => {
+    return Array.isArray(arr) && arr.every(element => typeof element === 'number');
+}
 export const notifyForError = (title: string, caption: string, setTimeout: boolean = false) =>
         Notify.create({
             message: title,
