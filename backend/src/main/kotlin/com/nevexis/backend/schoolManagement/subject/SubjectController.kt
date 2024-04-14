@@ -14,14 +14,6 @@ class SubjectController {
     @Autowired
     private lateinit var subjectService: SubjectService
 
-//    @GetMapping("/get-student-subjects-with-evaluation")
-//    fun getStudentSubjectsAndTheirEvaluations(
-//        schoolClassId: BigDecimal,
-//        studentId: BigDecimal,//TODO studentRoleId
-//        schoolId: BigDecimal,
-//        periodId: BigDecimal
-//    ) = subjectService.getAllStudentSubjectsAndTheirEvaluations(schoolClassId, studentId, periodId, schoolId)
-
     @GetMapping("/get-subjects-by-school-class")
     fun getAllSubjectsBySchoolClassId(
         schoolClassId: BigDecimal,

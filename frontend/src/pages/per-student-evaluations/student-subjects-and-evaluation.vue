@@ -48,7 +48,7 @@ const props = defineProps<{
   schoolId: number
 }>()
 
-let subjectWithEvaluationDTO = $ref(await getStudentsSubjectsAndEvaluations(props.schoolClassId, props.studentId, props.periodId, props.schoolClassId))
+let subjectWithEvaluationDTO = $ref(await getStudentsSubjectsAndEvaluations(props.studentId, props.periodId, props.schoolId, props.schoolClassId))
 
 </script>
 

@@ -20,4 +20,12 @@ class EvaluationController {
     ): Map<BigDecimal, Map<BigDecimal, List<Evaluation>>> =
         evaluationService.getAllStudentSubjectEvaluationsFromSchoolClass(schoolClass, evaluationType)
 
+    @PostMapping("/get-student-subjects-with-evaluation")
+    fun getStudentSubjectsAndTheirEvaluations(
+        @RequestParam studentId: BigDecimal,
+        @RequestParam periodId: BigDecimal,
+        @RequestParam schoolId: BigDecimal,
+        @RequestParam schoolClassId: BigDecimal
+    ) = evaluationService.getAllEvaluationsForStudent(studentId, periodId, schoolId, schoolClassId)
+
 }

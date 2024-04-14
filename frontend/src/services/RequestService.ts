@@ -43,13 +43,13 @@ export const getUserWithDetailsByUserId = async (userId, periodId, schoolId): Pr
             }
         }).then(p => p.data)
 
-export const getStudentsSubjectsAndEvaluations = async (schoolClassId, studentId, periodId, schoolId): Promise<SubjectWithEvaluationDTO[]> =>
-        await api.get<SubjectWithEvaluationDTO[]>('/get-student-subjects-with-evaluation', {
+export const getStudentsSubjectsAndEvaluations = async (studentId, periodId, schoolId, schoolClassId): Promise<SubjectWithEvaluationDTO[]> =>
+        await api.post<SubjectWithEvaluationDTO[]>('/get-student-subjects-with-evaluation', null, {
             params: {
-                schoolClassId,
                 studentId,
                 periodId,
-                schoolId
+                schoolId,
+                schoolClassId
             }
         }).then(p => p.data)
 
