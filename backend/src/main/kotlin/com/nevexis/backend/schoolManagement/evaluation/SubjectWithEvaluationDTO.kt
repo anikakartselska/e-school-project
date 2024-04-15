@@ -1,6 +1,6 @@
-package com.nevexis.backend.schoolManagement.subject
+package com.nevexis.backend.schoolManagement.evaluation
 
-import com.nevexis.backend.schoolManagement.evaluation.Evaluation
+import com.nevexis.backend.schoolManagement.subject.Subject
 
 data class SubjectWithEvaluationDTO(
     val subject: Subject,

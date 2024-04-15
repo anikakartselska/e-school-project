@@ -5,6 +5,7 @@
           :columns="columns"
           row-key="subject"
           no-data-label="Няма данни в таблицата"
+          :pagination="{rowsPerPage:20}"
   >
     <template v-slot:body-cell-feedbacks="props">
       <q-td>

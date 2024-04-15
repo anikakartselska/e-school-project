@@ -11,7 +11,7 @@ data class Evaluation(
     val id: BigDecimal,
     val student: StudentView,
     val subject: Subject,
-    val schoolLessonId: BigDecimal,
+    val schoolLessonId: BigDecimal? = null,
     val evaluationDate: LocalDate,
     val evaluationType: EvaluationType,
     val evaluationValue: EvaluationValue,

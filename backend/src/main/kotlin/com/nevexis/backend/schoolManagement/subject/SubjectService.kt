@@ -107,6 +107,26 @@ class SubjectService : BaseService() {
                 mapToInternalModel(it)
             }
 
+    fun getSubjectsById(
+        schoolClassId: BigDecimal,
+        periodId: BigDecimal,
+        schoolId: BigDecimal
+    ): Subject? =
+        db.select(
+            SUBJECT.asterisk(), USER.asterisk(),
+            SCHOOL_USER.asterisk(),
+            SCHOOL_USER_PERIOD.asterisk()
+        ).from(SUBJECT)
+            .leftJoin(USER).on(SUBJECT.TEACHER_ID.eq(USER.ID))
+            .leftJoin(SCHOOL_USER).on(SCHOOL_USER.USER_ID.eq(USER.ID))
+            .leftJoin(SCHOOL_USER_PERIOD).on(SCHOOL_USER_PERIOD.SCHOOL_USER_ID.eq(SCHOOL_USER.ID))
+            .where(SUBJECT.SCHOOL_ID.eq(schoolId))
+            .and(SUBJECT.SCHOOL_PERIOD_ID.eq(periodId))
+            .fetchAny()
+            ?.let {
+                mapToInternalModel(it)
+            }
+
 
     fun mapToInternalModel(record: Record) = record.into(SubjectRecord::class.java)
         .map {

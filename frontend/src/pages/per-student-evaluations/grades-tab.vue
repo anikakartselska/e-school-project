@@ -5,6 +5,7 @@
           :columns="columns"
           row-key="subject"
           no-data-label="Няма данни в таблицата"
+          :pagination="{rowsPerPage:20}"
   >
     <template v-slot:body-cell-grades="props">
       <q-td>
@@ -38,7 +39,11 @@
 <script lang="ts" setup>
 import {$ref} from "vue/macros";
 import {SubjectWithEvaluationDTO} from "../../model/SubjectWithEvaluationDTO";
-import {calculateAverageGrade, gradeBackgroundColorMap, gradeMap} from "../../services/helper-services/EvaluationService";
+import {
+    calculateAverageGrade,
+    gradeBackgroundColorMap,
+    gradeMap
+} from "../../services/helper-services/EvaluationService";
 
 const props = defineProps<{
   evaluations: SubjectWithEvaluationDTO[]

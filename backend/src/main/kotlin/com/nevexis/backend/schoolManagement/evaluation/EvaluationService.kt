@@ -6,7 +6,6 @@ import com.nevexis.backend.schoolManagement.school_class.SchoolClass
 import com.nevexis.backend.schoolManagement.school_period.Semester
 import com.nevexis.backend.schoolManagement.subject.Subject
 import com.nevexis.backend.schoolManagement.subject.SubjectService
-import com.nevexis.backend.schoolManagement.subject.SubjectWithEvaluationDTO
 import com.nevexis.backend.schoolManagement.users.StudentView
 import com.nevexis.backend.schoolManagement.users.UserService
 import com.nevexis.`demo-project`.jooq.tables.records.EvaluationRecord
@@ -15,8 +14,10 @@ import com.nevexis.`demo-project`.jooq.tables.references.EVALUATION
 import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_CLASS_SUBJECT
 import com.nevexis.`demo-project`.jooq.tables.references.USER
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jooq.Record
+import org.jooq.impl.DSL
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
@@ -69,6 +70,63 @@ class EvaluationService : BaseService() {
         }
     }
 
+    fun getAllEvaluationsForSubjectAnSchoolClass(
+        subjectId: BigDecimal,
+        periodId: BigDecimal,
+        schoolId: BigDecimal,
+        schoolClassId: BigDecimal
+    ): List<StudentWithEvaluationDTO> {
+        val subject = subjectService.getSubjectsById(
+            subjectId,
+            periodId,
+            schoolId
+        ) ?: error(
+            SMSError(
+                "NOT_FOUND",
+                "Subject with id $subjectId does not exist"
+            )
+        )
+        val students = userService.getAllStudentsInSchoolClass(
+            schoolClassId = schoolClassId,
+            periodId = periodId
+        )
+        val records = db.select(
+            EVALUATION.asterisk(),
+            USER.asterisk()
+        )
+            .from(EVALUATION)
+            .leftJoin(SCHOOL_CLASS_SUBJECT)
+            .on(SCHOOL_CLASS_SUBJECT.SUBJECT_ID.eq(EVALUATION.SUBJECT_ID))
+            .leftJoin(USER)
+            .on(USER.ID.eq(EVALUATION.CREATED_BY))
+            .where(
+                EVALUATION.SCHOOL_PERIOD_ID.eq(periodId)
+                    .and(EVALUATION.SCHOOL_ID.eq(schoolId))
+                    .and(SCHOOL_CLASS_SUBJECT.SCHOOL_CLASS_ID.eq(schoolClassId))
+                    .and(EVALUATION.SUBJECT_ID.eq(subject.id))
+            ).fetch()
+
+        val evaluationsMap = records.groupBy { it.get(EVALUATION.USER_ID)!! }
+            .mapValues { (_, values) -> values.groupBy { it.get(EVALUATION.EVALUATION_TYPE) } }
+
+        return students.map { student ->
+            (evaluationsMap[student.id] ?: emptyMap()).let { evaluationTypeToEvaluationsMap ->
+                StudentWithEvaluationDTO(
+                    student,
+                    evaluationTypeToEvaluationsMap[EvaluationType.ABSENCE.name]?.map {
+                        mapToEvaluationModel(it, student, subject)
+                    } ?: emptyList(),
+                    evaluationTypeToEvaluationsMap[EvaluationType.GRADE.name]?.map {
+                        mapToEvaluationModel(it, student, subject)
+                    } ?: emptyList(),
+                    evaluationTypeToEvaluationsMap[EvaluationType.FEEDBACK.name]?.map {
+                        mapToEvaluationModel(it, student, subject)
+                    } ?: emptyList(),
+                )
+            }
+        }
+    }
+
     fun getAllEvaluationsForStudent(
         studentId: BigDecimal,
         periodId: BigDecimal,
@@ -104,8 +162,8 @@ class EvaluationService : BaseService() {
         val evaluationsMap = records.groupBy { it.get(EVALUATION.SUBJECT_ID)!! }
             .mapValues { (_, values) -> values.groupBy { it.get(EVALUATION.EVALUATION_TYPE) } }
 
-        return subjects.mapNotNull { subject ->
-            evaluationsMap[subject.id]?.let { evaluationTypeToEvaluationsMap ->
+        return subjects.map { subject ->
+            (evaluationsMap[subject.id] ?: emptyMap()).let { evaluationTypeToEvaluationsMap ->
                 SubjectWithEvaluationDTO(
                     subject,
                     evaluationTypeToEvaluationsMap[EvaluationType.ABSENCE.name]?.map {
@@ -139,22 +197,32 @@ class EvaluationService : BaseService() {
             createdBy = userService.mapToUserView(record.into(UserRecord::class.java), emptyList())
         )
     }
+
+    fun saveEvaluations(evaluations: List<Evaluation>, schoolId: BigDecimal, periodId: BigDecimal): List<Evaluation> {
+        val evaluationsToEvaluationRecords = evaluations.map { evaluation ->
+            val evaluationId = getEvaluationSeqNextVal()
+            evaluation.copy(id = evaluationId) to db.newRecord(EVALUATION, evaluation).apply {
+                id = evaluationId
+                subjectId = evaluation.subject.id
+                schoolLessonId = evaluation.schoolLessonId
+                evaluationDate = evaluation.evaluationDate
+                evaluationType = evaluation.evaluationType.name
+                evaluationValue = Json.encodeToString(evaluation.evaluationValue)
+                this.schoolId = schoolId
+                schoolPeriodId = periodId
+                userId = evaluation.student.id
+                semester = evaluation.semester.name
+                createdBy = evaluation.createdBy.id.toBigDecimal()
+            }
+        }
+        db.batchInsert(evaluationsToEvaluationRecords.map { it.second }).execute()
+        return evaluationsToEvaluationRecords.map { it.first }
+    }
+
+    fun getEvaluationSeqNextVal(): BigDecimal =
+        db.select(DSL.field("EVALUATION_SEQ.nextval")).from("DUAL")
+            .fetchOne()!!.map { it.into(BigDecimal::class.java) }
 }
 
-//    fun getAllEvaluationsForSubject(
-//        subjectId: BigDecimal,
-//        schoolClassId: BigDecimal,
-//        periodId: BigDecimal,
-//        schoolId: BigDecimal
-//    ) = db.selectFrom(EVALUATION).where(
-//        EVALUATION.STUDENT_ROLE_ID.`in`(
-//            db.select(STUDENT_SCHOOL_CLASS.STUDENT_SCHOOL_USER_ROLE_ID).from(STUDENT_SCHOOL_CLASS).where(
-//                STUDENT_SCHOOL_CLASS.SCHOOL_CLASS_ID.eq(schoolClassId)
-//            )
-//        ).and(EVALUATION.SUBJECT_ID.eq(subjectId))
-//            .and(EVALUATION.SCHOOL_PERIOD_ID.eq(periodId)).and(
-//                EVALUATION.SCHOOL_ID.eq(schoolId)
-//            )
-//    ).fetch().map { it.mapToInternalModel() }
 
 

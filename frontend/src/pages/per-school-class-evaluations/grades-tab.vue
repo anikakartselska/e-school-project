@@ -5,6 +5,7 @@
           :columns="columns"
           row-key="student"
           no-data-label="Няма данни в таблицата"
+          :pagination="{rowsPerPage:20}"
   >
     <template v-slot:body-cell-grades="props">
       <q-td>

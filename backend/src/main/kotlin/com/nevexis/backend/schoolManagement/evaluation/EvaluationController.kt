@@ -28,4 +28,23 @@ class EvaluationController {
         @RequestParam schoolClassId: BigDecimal
     ) = evaluationService.getAllEvaluationsForStudent(studentId, periodId, schoolId, schoolClassId)
 
+    @PostMapping("/get-evaluation-for-subject-and-school-class")
+    fun getEvaluationForSubjectAndSchoolClass(
+        @RequestParam subjectId: BigDecimal,
+        @RequestParam periodId: BigDecimal,
+        @RequestParam schoolId: BigDecimal,
+        @RequestParam schoolClassId: BigDecimal
+    ) = evaluationService.getAllEvaluationsForSubjectAnSchoolClass(
+        subjectId,
+        periodId,
+        schoolId,
+        schoolClassId
+    )
+
+    @PostMapping("/save-evaluations")
+    fun saveEvaluations(
+        @RequestBody evaluations: List<Evaluation>,
+        @RequestParam periodId: BigDecimal,
+        @RequestParam schoolId: BigDecimal,
+    ) = evaluationService.saveEvaluations(evaluations, periodId, schoolId)
 }

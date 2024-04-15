@@ -1,73 +1,39 @@
 <template>
-  <q-table
-          title="Отсъствия"
-          :rows="absences"
-          :columns="columns"
-          :visible-columns="visibleColumns"
-          row-key="subject"
-          no-data-label="Няма данни в таблицата"
-  >
-    <template v-slot:body-cell-absences="props">
-      <q-td>
-        <q-btn v-for="absence in props.row.absences"
-               flat rounded
-               :class="`q-ma-xs ${absenceBackgroundColorMap.get(absence.evaluationValue.absence)}`"
-               :label="absenceMap.get(absence.evaluationValue.absence)">
-          <q-popup-proxy>
-            <q-banner>
-              Въведен от:<span class="text-primary">{{
-                props.row.subject.teacher.firstName
-              }} {{ props.row.subject.teacher.lastName }}</span><br/>
-              Дата:<span class="text-primary">{{
-                absence.evaluationDate
-              }}</span><br/>
-            </q-banner>
-          </q-popup-proxy>
-        </q-btn>
-      </q-td>
-    </template>
-    <template v-slot:body-cell-total="props">
-      <q-td>
-        <div>
-          {{ calculateAbsencesSum(props.row.absences) }}
-        </div>
-      </q-td>
-    </template>
-  </q-table>
+  <q-page class="q-pa-sm bg-sms">
+    <q-card>
+      <q-expansion-item v-model="expansionItem[Semester.FIRST]"
+                        header-class="text-primary"
+                        icon="book"
+                        label="Първи срок">
+        <student-absences-table :evaluations="evaluations" :semester="Semester.FIRST"/>
+      </q-expansion-item>
+      <q-expansion-item v-model="expansionItem[Semester.SECOND]"
+                        header-class="text-primary"
+                        icon="book"
+                        label="Втори срок">
+        <student-absences-table :evaluations="evaluations" :semester="Semester.SECOND"/>
+      </q-expansion-item>
+      <q-expansion-item v-model="expansionItem[Semester.YEARLY]"
+                        header-class="text-primary"
+                        icon="book"
+                        label="Общ брой отсъствия за учебната година">
+        <student-absences-table :evaluations="evaluations" :semester="Semester.YEARLY"/>
+      </q-expansion-item>
+    </q-card>
+  </q-page>
 </template>
 
 <script lang="ts" setup>
 import {$ref} from "vue/macros";
 import {SubjectWithEvaluationDTO} from "../../model/SubjectWithEvaluationDTO";
-import {
-  absenceBackgroundColorMap,
-  absenceMap,
-  calculateAbsencesSum
-} from "../../services/helper-services/EvaluationService";
+import StudentAbsencesTable from "./student-absences-table.vue";
+import {Semester} from "../../model/SchoolPeriod";
 
 const props = defineProps<{
-  evaluations: SubjectWithEvaluationDTO[]
+  evaluations: SubjectWithEvaluationDTO[],
 }>()
-const absences = $ref(props.evaluations)
-const columns = [
-  {name: 'edit'},
-  {
-    name: "subject",
-    label: "Предмет",
-    align: "left",
-    field: (row: SubjectWithEvaluationDTO) => row.subject.name,
-  },
-  {
-    name: "absences",
-    align: "left",
-    label: "Отсъствия",
-  },
-  {
-    name: "total",
-    align: "left",
-    label: "Общо",
-  }
-]
+const expansionItem = $ref({"FIRST": false, "SECOND": false, "YEARLY": false})
+
 </script>
 
 <style scoped>

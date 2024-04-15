@@ -9,6 +9,7 @@ import {SchoolUserRole} from "../model/SchoolUserRole";
 import {SchoolPeriod, SchoolPeriodWithSchoolIds} from "../model/SchoolPeriod";
 import {Request} from "../model/Request";
 import {Evaluation} from "../model/Evaluation";
+import {StudentWithEvaluationDTO} from "../model/StudentWithEvaluationDTO";
 
 export const login = async (email: string, password: string): Promise<AxiosResponse> =>
         await axios.post<string>(`/authenticate`, {username: email, password}, {
@@ -52,6 +53,16 @@ export const getStudentsSubjectsAndEvaluations = async (studentId, periodId, sch
                 schoolClassId
             }
         }).then(p => p.data)
+export const getEvaluationForSubjectAndSchoolClass = async (subjectId, periodId, schoolId, schoolClassId): Promise<StudentWithEvaluationDTO[]> =>
+        await api.post<StudentWithEvaluationDTO[]>('/get-evaluation-for-subject-and-school-class', null, {
+            params: {
+                subjectId,
+                periodId,
+                schoolId,
+                schoolClassId
+            }
+        }).then(p => p.data)
+
 
 export const getAllStudentsFromClass = async (schoolClassId, periodId): Promise<StudentView[]> =>
         await api.get<StudentView[]>('/get-all-students-from-class', {
@@ -324,3 +335,10 @@ export const fetchAllStudentSubjectEvaluationsFromSchoolClass = async (schoolCla
             params: {evaluationType: evaluationType},
             headers: {'Content-Type': 'application/json'}
         })
+
+export const saveEvaluations = async (evaluations, periodId, schoolId): Promise<AxiosResponse<Evaluation[]>> =>
+        await api.post<Evaluation[]>(`/save-evaluations`, evaluations, {
+            params: {periodId: periodId, schoolId: schoolId},
+            headers: {'Content-Type': 'application/json'}
+        })
+

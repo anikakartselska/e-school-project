@@ -512,26 +512,12 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>EVALUATION</table_name>
-            <column_name>FINAL</column_name>
-            <data_type>char</data_type>
-            <character_maximum_length>1</character_maximum_length>
-            <numeric_precision>0</numeric_precision>
-            <numeric_scale>0</numeric_scale>
-            <ordinal_position>10</ordinal_position>
-            <is_nullable>false</is_nullable>
-            <column_default>'''N'' '</column_default>
-            <comment></comment>
-        </column>
-        <column>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>EVALUATION</table_name>
             <column_name>SEMESTER</column_name>
             <data_type>varchar</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
-            <ordinal_position>11</ordinal_position>
+            <ordinal_position>10</ordinal_position>
             <is_nullable>true</is_nullable>
             <comment></comment>
         </column>
@@ -544,7 +530,7 @@
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
-            <ordinal_position>12</ordinal_position>
+            <ordinal_position>11</ordinal_position>
             <is_nullable>true</is_nullable>
             <comment></comment>
         </column>

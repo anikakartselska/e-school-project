@@ -6,6 +6,7 @@
           :visible-columns="visibleColumns"
           row-key="subject"
           no-data-label="Няма данни в таблицата"
+          :pagination="{rowsPerPage:20}"
   >
     <template v-slot:top-right>
       <q-btn v-if="!addingMode" icon="add" @click="addingMode = !addingMode"/>
@@ -50,9 +51,9 @@
 import {$computed, $ref} from "vue/macros";
 import {StudentWithEvaluationDTO} from "../../model/StudentWithEvaluationDTO";
 import {
-  absenceBackgroundColorMap,
-  absenceMap,
-  calculateAbsencesSum
+    absenceBackgroundColorMap,
+    absenceMap,
+    calculateAbsencesSum
 } from "../../services/helper-services/EvaluationService";
 import {Subject} from "../../model/Subject";
 import {watch} from "vue";

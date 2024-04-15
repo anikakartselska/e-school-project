@@ -5,6 +5,7 @@
             hide-pagination
             no-data-label="Няма данни в таблицата"
             no-results-label="Няма резултати от вашето търсене"
+            :pagination="{rowsPerPage:20}"
             row-key="id"
             separator="cell"
             title="Отзиви"
