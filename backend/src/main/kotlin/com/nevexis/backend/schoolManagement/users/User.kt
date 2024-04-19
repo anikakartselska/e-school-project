@@ -4,7 +4,6 @@ import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.requests.RequestStatus
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
 import kotlinx.serialization.Serializable
-import java.math.BigDecimal
 
 @Serializable
 data class User(
@@ -50,8 +49,9 @@ data class UserView(
     val status: RequestStatus? = null,
 )
 
+@Serializable
 data class StudentView(
-    val id: BigDecimal,
+    val id: Int,
     val email: String,
     val firstName: String,
     val middleName: String,

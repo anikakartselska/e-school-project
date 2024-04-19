@@ -7,7 +7,7 @@ export interface Evaluation {
     student: StudentView,
     subject: Subject,
     schoolLessonId: number | null,
-    evaluationDate: Date,
+    evaluationDate: string,
     evaluationType: EvaluationType,
     evaluationValue: EvaluationValue,
     semester: Semester,

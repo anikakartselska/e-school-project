@@ -81,10 +81,10 @@ class SubjectService : BaseService() {
     fun mapToInternalModel(record: Record) = record.into(SubjectRecord::class.java)
         .map {
             Subject(
-                id = (it as SubjectRecord).id!!,
+                id = (it as SubjectRecord).id!!.toInt(),
                 name = it.name!!,
                 teacher = userService.mapToUserView(record, listOf(SchoolRole.TEACHER)),
-                forClass = it.forClass!!,
+                forClass = it.forClass!!.toInt(),
             )
         }
 

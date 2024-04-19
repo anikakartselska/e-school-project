@@ -103,7 +103,7 @@ class UserService : UserBaseService() {
                 val numberInClass = record.get(DSL.field("NUMBER_IN_CLASS", BigDecimal::class.java))?.toInt()
                 record.into(UserRecord::class.java).let { userRecord ->
                     StudentView(
-                        id = userRecord.id!!,
+                        id = userRecord.id?.toInt()!!,
                         email = userRecord.email!!,
                         firstName = userRecord.firstName!!,
                         middleName = userRecord.middleName!!,
@@ -135,7 +135,7 @@ class UserService : UserBaseService() {
                 val numberInClass = record.get(DSL.field("NUMBER_IN_CLASS", BigDecimal::class.java))?.toInt()
                 record.into(UserRecord::class.java).let { userRecord ->
                     StudentView(
-                        id = userRecord.id!!,
+                        id = userRecord.id!!.toInt(),
                         email = userRecord.email!!,
                         firstName = userRecord.firstName!!,
                         middleName = userRecord.middleName!!,

@@ -70,6 +70,7 @@ import {StudentView} from "../../model/User";
 import {getCurrentUserAsUserView} from "../../services/LocalStorageService";
 import {Subject} from "../../model/Subject";
 import {Semester} from "../../model/SchoolPeriod";
+import {formatToDate} from "../../utils";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
 const quasar = useQuasar()
@@ -82,7 +83,7 @@ const props = defineProps<{
 }>()
 const currentUser = getCurrentUserAsUserView()
 const studentEvaluations = $ref([...props.evaluations].map(it => {
-  return {...it, grades: []}
+    return {...it, grades: [], feedbacks: [], absences: []}
 }))
 
 const submit = () => {
@@ -93,15 +94,15 @@ const submit = () => {
 
 const addGrade = (grade: Grade, student: StudentView) => {
   const evaluation = <Evaluation>{
-    id: null,
-    subject: props.subject,
-    student: student,
-    schoolLessonId: null,
-    evaluationDate: new Date(),
-    evaluationType: EvaluationType.GRADE,
-    evaluationValue: <GradeValue>{grade: grade, finalGrade: false},
-    semester: props.semester,
-    createdBy: currentUser
+      id: null,
+      subject: props.subject,
+      student: student,
+      schoolLessonId: null,
+      evaluationDate: formatToDate(new Date()),
+      evaluationType: EvaluationType.GRADE,
+      evaluationValue: <GradeValue>{grade: grade, finalGrade: false},
+      semester: props.semester,
+      createdBy: currentUser
   }
   studentEvaluations.map(it => {
     if (it.student.id == student.id) {

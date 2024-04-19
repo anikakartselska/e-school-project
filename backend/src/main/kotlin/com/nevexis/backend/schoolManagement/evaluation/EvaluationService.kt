@@ -34,7 +34,7 @@ class EvaluationService : BaseService() {
     fun getAllStudentSubjectEvaluationsFromSchoolClass(
         schoolClass: SchoolClass,
         evaluationType: EvaluationType
-    ): Map<BigDecimal, Map<BigDecimal, List<Evaluation>>> {
+    ): Map<Int, Map<Int, List<Evaluation>>> {
         val students = userService.getAllStudentsInSchoolClass(
             schoolClassId = schoolClass.id!!.toBigDecimal(),
             periodId = schoolClass.schoolPeriodId.toBigDecimal()
@@ -59,8 +59,8 @@ class EvaluationService : BaseService() {
                     .and(SCHOOL_CLASS_SUBJECT.SCHOOL_CLASS_ID.eq(schoolClass.id.toBigDecimal()))
                     .and(EVALUATION.EVALUATION_TYPE.eq(evaluationType.name))
             ).fetch()
-        val evaluationsMap = records.groupBy { it.get(EVALUATION.SUBJECT_ID)!! }
-            .mapValues { (_, values) -> values.groupBy { it.get(EVALUATION.USER_ID) } }
+        val evaluationsMap = records.groupBy { it.get(EVALUATION.SUBJECT_ID)!!.toInt() }
+            .mapValues { (_, values) -> values.groupBy { it.get(EVALUATION.USER_ID)?.toInt() } }
         return subjects.associate { subject ->
             subject.id to students.associate { student ->
                 student.id to (evaluationsMap[subject.id]?.get(student.id)?.map { record ->
@@ -103,14 +103,14 @@ class EvaluationService : BaseService() {
                 EVALUATION.SCHOOL_PERIOD_ID.eq(periodId)
                     .and(EVALUATION.SCHOOL_ID.eq(schoolId))
                     .and(SCHOOL_CLASS_SUBJECT.SCHOOL_CLASS_ID.eq(schoolClassId))
-                    .and(EVALUATION.SUBJECT_ID.eq(subject.id))
+                    .and(EVALUATION.SUBJECT_ID.eq(subject.id.toBigDecimal()))
             ).fetch()
 
         val evaluationsMap = records.groupBy { it.get(EVALUATION.USER_ID)!! }
             .mapValues { (_, values) -> values.groupBy { it.get(EVALUATION.EVALUATION_TYPE) } }
 
         return students.map { student ->
-            (evaluationsMap[student.id] ?: emptyMap()).let { evaluationTypeToEvaluationsMap ->
+            (evaluationsMap[student.id.toBigDecimal()] ?: emptyMap()).let { evaluationTypeToEvaluationsMap ->
                 StudentWithEvaluationDTO(
                     student,
                     evaluationTypeToEvaluationsMap[EvaluationType.ABSENCE.name]?.map {
@@ -156,10 +156,10 @@ class EvaluationService : BaseService() {
                 EVALUATION.SCHOOL_PERIOD_ID.eq(periodId)
                     .and(EVALUATION.SCHOOL_ID.eq(schoolId))
                     .and(SCHOOL_CLASS_SUBJECT.SCHOOL_CLASS_ID.eq(schoolClassId))
-                    .and(EVALUATION.USER_ID.eq(studentView.id))
+                    .and(EVALUATION.USER_ID.eq(studentView.id.toBigDecimal()))
             ).fetch()
 
-        val evaluationsMap = records.groupBy { it.get(EVALUATION.SUBJECT_ID)!! }
+        val evaluationsMap = records.groupBy { it.get(EVALUATION.SUBJECT_ID)!!.toInt() }
             .mapValues { (_, values) -> values.groupBy { it.get(EVALUATION.EVALUATION_TYPE) } }
 
         return subjects.map { subject ->
@@ -186,10 +186,10 @@ class EvaluationService : BaseService() {
         subject: Subject,
     ) = record.into(EvaluationRecord::class.java).let {
         Evaluation(
-            id = it.id!!,
+            id = it.id!!.toInt(),
             student = student,
             subject = subject,
-            schoolLessonId = it.schoolLessonId!!,
+            schoolLessonId = it.schoolLessonId?.toInt(),
             evaluationDate = it.evaluationDate!!,
             evaluationType = EvaluationType.valueOf(it.evaluationType!!),
             evaluationValue = Json.decodeFromString(it.evaluationValue!!),
@@ -198,25 +198,56 @@ class EvaluationService : BaseService() {
         )
     }
 
-    fun saveEvaluations(evaluations: List<Evaluation>, schoolId: BigDecimal, periodId: BigDecimal): List<Evaluation> {
-        val evaluationsToEvaluationRecords = evaluations.map { evaluation ->
-            val evaluationId = getEvaluationSeqNextVal()
-            evaluation.copy(id = evaluationId) to db.newRecord(EVALUATION, evaluation).apply {
-                id = evaluationId
-                subjectId = evaluation.subject.id
-                schoolLessonId = evaluation.schoolLessonId
-                evaluationDate = evaluation.evaluationDate
-                evaluationType = evaluation.evaluationType.name
-                evaluationValue = Json.encodeToString(evaluation.evaluationValue)
-                this.schoolId = schoolId
-                schoolPeriodId = periodId
-                userId = evaluation.student.id
-                semester = evaluation.semester.name
-                createdBy = evaluation.createdBy.id.toBigDecimal()
-            }
+    fun saveEvaluations(
+        evaluations: List<StudentWithEvaluationDTO>,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ): List<StudentWithEvaluationDTO> {
+        val evaluationsWithId = evaluations.map { evaluationDto ->
+            evaluationDto.copy(
+                absences = evaluationDto.absences.map {
+                    it.copy(id = getEvaluationSeqNextVal().toInt())
+                },
+                grades = evaluationDto.grades.map {
+                    it.copy(id = getEvaluationSeqNextVal().toInt())
+                },
+                feedbacks = evaluationDto.feedbacks.map {
+                    it.copy(id = getEvaluationSeqNextVal().toInt())
+                },
+            )
+
         }
-        db.batchInsert(evaluationsToEvaluationRecords.map { it.second }).execute()
-        return evaluationsToEvaluationRecords.map { it.first }
+
+        val evaluationRecords = evaluationsWithId.map { evaluationDto ->
+            mapToEvaluationToEvaluationRecords(
+                evaluationDto.grades.plus(evaluationDto.feedbacks).plus(evaluationDto.absences),
+                schoolId,
+                periodId
+            )
+        }.flatten()
+        db.batchInsert(evaluationRecords).execute()
+
+        return evaluationsWithId
+    }
+
+    private fun mapToEvaluationToEvaluationRecords(
+        evaluations: List<Evaluation>,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ) = evaluations.map { evaluation ->
+        db.newRecord(EVALUATION, evaluation).apply {
+            id = evaluation.id?.toBigDecimal()
+            subjectId = evaluation.subject.id.toBigDecimal()
+            schoolLessonId = evaluation.schoolLessonId?.toBigDecimal()
+            evaluationDate = evaluation.evaluationDate
+            evaluationType = evaluation.evaluationType.name
+            evaluationValue = Json.encodeToString(evaluation.evaluationValue)
+            this.schoolId = schoolId
+            schoolPeriodId = periodId
+            userId = evaluation.student.id.toBigDecimal()
+            semester = evaluation.semester.name
+            createdBy = evaluation.createdBy.id.toBigDecimal()
+        }
     }
 
     fun getEvaluationSeqNextVal(): BigDecimal =

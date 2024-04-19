@@ -24,6 +24,7 @@ export const getCurrentUserAsUserView = (): UserView => {
         middleName: user.middleName,
         lastName: user.lastName,
         username: user.username,
+        roles: [user.role.role]
     }
 }
 

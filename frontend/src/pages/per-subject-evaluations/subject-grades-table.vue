@@ -89,21 +89,23 @@ import {useQuasar} from "quasar";
 import AddGradesDialog from "./add-grades-dialog.vue";
 import {StudentView} from "../../model/User";
 import {Subject} from "../../model/Subject";
+import {saveEvaluations} from "../../services/RequestService";
+import {periodId, schoolId} from "../../model/constants";
 
 const props = defineProps<{
-  evaluations: StudentWithEvaluationDTO[],
-  semester: Semester,
-  subject: Subject
+    evaluations: StudentWithEvaluationDTO[],
+    semester: Semester,
+    subject: Subject
 }>()
 const quasar = useQuasar()
 
 const grades: StudentWithEvaluationDTO[] = $ref(props.evaluations ? [...props.evaluations] : [])
 grades.push(
         {
-          grades: props.evaluations?.map(it => it.grades).flat(1)?.filter((it: Evaluation) => it.semester == props.semester || props.semester == Semester.YEARLY),
-          student: <StudentView><unknown>{id: '10000'},
-          absences: [],
-          feedbacks: []
+            grades: props.evaluations?.map(it => it.grades).flat(1)?.filter((it: Evaluation) => it.semester == props.semester || props.semester == Semester.YEARLY),
+            student: <StudentView><unknown>{id: 10000},
+            absences: [],
+            feedbacks: []
         })
 
 const addNewGrades = async () => quasar.dialog({
@@ -114,7 +116,19 @@ const addNewGrades = async () => quasar.dialog({
     semester: props.semester,
   },
 }).onOk(async (payload) => {
-  console.log(payload)
+    console.log(payload)
+    await saveEvaluations(payload.item, periodId.value, schoolId.value).then(e => {
+                const newlyAddedGrades = e.data
+                grades.forEach(studentGrades => {
+                            const newlyAddedGradesForCurrentStudent = newlyAddedGrades.find(v => v.student.id == studentGrades.student.id)?.grades
+                            if (studentGrades.student.id == 10000) {
+                                studentGrades.grades = studentGrades.grades.concat(newlyAddedGrades.map(it => it.grades).flat(1))
+                            }
+                            studentGrades.grades = studentGrades.grades.concat(newlyAddedGradesForCurrentStudent ? newlyAddedGradesForCurrentStudent : [])
+                        }
+                )
+            }
+    )
 })
 const getRowKey = (row) => {
   return row?.student ? row?.student : '1000'

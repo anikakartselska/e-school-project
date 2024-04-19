@@ -54,6 +54,14 @@ export const getRequestStatusColorClass = (requestStatus: RequestStatus) => {
             return 'text-red';
     }
 }
+export const formatToDate = (ev) => {
+    if (ev == null || ev == '') {
+        return null
+    }
+    debugger
+    return date.formatDate(ev, "YYYY-MM-DD");
+}
+
 
 export const formatToBulgarian = (dateToFormat: string | null) => {
     if (dateToFormat == null || dateToFormat == '') {

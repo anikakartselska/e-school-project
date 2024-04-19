@@ -1,12 +1,19 @@
 package com.nevexis.backend.schoolManagement.evaluation
 
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 import java.math.BigDecimal
 
 @Serializable(with = EvaluationValueSerializer::class)
+@JsonDeserialize(using = EvaluationValueDeserializer::class)
 sealed class EvaluationValue {
     @Serializable
     data class FeedbackValue(
@@ -33,6 +40,28 @@ object EvaluationValueSerializer :
         "absence" in element.jsonObject -> EvaluationValue.AbsenceValue.serializer()
         "grade" in element.jsonObject -> EvaluationValue.GradeValue.serializer()
         else -> error("There are no other student evaluations")
+    }
+}
+
+class EvaluationValueDeserializer : JsonDeserializer<EvaluationValue>() {
+    override fun deserialize(
+        p: com.fasterxml.jackson.core.JsonParser,
+        ctxt: DeserializationContext
+    ): EvaluationValue {
+        val rootNode = p.codec.readTree<JsonNode>(p) ?: throw IllegalArgumentException("Unable to parse JSON")
+        val evaluationNode = rootNode.path("evaluationValue")
+
+        if (evaluationNode.isMissingNode) {
+            throw IllegalArgumentException("Evaluation value is missing in the JSON")
+        }
+
+        val evaluationJson = evaluationNode.toString()
+
+        return when {
+            evaluationJson.contains("feedback") -> Json.decodeFromString<EvaluationValue.FeedbackValue>(evaluationJson)
+            evaluationJson.contains("absence") -> Json.decodeFromString<EvaluationValue.AbsenceValue>(evaluationJson)
+            else -> Json.decodeFromString<EvaluationValue.GradeValue>(evaluationJson)
+        }
     }
 }
 
