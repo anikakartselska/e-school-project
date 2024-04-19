@@ -4,6 +4,7 @@ import Component from './pages/Component.vue'
 import {createRouter, createWebHistory} from "vue-router";
 import UsersPage from "./pages/user/users-page.vue";
 import UserPage from "./pages/user/user-page.vue";
+import GradesTabPerStudent from "./pages/per-student-evaluations/grades-tab.vue";
 import AbsenceTabPerStudent from "./pages/per-student-evaluations/absence-tab.vue";
 import FeedbackTabPerStudent from "./pages/per-student-evaluations/feedback-tab.vue";
 import FeedbackTabPerSubject from "./pages/per-school-class-evaluations/feedback-tab.vue";
@@ -31,6 +32,10 @@ import SchoolClassSubjectsTab from "./pages/school-class/school-class-subjects-t
 import SchoolClassGradesTab from "./pages/school-class/school-class-grades-tab.vue";
 import SchoolClassRemarksTab from "./pages/school-class/school-class-feedbacks-tab.vue";
 import SchoolClassAbsencesTab from "./pages/school-class/school-class-absences-tab.vue";
+import SubjectEvaluationsPerSchoolClass from "./pages/per-subject-evaluations/subject-evaluations-per-school-class.vue";
+import SubjectGradesTab from "./pages/per-subject-evaluations/subject-grades-tab.vue";
+import SubjectAbsenceTab from "./pages/per-subject-evaluations/subject-absence-tab.vue";
+import SubjectFeedbackTab from "./pages/per-subject-evaluations/subject-feedback-tab.vue";
 
 const routes = [
     {
@@ -121,13 +126,13 @@ const routes = [
                 },
             },
             {
-                path: '/diary/:schoolClassId(\\d+)/:studentId(\\d+)/:periodId(\\d+)/:schoolId(\\d+)',
+                path: '/student-diary/:schoolClassId(\\d+)/:studentId(\\d+)/:periodId(\\d+)/:schoolId(\\d+)',
                 component: StudentSubjectsAndEvaluation,
                 props: true,
                 children: [
                     {
                         path: 'grades',
-                        component: FeedbackTabPerStudent
+                        component: GradesTabPerStudent
                     },
                     {
                         path: 'absences',
@@ -136,6 +141,25 @@ const routes = [
                     {
                         path: 'feedbacks',
                         component: FeedbackTabPerStudent
+                    }
+                ],
+            },
+            {
+                path: '/subject-diary/:schoolClassId(\\d+)/:subjectId(\\d+)/:periodId(\\d+)/:schoolId(\\d+)',
+                component: SubjectEvaluationsPerSchoolClass,
+                props: true,
+                children: [
+                    {
+                        path: 'grades',
+                        component: SubjectGradesTab
+                    },
+                    {
+                        path: 'absences',
+                        component: SubjectAbsenceTab
+                    },
+                    {
+                        path: 'feedbacks',
+                        component: SubjectFeedbackTab
                     }
                 ],
             },

@@ -5,37 +5,37 @@
           :rows="absences"
           :visible-columns="visibleColumns"
           no-data-label="Няма данни в таблицата"
-          row-key="subject"
+          row-key="student"
           separator="cell"
           title="Отсъствия"
   >
-      <template v-slot:header-cell-total="props">
-          <q-th>
-              <div class="row">
-                  <div class="col text-center">
-                      Извинени
-                  </div>
-                  <q-separator vertical/>
-                  <div class="col-4 text-center">
-                      Неизвинени
-                  </div>
-                  <q-separator vertical/>
-                  <div class="col-4 text-center">
-                      Общо
-                  </div>
-              </div>
-          </q-th>
-      </template>
-      <template v-slot:body-cell-absences="props">
-          <q-td class="text-center">
-              <q-btn v-for="absence in props.row.absences.filter(it=>it.semester === semester)"
-                     v-if="props.row.subject !== undefined"
-                     :class="`q-ma-xs ${getAbsenceBackgroundColor(absence)}`"
-                     :label="absenceMap.get(absence.evaluationValue.absence)"
-                     flat
-                     rounded>
-                  <q-popup-proxy>
-                      <q-banner>
+    <template v-slot:header-cell-total="props">
+      <q-th>
+        <div class="row">
+          <div class="col text-center">
+            Извинени
+          </div>
+          <q-separator vertical/>
+          <div class="col-4 text-center">
+            Неизвинени
+          </div>
+          <q-separator vertical/>
+          <div class="col-4 text-center">
+            Общо
+          </div>
+        </div>
+      </q-th>
+    </template>
+    <template v-slot:body-cell-absences="props">
+      <q-td class="text-center">
+        <q-btn v-for="absence in props.row.absences.filter(it=>it.semester === semester)"
+               v-if="props.row.student !== undefined"
+               :class="`q-ma-xs ${getAbsenceBackgroundColor(absence)}`"
+               :label="absenceMap.get(absence.evaluationValue.absence)"
+               flat
+               rounded>
+          <q-popup-proxy>
+            <q-banner>
               Въведен от:<span class="text-primary">{{
                 absence.createdBy.firstName
               }} {{ absence.createdBy.lastName }}</span><br/>
@@ -81,7 +81,6 @@
 
 <script lang="ts" setup>
 import {$ref} from "vue/macros";
-import {SubjectWithEvaluationDTO} from "../../model/SubjectWithEvaluationDTO";
 import {
     absenceMap,
     calculateAbsencesSum,
@@ -89,27 +88,37 @@ import {
 } from "../../services/helper-services/EvaluationService";
 import {Semester} from "../../model/SchoolPeriod";
 import {Evaluation} from "../../model/Evaluation";
+import {StudentWithEvaluationDTO} from "../../model/StudentWithEvaluationDTO";
+import {Subject} from "../../model/Subject";
 
 const props = defineProps<{
-  evaluations: SubjectWithEvaluationDTO[],
-  semester: Semester
+  evaluations: StudentWithEvaluationDTO[],
+  semester: Semester,
+  subject: Subject
 }>()
 const absences = $ref([...props.evaluations,
   {
     absences: props.evaluations.map(it => it.absences).flat(1).filter((it: Evaluation) => it.semester == props.semester || props.semester == Semester.YEARLY),
-    subject: undefined,
+    student: undefined,
     feedbacks: [],
     grades: []
   }])
 
 const columns = [
-    {
-        name: "subject",
-        label: "Предмет",
-        align: "center",
-        field: (row: SubjectWithEvaluationDTO) => row.subject?.name ? row.subject?.name : 'Общо',
-        sortable: true
-    },
+  {
+    name: "numberInClass",
+    label: "Номер в клас",
+    align: "center",
+    field: (row: StudentWithEvaluationDTO) => `${row.student?.numberInClass}`,
+    sortable: true
+  },
+  {
+    name: "student",
+    label: "Име на ученика",
+    align: "center",
+    field: (row: StudentWithEvaluationDTO) => row.student ? `${row.student?.firstName} ${row.student?.middleName} ${row.student?.lastName}` : 'Общо',
+    sortable: true
+  },
   {
     name: "absences",
     align: "center",

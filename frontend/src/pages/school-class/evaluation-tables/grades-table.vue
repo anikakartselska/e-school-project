@@ -77,17 +77,17 @@
         </template>
         <template v-for="column in columns.slice(3,columns.length)" :key="column.name"
                   v-slot:[`body-cell-${column.name}`]="props">
-            <q-td :props="props" class="fi">
-                <div v-if="props.row.student?.firstName=== undefined" class="row">
-                    <div v-if="semester !== Semester.YEARLY" class="col-8"/>
-                    <q-separator v-if="semester !== Semester.YEARLY" vertical/>
-                    <div v-if="semester !== Semester.YEARLY" class="col-2">
-                        <q-btn v-if="!isNaN(props.row[column.name]?.first)"
-                               :class="`q-ma-xs ${getAverageGradeColorClass(props.row[column.name]?.first)}`"
-                               :label="props.row[column.name]?.first ? props.row[column.name]?.first : ''"
-                               flat
-                               rounded>
-                            <q-tooltip>
+            <q-td :props="props">
+              <div v-if="props.row.student?.firstName=== undefined" class="row">
+                <div v-if="semester !== Semester.YEARLY" class="col-8"/>
+                <q-separator v-if="semester !== Semester.YEARLY" vertical/>
+                <div v-if="semester !== Semester.YEARLY" class="col-2">
+                  <q-btn v-if="!isNaN(props.row[column.name]?.first)"
+                         :class="`q-ma-xs ${getAverageGradeColorClass(props.row[column.name]?.first)}`"
+                         :label="props.row[column.name]?.first ? props.row[column.name]?.first : ''"
+                         flat
+                         rounded>
+                    <q-tooltip>
                                 Средноаритметична оценка
                             </q-tooltip>
                         </q-btn>

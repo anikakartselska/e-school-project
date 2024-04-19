@@ -80,14 +80,14 @@ export const getAverageGradeColorClass = (grade: number) => {
     return ''
 }
 export const calculateAbsencesSum = (evaluations: Evaluation[], excused: boolean | null = null) => {
-    const absences = evaluations.filter(it => (it.evaluationType == EvaluationType.ABSENCE) && (excused == null || excused == (<AbsenceValue>it.evaluationValue).excused))
-    return absences.map(absence => {
+    const absences = evaluations?.filter(it => (it.evaluationType == EvaluationType.ABSENCE) && (excused == null || excused == (<AbsenceValue>it.evaluationValue).excused))
+    return absences?.map(absence => {
         return absenceMap.get((absence.evaluationValue as AbsenceValue).absence)!!
     }).reduce((sum, current) => sum + current, 0)
 }
 export const countFeedbacksSum = (evaluations: Evaluation[], positive: boolean | null = null) => {
-    const feedbacks = evaluations.filter(it => (it.evaluationType == EvaluationType.FEEDBACK) && (positive == null || positive == feedbacksMap.get((<FeedbackValue>it.evaluationValue).feedback)))
-    return feedbacks.length
+    const feedbacks = evaluations?.filter(it => (it.evaluationType == EvaluationType.FEEDBACK) && (positive == null || positive == feedbacksMap.get((<FeedbackValue>it.evaluationValue).feedback)))
+    return feedbacks?.length
 }
 export const calculateAverageGrade = (evaluations: Evaluation[], finalGrades: boolean = false) => {
     const grades = evaluations?.filter(it => it.evaluationType == EvaluationType.GRADE && ((finalGrades && (it.evaluationValue as GradeValue).finalGrade) || (!finalGrades && !(it.evaluationValue as GradeValue).finalGrade)))

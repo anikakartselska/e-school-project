@@ -313,6 +313,17 @@ export const getAllTeachersThatDoNotHaveSchoolClass = async (schoolId, periodId)
             }
         }).then(p => p.data)
 
+export const fetchSubjectById = async (subjectId,
+                                       periodId,
+                                       schoolId): Promise<Subject> =>
+        await api.get<Subject>('/get-subject-by-id', {
+            params: {
+                subjectId,
+                periodId,
+                schoolId
+            }
+        }).then(p => p.data)
+
 export const saveSchoolClass = async (schoolClass, studentsFromClassFile: Blob | null = null): Promise<AxiosResponse<number>> => {
     const bodyFormData = new FormData()
     bodyFormData.append('schoolClass', JSON.stringify(schoolClass))

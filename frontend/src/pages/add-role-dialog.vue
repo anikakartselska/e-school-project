@@ -149,15 +149,6 @@ const submit = () => {
     item: schoolUserRole
   })
 }
-const test = (option: SchoolPeriodWithSchoolIds) => {
-  return {
-    id: option.id,
-    startYear: option.startYear,
-    endYear: option.endYear,
-    firstSemester: option.firstSemester,
-    secondSemester: option.secondSemester
-  }
-}
 
 </script>
 

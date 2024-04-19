@@ -3,10 +3,10 @@ import {Subject} from "./Subject";
 import {Semester} from "./SchoolPeriod";
 
 export interface Evaluation {
-    id: number,
+    id: number | null,
     student: StudentView,
     subject: Subject,
-    schoolLessonId: number,
+    schoolLessonId: number | null,
     evaluationDate: Date,
     evaluationType: EvaluationType,
     evaluationValue: EvaluationValue,

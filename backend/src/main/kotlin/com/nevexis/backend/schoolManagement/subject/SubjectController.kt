@@ -1,10 +1,7 @@
 package com.nevexis.backend.schoolManagement.subject
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.CrossOrigin
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
 @CrossOrigin("http://localhost:3000/")
@@ -28,18 +25,6 @@ class SubjectController {
         periodId: BigDecimal
     ) = subjectService.getAllSubjectsBySchoolClassId(schoolClassId, periodId, schoolId)
 
-//    @GetMapping("/get-all-evaluations-from-subject-in-school-class")
-//    fun fetchSchoolClassStudentsAndTheirEvaluations(
-//        subjectId: BigDecimal,
-//        schoolClassId: BigDecimal,
-//        periodId: BigDecimal,
-//        schoolId: BigDecimal
-//    ) = subjectService.getSubjectFromSchoolClassAndItsEvaluations(
-//        subjectId,
-//        schoolClassId,
-//        periodId,
-//        schoolId
-//    )
 
     @GetMapping("/get-all-subjects-taught-by-teacher")
     fun fetchAllSubjectsTaughtByTeacher(
@@ -51,4 +36,12 @@ class SubjectController {
         periodId,
         schoolId,
     )
+
+    @GetMapping("/get-subject-by-id")
+    fun fetchSubjectsById(
+        @RequestParam subjectId: BigDecimal,
+        @RequestParam periodId: BigDecimal,
+        @RequestParam schoolId: BigDecimal
+    ) = subjectService.getSubjectsById(subjectId, periodId, schoolId)
+
 }

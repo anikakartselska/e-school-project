@@ -2,66 +2,68 @@
   <q-table
           :columns="columns"
           :pagination="{rowsPerPage:20}"
-          :rows="feedbacks"
+          :rows="grades"
           :visible-columns="visibleColumns"
           no-data-label="Няма данни в таблицата"
           row-key="subject"
           separator="cell"
-          title="Отзиви"
+          title="Оценки"
   >
-    <template v-slot:body-cell-feedbacks="props">
-      <q-td class="text-center">
-        <q-btn v-for="feedback in props.row.feedbacks.filter(it=>it.semester === semester)"
-               v-if="props.row.subject !== undefined"
-               :class="feedbacksMap.get(feedback.evaluationValue.feedback)===true? `text-green-14` : `text-red-14`" :icon="feedbacksMap.get(feedback.evaluationValue.feedback)===true? 'thumb_up_alt' : 'thumb_down_alt'"
-               flat
-               rounded
-        >
-          <q-tooltip>
-            {{ feedbacksMapTranslation.get(feedback.evaluationValue.feedback) }}
-          </q-tooltip>
-          <q-popup-proxy>
-            <q-banner>
-              Въведен от:<span class="text-primary">{{
-                feedback.createdBy.firstName
-              }} {{ feedback.createdBy.lastName }}</span><br/>
-              Дата:<span class="text-primary">{{
-                feedback.evaluationDate
-              }}</span><br/>
-            </q-banner>
-          </q-popup-proxy>
-        </q-btn>
-      </q-td>
-    </template>
-    <template v-slot:body-cell-total="props">
-      <q-td>
-        <div class="col row">
-          <div class="col text-center">
-            <q-btn :class="`q-ma-xs bg-green-2`"
-                   :label="countFeedbacksSum(props.row.feedbacks.filter(it=>semester === Semester.YEARLY || it.semester === semester),true)"
-                   flat
-                   rounded>
-            </q-btn>
-          </div>
-          <q-separator vertical/>
-          <div class="col-4 text-center">
-            <q-btn :class="`q-ma-xs bg-red-2`"
-                   :label="countFeedbacksSum(props.row.feedbacks.filter(it=>semester === Semester.YEARLY || it.semester === semester),false)"
-                   flat
-                   rounded>
-            </q-btn>
-          </div>
-          <q-separator vertical/>
-          <div class="col-4 text-center">
-            <q-btn :class="`q-ma-xs bg-blue-2`"
-                   :label="countFeedbacksSum(props.row.feedbacks.filter(it=>semester === Semester.YEARLY || it.semester === semester))"
-                   flat
-                   rounded>
-            </q-btn>
-          </div>
-        </div>
-      </q-td>
-    </template>
+      <template v-slot:body-cell-grades="props">
+          <q-td class="text-center">
+              <q-btn v-for="grade in props.row.grades.filter(it => !(it.evaluationValue.finalGrade === true) && it.semester === semester)"
+                     v-if="props.row.subject !== undefined"
+                     :class="`q-ma-xs ${gradeBackgroundColorMap.get(grade.evaluationValue.grade)}`"
+                     :label="gradeMap.get(grade.evaluationValue.grade)?.toString()"
+                     flat
+                     rounded>
+                  <q-popup-proxy>
+                      <q-banner>
+                          Въведен от:<span class="text-primary">{{
+                          grade.createdBy.firstName
+                          }} {{ grade.createdBy.lastName }}</span><br/>
+                          Дата:<span class="text-primary">{{
+                          grade.evaluationDate
+                          }}</span><br/>
+                      </q-banner>
+                  </q-popup-proxy>
+              </q-btn>
+          </q-td>
+      </template>
+      <template v-slot:body-cell-average="props">
+          <q-td class="text-center">
+              <q-btn v-if="!isNaN(calculateAverageGrade(props.row.grades.filter(it => !(it.evaluationValue.finalGrade === true) && it.semester === semester)))"
+                     :class="`q-ma-xs ${getAverageGradeColorClass(calculateAverageGrade(props.row.grades.filter(it => !(it.evaluationValue.finalGrade === true) && it.semester === semester)))}`"
+                     :label="calculateAverageGrade(props.row.grades.filter(it => !(it.evaluationValue.finalGrade === true) && it.semester === semester)) ? calculateAverageGrade((props.row.grades.filter(it => !(it.evaluationValue.finalGrade === true && it.semester === semester)))) : ''"
+                     flat
+                     rounded>
+                  <q-tooltip>
+                      Средноаритметична оценка
+                  </q-tooltip>
+              </q-btn>
+          </q-td>
+      </template>
+      <template v-slot:body-cell-finalGrade="props">
+          <q-td class="text-center">
+              <q-btn v-for="grade in props.row.grades?.filter(it=> it.evaluationValue.finalGrade === true && it.semester === semester)"
+                     v-if="props.row.subject !== undefined"
+                     :class="`q-ma-xs ${gradeBackgroundColorMap.get(grade.evaluationValue.grade)}`"
+                     :label="gradeMap.get(grade.evaluationValue.grade)?.toString()"
+                     flat
+                     rounded>
+                  <q-popup-proxy>
+                      <q-banner>
+                          Въведен от:<span class="text-primary">{{
+                          grade.createdBy.firstName
+                          }} {{ grade.createdBy.lastName }}</span><br/>
+                          Дата:<span class="text-primary">{{
+                          grade.evaluationDate
+                          }}</span><br/>
+                      </q-banner>
+                  </q-popup-proxy>
+              </q-btn>
+          </q-td>
+      </template>
   </q-table>
 </template>
 
@@ -69,45 +71,51 @@
 import {$ref} from "vue/macros";
 import {SubjectWithEvaluationDTO} from "../../model/SubjectWithEvaluationDTO";
 import {
-    countFeedbacksSum,
-    feedbacksMap,
-    feedbacksMapTranslation
+    calculateAverageGrade,
+    getAverageGradeColorClass,
+    gradeBackgroundColorMap,
+    gradeMap,
 } from "../../services/helper-services/EvaluationService";
 import {Semester} from "../../model/SchoolPeriod";
 import {Evaluation} from "../../model/Evaluation";
 
 const props = defineProps<{
-  evaluations: SubjectWithEvaluationDTO[],
-  semester: Semester
+    evaluations: SubjectWithEvaluationDTO[],
+    semester: Semester
 }>()
-const feedbacks = $ref([...props.evaluations,
-  {
-    feedbacks: props.evaluations.map(it => it.feedbacks).flat(1).filter((it: Evaluation) => it.semester == props.semester || props.semester == Semester.YEARLY),
-    subject: undefined,
-    absences: [],
-    grades: []
-  }])
+const grades = $ref([...props.evaluations,
+    {
+        grades: props.evaluations.map(it => it.grades).flat(1).filter((it: Evaluation) => it.semester == props.semester || props.semester == Semester.YEARLY),
+        subject: undefined,
+        absences: [],
+        feedbacks: []
+    }])
 
 const columns = [
-  {
-    name: "subject",
-    label: "Предмет",
-    align: "center",
-    field: (row: SubjectWithEvaluationDTO) => row.subject?.name,
-    sortable: true
-  },
-  {
-    name: "feedbacks",
-    align: "center",
-    label: "Отзиви",
-  },
-  {
-    name: "total",
-    align: "center",
-    label: "Общо"
-  }
+    {
+        name: "subject",
+        label: "Предмет",
+        align: "center",
+        field: (row: SubjectWithEvaluationDTO) => row.subject?.name ? row.subject?.name : 'Общо',
+        sortable: true
+    },
+    {
+        name: "grades",
+        align: "center",
+        label: "Оценки",
+    },
+    {
+        name: "average",
+        align: "center",
+        label: "Средно аритметично"
+    },
+    {
+        name: "finalGrade",
+        align: "center",
+        label: "Оформена оценка"
+    }
 ]
-const visibleColumns = [...columns].filter(it => props.semester !== Semester.YEARLY || it.name != 'feedbacks').map(it => it.name)
+const visibleColumns = [...columns].filter(it => props.semester !== Semester.YEARLY || (it.name != 'grades' && it.name != 'average')).map(it => it.name)
 
 </script>
 

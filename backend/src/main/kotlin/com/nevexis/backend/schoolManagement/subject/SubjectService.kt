@@ -17,57 +17,6 @@ class SubjectService : BaseService() {
     @Autowired
     private lateinit var userService: UserService
 
-
-//    fun getAllStudentSubjectsAndTheirEvaluations(
-//        schoolClassId: BigDecimal,
-//        studentRoleId: BigDecimal,
-//        periodId: BigDecimal,
-//        schoolId: BigDecimal
-//    ): List<SubjectWithEvaluationDTO> {
-//        val studentEvaluations =
-//            evaluationService.getAllEvaluationsForStudentAndPeriod(studentRoleId, periodId, schoolId)
-//                .groupBy { it.subjectId }
-//                .mapValues { (_, evaluations) ->
-//                    evaluations.groupBy { it.evaluationType }
-//                }
-//
-//        return getAllSubjectsBySchoolClassId(schoolClassId, periodId, schoolId).map { subject ->
-//            SubjectWithEvaluationDTO(
-//                subject,
-//                studentEvaluations[subject.id]?.get(EvaluationType.ABSENCE) ?: emptyList(),
-//                studentEvaluations[subject.id]?.get(EvaluationType.GRADE) ?: emptyList(),
-//                studentEvaluations[subject.id]?.get(EvaluationType.FEEDBACK) ?: emptyList(),
-//            )
-//        }
-//    }
-
-//    fun getSubjectFromSchoolClassAndItsEvaluations(
-//        subjectId: BigDecimal,
-//        schoolClassId: BigDecimal,
-//        periodId: BigDecimal,
-//        schoolId: BigDecimal,
-//        dsl: DSLContext = db
-//    ): List<StudentWithEvaluationDTO> {
-//        val studentsFromClassMap = userService.getAllStudentsInSchoolClass(schoolClassId, periodId)
-//
-//        val studentIdToEvaluations =
-//            evaluationService.getAllEvaluationsForSubject(subjectId, schoolClassId, periodId, schoolId).groupBy {
-//                it.studentRoleId
-//            }
-//
-//        return studentsFromClassMap.map { student ->
-//            val studentEvaluationsForCurrentSubject =
-//                studentIdToEvaluations[student.id]?.groupBy { it.evaluationType } ?: emptyMap()
-//
-//            StudentWithEvaluationDTO(
-//                student = student,
-//                absences = studentEvaluationsForCurrentSubject[EvaluationType.ABSENCE] ?: emptyList(),
-//                grades = studentEvaluationsForCurrentSubject[EvaluationType.GRADE] ?: emptyList(),
-//                feedbacks = studentEvaluationsForCurrentSubject[EvaluationType.FEEDBACK] ?: emptyList()
-//            )
-//        }
-//    }
-
     fun getAllSubjectsTaughtByTeacher(
         teacherId: BigDecimal,
         periodId: BigDecimal,
@@ -108,7 +57,7 @@ class SubjectService : BaseService() {
             }
 
     fun getSubjectsById(
-        schoolClassId: BigDecimal,
+        subjectId: BigDecimal,
         periodId: BigDecimal,
         schoolId: BigDecimal
     ): Subject? =
@@ -122,6 +71,7 @@ class SubjectService : BaseService() {
             .leftJoin(SCHOOL_USER_PERIOD).on(SCHOOL_USER_PERIOD.SCHOOL_USER_ID.eq(SCHOOL_USER.ID))
             .where(SUBJECT.SCHOOL_ID.eq(schoolId))
             .and(SUBJECT.SCHOOL_PERIOD_ID.eq(periodId))
+            .and(SUBJECT.ID.eq(subjectId))
             .fetchAny()
             ?.let {
                 mapToInternalModel(it)
