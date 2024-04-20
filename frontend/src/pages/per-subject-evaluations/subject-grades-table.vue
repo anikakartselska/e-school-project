@@ -10,16 +10,24 @@
           title="Оценки"
   >
     <template v-slot:top-right>
-      <q-btn color="primary"
-             flat icon="add_circle_outline"
-             label="Добави оценки за повече ученици"
-             @click="addNewGrades"
-      />
+        <q-btn color="primary"
+               icon="add_circle_outline"
+               label="Добави оценки за повече ученици"
+               outline
+               @click="addNewGrades(false)"
+        />
+        <q-btn class="q-ml-sm"
+               color="negative"
+               icon="add_circle_outline"
+               label="Оформи успех"
+               outline
+               @click="addNewGrades(true)"
+        />
     </template>
     <template v-slot:body-cell-grades="props">
       <q-td class="text-center">
         <q-btn v-for="grade in props.row?.grades?.filter(it => !(it.evaluationValue.finalGrade === true) && it.semester === semester)"
-               v-if="props.row?.student !== undefined"
+               v-if="props.row?.student?.firstName !== undefined"
                :class="`q-ma-xs ${gradeBackgroundColorMap.get(grade.evaluationValue.grade)}`"
                :label="gradeMap.get(grade.evaluationValue.grade)?.toString()"
                flat
@@ -53,22 +61,31 @@
     <template v-slot:body-cell-finalGrade="props">
       <q-td class="text-center">
         <q-btn v-for="grade in props.row?.grades?.filter(it=> it.evaluationValue.finalGrade === true && it.semester === semester)"
-               v-if="props.row?.student !== undefined"
+               v-if="props.row?.student?.firstName !== undefined"
                :class="`q-ma-xs ${gradeBackgroundColorMap.get(grade.evaluationValue.grade)}`"
                :label="gradeMap.get(grade.evaluationValue.grade)?.toString()"
                flat
                rounded>
           <q-popup-proxy>
-            <q-banner>
-              Въведен от:<span class="text-primary">{{
-                grade.createdBy.firstName
-              }} {{ grade.createdBy.lastName }}</span><br/>
-              Дата:<span class="text-primary">{{
-                grade.evaluationDate
-              }}</span><br/>
-            </q-banner>
+              <q-banner>
+                  Въведен от:<span class="text-primary">{{
+                  grade.createdBy.firstName
+                  }} {{ grade.createdBy.lastName }}</span><br/>
+                  Дата:<span class="text-primary">{{
+                  grade.evaluationDate
+                  }}</span><br/>
+              </q-banner>
           </q-popup-proxy>
         </q-btn>
+          <q-btn v-else-if="!isNaN(calculateAverageGrade(props.row?.grades?.filter(it => it.evaluationValue.finalGrade === true && it.semester === semester),true))"
+                 :class="`q-ma-xs ${getAverageGradeColorClass(calculateAverageGrade(props.row?.grades?.filter(it => it.evaluationValue.finalGrade === true && it.semester === semester),true))}`"
+                 :label="calculateAverageGrade(props.row?.grades?.filter(it => it.evaluationValue.finalGrade === true && it.semester === semester),true) ? calculateAverageGrade((props.row?.grades?.filter(it => it.evaluationValue.finalGrade === true && it.semester === semester)),true) : ''"
+                 flat
+                 rounded>
+              <q-tooltip>
+                  Средноаритметична оценка
+              </q-tooltip>
+          </q-btn>
       </q-td>
     </template>
   </q-table>
@@ -108,13 +125,14 @@ grades.push(
             feedbacks: []
         })
 
-const addNewGrades = async () => quasar.dialog({
-  component: AddGradesDialog,
-  componentProps: {
-    evaluations: props.evaluations,
-    subject: props.subject,
-    semester: props.semester,
-  },
+const addNewGrades = async (finalGrade: boolean) => quasar.dialog({
+    component: AddGradesDialog,
+    componentProps: {
+        evaluations: props.evaluations,
+        subject: props.subject,
+        semester: props.semester,
+        finalGrade: finalGrade
+    },
 }).onOk(async (payload) => {
     console.log(payload)
     await saveEvaluations(payload.item, periodId.value, schoolId.value).then(e => {
@@ -134,20 +152,20 @@ const getRowKey = (row) => {
   return row?.student ? row?.student : '1000'
 }
 const columns = [
-  {
-    name: "numberInClass",
-    label: "Номер в клас",
-    align: "center",
-    field: (row: StudentWithEvaluationDTO) => `${row?.student?.numberInClass}`,
-    sortable: true
-  },
-  {
-    name: "student",
-    label: "Име на ученика",
-    align: "center",
-    field: (row: StudentWithEvaluationDTO) => row?.student ? `${row?.student?.firstName} ${row?.student?.middleName} ${row?.student?.lastName}` : 'Общо',
-    sortable: true
-  },
+    {
+        name: "numberInClass",
+        label: "Номер в клас",
+        align: "center",
+        field: (row: StudentWithEvaluationDTO) => row?.student?.numberInClass != undefined ? `${row?.student?.numberInClass}` : '',
+        sortable: true
+    },
+    {
+        name: "student",
+        label: "Име на ученика",
+        align: "center",
+        field: (row: StudentWithEvaluationDTO) => row?.student.firstName != undefined ? `${row?.student?.firstName} ${row?.student?.middleName} ${row?.student?.lastName}` : 'Общо',
+        sortable: true
+    },
   {
     name: "grades",
     align: "center",

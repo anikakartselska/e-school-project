@@ -205,14 +205,20 @@ class EvaluationService : BaseService() {
     ): List<StudentWithEvaluationDTO> {
         val evaluationsWithId = evaluations.map { evaluationDto ->
             evaluationDto.copy(
-                absences = evaluationDto.absences.map {
-                    it.copy(id = getEvaluationSeqNextVal().toInt())
+                absences = evaluationDto.absences.mapNotNull {
+                    if (it.id == null) {
+                        it.copy(id = getEvaluationSeqNextVal().toInt())
+                    } else null
                 },
-                grades = evaluationDto.grades.map {
-                    it.copy(id = getEvaluationSeqNextVal().toInt())
+                grades = evaluationDto.grades.mapNotNull {
+                    if (it.id == null) {
+                        it.copy(id = getEvaluationSeqNextVal().toInt())
+                    } else null
                 },
-                feedbacks = evaluationDto.feedbacks.map {
-                    it.copy(id = getEvaluationSeqNextVal().toInt())
+                feedbacks = evaluationDto.feedbacks.mapNotNull {
+                    if (it.id == null) {
+                        it.copy(id = getEvaluationSeqNextVal().toInt())
+                    } else null
                 },
             )
 

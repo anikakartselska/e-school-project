@@ -17,7 +17,7 @@ class EvaluationController {
     fun fetchAllStudentSubjectEvaluationsFromSchoolClass(
         @RequestBody schoolClass: SchoolClass,
         @RequestParam evaluationType: EvaluationType
-    ): Map<BigDecimal, Map<BigDecimal, List<Evaluation>>> =
+    ): Map<Int, Map<Int, List<Evaluation>>> =
         evaluationService.getAllStudentSubjectEvaluationsFromSchoolClass(schoolClass, evaluationType)
 
     @PostMapping("/get-student-subjects-with-evaluation")

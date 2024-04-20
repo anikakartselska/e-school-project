@@ -21,33 +21,48 @@
             <q-btn v-for="currentGrade in Object.keys(Grade)"
                    :class="`q-ma-xs ${gradeBackgroundColorMap.get(currentGrade)}`"
                    :label="gradeMap.get(currentGrade)?.toString()"
+                   :disable="finalGrade===true && props.row.grades.filter(it => (it.evaluationValue.finalGrade === true)).length > 0"
                    flat
+                   type="a"
                    rounded
                    @click="addGrade(currentGrade,props.row.student)">
-              <q-tooltip>
-                Кликни за да добавиш оценка
-              </q-tooltip>
+                <q-tooltip
+                        v-if="finalGrade===true && props.row.grades.filter(it => (it.evaluationValue.finalGrade === true)).length > 0">
+                    Успехът за текущия ученик е вече оформен
+                </q-tooltip>
+                <q-tooltip v-else>
+                    Кликни, за да добавиш оценка
+                </q-tooltip>
             </q-btn>
           </q-td>
         </template>
         <template v-slot:body-cell-added-grades="props">
           <q-td class="text-center">
-            <q-btn v-for="grade in props.row.grades.filter(it => !(it.evaluationValue.finalGrade === true) && it.semester === semester)"
-                   v-if="props.row.student !== undefined"
-                   :class="`q-ma-xs ${gradeBackgroundColorMap.get(grade.evaluationValue.grade)}`"
-                   :label="gradeMap.get(grade.evaluationValue.grade)?.toString()"
-                   flat
-                   rounded>
-              <q-popup-proxy>
-                <q-banner>
-                  Въведен от:<span class="text-primary">{{
-                    grade.createdBy.firstName
-                  }} {{ grade.createdBy.lastName }}</span><br/>
-                  Дата:<span class="text-primary">{{
-                    grade.evaluationDate
-                  }}</span><br/>
-                </q-banner>
-              </q-popup-proxy>
+              <q-btn v-for="grade in props.row.grades.filter(it => (it.evaluationValue.finalGrade === finalGrade) && it.semester === semester)"
+                     v-if="props.row.student !== undefined"
+                     :class="`q-ma-xs ${gradeBackgroundColorMap.get(grade.evaluationValue.grade)}`"
+                     :label="gradeMap.get(grade.evaluationValue.grade)?.toString()"
+                     flat
+                     rounded>
+                  <q-badge v-if="grade.id == null" align="bottom" color="white" floating
+                           style="width:2px; height: 2px ">
+                      <template v-slot:default>
+                          <div class="row">
+                              <q-btn class="bg-negative absolute-left" icon="close" round size="5px"
+                                     @click="removeAddedGrade(grade)"/>
+                          </div>
+                      </template>
+                  </q-badge>
+                  <q-popup-proxy>
+                      <q-banner>
+                          Въведен от:<span class="text-primary">{{
+                          grade.createdBy.firstName
+                          }} {{ grade.createdBy.lastName }}</span><br/>
+                          Дата:<span class="text-primary">{{
+                          grade.evaluationDate
+                          }}</span><br/>
+                      </q-banner>
+                  </q-popup-proxy>
             </q-btn>
           </q-td>
         </template>
@@ -80,10 +95,16 @@ const props = defineProps<{
   subject: Subject,
   semester: Semester,
   evaluations: StudentWithEvaluationDTO[],
+    finalGrade: boolean
 }>()
 const currentUser = getCurrentUserAsUserView()
 const studentEvaluations = $ref([...props.evaluations].map(it => {
-    return {...it, grades: [], feedbacks: [], absences: []}
+    return {
+        ...it,
+        grades: props.finalGrade == true ? it.grades.filter(it => (<GradeValue>it.evaluationValue).finalGrade == true) : [],
+        feedbacks: [],
+        absences: []
+    }
 }))
 
 const submit = () => {
@@ -100,19 +121,32 @@ const addGrade = (grade: Grade, student: StudentView) => {
       schoolLessonId: null,
       evaluationDate: formatToDate(new Date()),
       evaluationType: EvaluationType.GRADE,
-      evaluationValue: <GradeValue>{grade: grade, finalGrade: false},
+      evaluationValue: <GradeValue>{grade: grade, finalGrade: props.finalGrade},
       semester: props.semester,
       createdBy: currentUser
   }
   studentEvaluations.map(it => {
-    if (it.student.id == student.id) {
-      (<Evaluation[]>it.grades).push(evaluation)
-    } else {
-      it
-    }
-  })
+              if (it.student.id == student.id) {
+                  if (props.finalGrade == true) {
+                      it.grades = [evaluation]
+                  } else {
+                      (<Evaluation[]>it.grades).push(evaluation)
+                  }
+              } else {
+                  it
+              }
+          }
+  )
 }
-
+const removeAddedGrade = (grade: Evaluation) => {
+    studentEvaluations.map(it => {
+        if (it.student.id == grade.student.id) {
+            (<Evaluation[]>it.grades).splice(it.grades.indexOf(grade), 1);
+        } else {
+            it
+        }
+    })
+}
 
 const columns = [
   {
@@ -134,11 +168,11 @@ const columns = [
     align: "center",
     label: "Оценки",
   },
-  {
-    name: "added-grades",
-    align: "center",
-    label: "Добавени оценки",
-  },
+    {
+        name: "added-grades",
+        align: "center",
+        label: props.finalGrade ? "Оформена оценка" : "Добавени оценки",
+    },
 ]
 </script>
 
