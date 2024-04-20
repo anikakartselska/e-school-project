@@ -62,6 +62,15 @@
                       </q-banner>
                   </q-popup-proxy>
               </q-btn>
+              <q-btn v-else-if="!isNaN(calculateAverageGrade(props.row?.grades?.filter(it => it.evaluationValue.finalGrade === true && it.semester === semester),true))"
+                     :class="`q-ma-xs ${getAverageGradeColorClass(calculateAverageGrade(props.row?.grades?.filter(it => it.evaluationValue.finalGrade === true && it.semester === semester),true))}`"
+                     :label="calculateAverageGrade(props.row?.grades?.filter(it => it.evaluationValue.finalGrade === true && it.semester === semester),true) ? calculateAverageGrade((props.row?.grades?.filter(it => it.evaluationValue.finalGrade === true && it.semester === semester)),true) : ''"
+                     flat
+                     rounded>
+                  <q-tooltip>
+                      Средноаритметична оценка
+                  </q-tooltip>
+              </q-btn>
           </q-td>
       </template>
   </q-table>

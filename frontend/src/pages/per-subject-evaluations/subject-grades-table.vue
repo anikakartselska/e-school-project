@@ -15,6 +15,7 @@
                label="Добави оценки за повече ученици"
                outline
                @click="addNewGrades(false)"
+               v-if="semester !== Semester.YEARLY"
         />
         <q-btn class="q-ml-sm"
                color="negative"
@@ -66,16 +67,16 @@
                :label="gradeMap.get(grade.evaluationValue.grade)?.toString()"
                flat
                rounded>
-          <q-popup-proxy>
-              <q-banner>
-                  Въведен от:<span class="text-primary">{{
-                  grade.createdBy.firstName
-                  }} {{ grade.createdBy.lastName }}</span><br/>
-                  Дата:<span class="text-primary">{{
-                  grade.evaluationDate
-                  }}</span><br/>
-              </q-banner>
-          </q-popup-proxy>
+            <q-popup-proxy>
+                <q-banner>
+                    Въведен от:<span class="text-primary">{{
+                    grade.createdBy.firstName
+                    }} {{ grade.createdBy.lastName }}</span><br/>
+                    Дата:<span class="text-primary">{{
+                    grade.evaluationDate
+                    }}</span><br/>
+                </q-banner>
+            </q-popup-proxy>
         </q-btn>
           <q-btn v-else-if="!isNaN(calculateAverageGrade(props.row?.grades?.filter(it => it.evaluationValue.finalGrade === true && it.semester === semester),true))"
                  :class="`q-ma-xs ${getAverageGradeColorClass(calculateAverageGrade(props.row?.grades?.filter(it => it.evaluationValue.finalGrade === true && it.semester === semester),true))}`"
@@ -134,7 +135,6 @@ const addNewGrades = async (finalGrade: boolean) => quasar.dialog({
         finalGrade: finalGrade
     },
 }).onOk(async (payload) => {
-    console.log(payload)
     await saveEvaluations(payload.item, periodId.value, schoolId.value).then(e => {
                 const newlyAddedGrades = e.data
                 grades.forEach(studentGrades => {
@@ -163,19 +163,19 @@ const columns = [
         name: "student",
         label: "Име на ученика",
         align: "center",
-        field: (row: StudentWithEvaluationDTO) => row?.student.firstName != undefined ? `${row?.student?.firstName} ${row?.student?.middleName} ${row?.student?.lastName}` : 'Общо',
+        field: (row: StudentWithEvaluationDTO) => row?.student?.firstName != undefined ? `${row?.student?.firstName} ${row?.student?.middleName} ${row?.student?.lastName}` : 'Общо',
         sortable: true
     },
-  {
-    name: "grades",
-    align: "center",
-    label: "Оценки",
-  },
-  {
-    name: "average",
-    align: "center",
-    label: "Средно аритметично"
-  },
+    {
+        name: "grades",
+        align: "center",
+        label: "Оценки",
+    },
+    {
+        name: "average",
+        align: "center",
+        label: "Средно аритметично"
+    },
   {
     name: "finalGrade",
     align: "center",

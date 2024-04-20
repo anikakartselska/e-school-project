@@ -5,20 +5,28 @@
           :rows="absences"
           :visible-columns="visibleColumns"
           no-data-label="Няма данни в таблицата"
-          row-key="student"
+          :row-key="getRowKey"
           separator="cell"
           title="Отсъствия"
   >
-    <template v-slot:header-cell-total="props">
-      <q-th>
-        <div class="row">
-          <div class="col text-center">
-            Извинени
-          </div>
-          <q-separator vertical/>
-          <div class="col-4 text-center">
-            Неизвинени
-          </div>
+      <template v-if="semester !== Semester.YEARLY" v-slot:top-right>
+          <q-btn color="primary"
+                 icon="add_circle_outline"
+                 label="Добави отсъствия за повече ученици"
+                 outline
+                 @click="addNewAbsences()"
+          />
+      </template>
+      <template v-slot:header-cell-total="props">
+          <q-th>
+              <div class="row">
+                  <div class="col text-center">
+                      Извинени
+                  </div>
+                  <q-separator vertical/>
+                  <div class="col-4 text-center">
+                      Неизвинени
+                  </div>
           <q-separator vertical/>
           <div class="col-4 text-center">
             Общо
@@ -29,7 +37,7 @@
     <template v-slot:body-cell-absences="props">
       <q-td class="text-center">
         <q-btn v-for="absence in props.row.absences.filter(it=>it.semester === semester)"
-               v-if="props.row.student !== undefined"
+               v-if="props.row.student.firstName !== undefined"
                :class="`q-ma-xs ${getAbsenceBackgroundColor(absence)}`"
                :label="absenceMap.get(absence.evaluationValue.absence)"
                flat
@@ -90,35 +98,68 @@ import {Semester} from "../../model/SchoolPeriod";
 import {Evaluation} from "../../model/Evaluation";
 import {StudentWithEvaluationDTO} from "../../model/StudentWithEvaluationDTO";
 import {Subject} from "../../model/Subject";
+import {StudentView} from "../../model/User";
+import {useQuasar} from "quasar";
+import AddAbsencesDialog from "./add-absences-dialog.vue";
+import {saveEvaluations} from "../../services/RequestService";
+import {periodId, schoolId} from "../../model/constants";
 
 const props = defineProps<{
-  evaluations: StudentWithEvaluationDTO[],
-  semester: Semester,
-  subject: Subject
+    evaluations: StudentWithEvaluationDTO[],
+    semester: Semester,
+    subject: Subject
 }>()
-const absences = $ref([...props.evaluations,
-  {
-    absences: props.evaluations.map(it => it.absences).flat(1).filter((it: Evaluation) => it.semester == props.semester || props.semester == Semester.YEARLY),
-    student: undefined,
-    feedbacks: [],
-    grades: []
-  }])
+
+const absences: StudentWithEvaluationDTO[] = $ref(props.evaluations ? [...props.evaluations] : [])
+absences.push(
+        {
+            absences: props.evaluations?.map(it => it.absences).flat(1)?.filter((it: Evaluation) => it.semester == props.semester || props.semester == Semester.YEARLY),
+            student: <StudentView><unknown>{id: 10000},
+            grades: [],
+            feedbacks: []
+        })
+
+const getRowKey = (row) => {
+    return row?.student ? row?.student : '1000'
+}
+const quasar = useQuasar()
+const addNewAbsences = async () => quasar.dialog({
+    component: AddAbsencesDialog,
+    componentProps: {
+        evaluations: props.evaluations,
+        subject: props.subject,
+        semester: props.semester
+    },
+}).onOk(async (payload) => {
+    await saveEvaluations(payload.item, periodId.value, schoolId.value).then(e => {
+                const newlyAddedAbsences = e.data
+                absences.forEach(studentEvaluations => {
+                            const newlyAddedAbsencesForCurrentStudent = newlyAddedAbsences.find(v => v.student.id == studentEvaluations.student.id)?.absences
+                            if (studentEvaluations.student.id == 10000) {
+                                studentEvaluations.absences = studentEvaluations.absences.concat(newlyAddedAbsences.map(it => it.absences).flat(1))
+                            }
+                            studentEvaluations.absences = studentEvaluations.absences.concat(newlyAddedAbsencesForCurrentStudent ? newlyAddedAbsencesForCurrentStudent : [])
+                        }
+                )
+            }
+    )
+})
 
 const columns = [
-  {
-    name: "numberInClass",
-    label: "Номер в клас",
-    align: "center",
-    field: (row: StudentWithEvaluationDTO) => `${row.student?.numberInClass}`,
-    sortable: true
-  },
-  {
-    name: "student",
-    label: "Име на ученика",
-    align: "center",
-    field: (row: StudentWithEvaluationDTO) => row.student ? `${row.student?.firstName} ${row.student?.middleName} ${row.student?.lastName}` : 'Общо',
-    sortable: true
-  },
+    {
+        name: "numberInClass",
+        label: "Номер в клас",
+        align: "center",
+        field: (row: StudentWithEvaluationDTO) => row?.student?.numberInClass != undefined ? `${row?.student?.numberInClass}` : '',
+        sortable: true
+    },
+    {
+        name: "student",
+        label: "Име на ученика",
+        align: "center",
+        field: (row: StudentWithEvaluationDTO) => row?.student?.firstName != undefined ? `${row?.student?.firstName} ${row?.student?.middleName} ${row?.student?.lastName}` : 'Общо',
+        sortable: true
+    },
   {
     name: "absences",
     align: "center",

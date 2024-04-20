@@ -43,10 +43,35 @@ export const getAbsenceBackgroundColor = (evaluation: Evaluation) => {
         return ''
     }
 }
-export const absenceBackgroundColorMap = new Map<Absence, string>([
-    [Absence.HALF, 'bg-red-2'],
-    [Absence.WHOLE, 'bg-red-4'],
-]);
+
+export const getAbsenceValueBackgroundColor = (evaluationValue: AbsenceValue) => {
+    switch (evaluationValue.absence) {
+        case Absence.WHOLE: {
+            switch (evaluationValue.excused) {
+                case true:
+                    return 'bg-green-2'
+                case false:
+                    return 'bg-red-2'
+            }
+            break;
+        }
+        case Absence.HALF: {
+            switch (evaluationValue.excused) {
+                case true:
+                    return 'bg-green-1'
+                case false:
+                    return 'bg-red-1'
+            }
+            break;
+        }
+    }
+}
+
+export const absencesOptions = [<AbsenceValue>{absence: Absence.HALF, excused: true}, <AbsenceValue>{
+    absence: Absence.WHOLE,
+    excused: true
+}, <AbsenceValue>{absence: Absence.HALF, excused: false}, <AbsenceValue>{absence: Absence.WHOLE, excused: false}]
+
 
 export const absenceMap = new Map<Absence, number>([
     [Absence.HALF, 0.5],

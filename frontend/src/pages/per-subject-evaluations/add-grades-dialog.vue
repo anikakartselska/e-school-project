@@ -37,34 +37,24 @@
           </q-td>
         </template>
         <template v-slot:body-cell-added-grades="props">
-          <q-td class="text-center">
-              <q-btn v-for="grade in props.row.grades.filter(it => (it.evaluationValue.finalGrade === finalGrade) && it.semester === semester)"
-                     v-if="props.row.student !== undefined"
-                     :class="`q-ma-xs ${gradeBackgroundColorMap.get(grade.evaluationValue.grade)}`"
-                     :label="gradeMap.get(grade.evaluationValue.grade)?.toString()"
-                     flat
-                     rounded>
-                  <q-badge v-if="grade.id == null" align="bottom" color="white" floating
-                           style="width:2px; height: 2px ">
-                      <template v-slot:default>
-                          <div class="row">
-                              <q-btn class="bg-negative absolute-left" icon="close" round size="5px"
-                                     @click="removeAddedGrade(grade)"/>
-                          </div>
-                      </template>
-                  </q-badge>
-                  <q-popup-proxy>
-                      <q-banner>
-                          Въведен от:<span class="text-primary">{{
-                          grade.createdBy.firstName
-                          }} {{ grade.createdBy.lastName }}</span><br/>
-                          Дата:<span class="text-primary">{{
-                          grade.evaluationDate
-                          }}</span><br/>
-                      </q-banner>
-                  </q-popup-proxy>
-            </q-btn>
-          </q-td>
+            <q-td class="text-center">
+                <q-btn v-for="grade in props.row.grades.filter(it => (it.evaluationValue.finalGrade === finalGrade) && it.semester === semester)"
+                       v-if="props.row.student !== undefined"
+                       :class="`q-ma-xs ${gradeBackgroundColorMap.get(grade.evaluationValue.grade)}`"
+                       :label="gradeMap.get(grade.evaluationValue.grade)?.toString()"
+                       flat
+                       rounded>
+                    <q-badge v-if="grade.id == null" align="bottom" color="white" floating
+                             style="width:2px; height: 2px ">
+                        <template v-slot:default>
+                            <div class="row">
+                                <q-btn class="bg-negative absolute-left" icon="close" round size="5px"
+                                       @click="removeAddedGrade(grade)"/>
+                            </div>
+                        </template>
+                    </q-badge>
+                </q-btn>
+            </q-td>
         </template>
       </q-table>
       <q-card-actions align="right">
@@ -158,16 +148,16 @@ const columns = [
   },
   {
     name: "student",
-    label: "Име на ученика",
-    align: "center",
-    field: (row: StudentWithEvaluationDTO) => row.student ? `${row.student?.firstName} ${row.student?.middleName} ${row.student?.lastName}` : 'Общо',
-    sortable: true
+      label: "Име на ученика",
+      align: "center",
+      field: (row: StudentWithEvaluationDTO) => row.student ? `${row.student?.firstName} ${row.student?.middleName} ${row.student?.lastName}` : 'Общо',
+      sortable: true
   },
-  {
-    name: "grades",
-    align: "center",
-    label: "Оценки",
-  },
+    {
+        name: "grades",
+        align: "center",
+        label: "Оценки",
+    },
     {
         name: "added-grades",
         align: "center",

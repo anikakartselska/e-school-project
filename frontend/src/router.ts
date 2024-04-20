@@ -7,12 +7,7 @@ import UserPage from "./pages/user/user-page.vue";
 import GradesTabPerStudent from "./pages/per-student-evaluations/grades-tab.vue";
 import AbsenceTabPerStudent from "./pages/per-student-evaluations/absence-tab.vue";
 import FeedbackTabPerStudent from "./pages/per-student-evaluations/feedback-tab.vue";
-import FeedbackTabPerSubject from "./pages/per-school-class-evaluations/feedback-tab.vue";
 import StudentSubjectsAndEvaluation from "./pages/per-student-evaluations/student-subjects-and-evaluation.vue";
-import SchoolClassSubjectsAndEvaluations
-    from "./pages/per-school-class-evaluations/school-class-subjects-and-evaluations.vue";
-import GradesTabPerSubject from "./pages/per-school-class-evaluations/grades-tab.vue";
-import AbsenceTabPerSubject from "./pages/per-school-class-evaluations/absence-tab.vue";
 import LoginSingIn from "./pages/login-signin.vue";
 import LoginTab from "./pages/login-tab.vue";
 import SignInTab from "./pages/sign-in-tab.vue";
@@ -181,25 +176,6 @@ const routes = [
                     {
                         path: 'role-status-change-request',
                         component: RoleRequestsTab
-                    }
-                ],
-            },
-            {
-                path: '/schoolClassDiary/:schoolClassId(\\d+)/:periodId(\\d+)/:schoolId(\\d+)',
-                component: SchoolClassSubjectsAndEvaluations,
-                props: true,
-                children: [
-                    {
-                        path: 'grades',
-                        component: GradesTabPerSubject
-                    },
-                    {
-                        path: 'absences',
-                        component: AbsenceTabPerSubject
-                    },
-                    {
-                        path: 'feedbacks',
-                        component: FeedbackTabPerSubject
                     }
                 ],
             }
