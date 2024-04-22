@@ -53,24 +53,32 @@
               <q-icon name="settings_accessibility"/>
             </template>
           </q-select>
-          <div v-if="isDetailsForStudent(schoolUserRole.detailsForUser)">
-            <q-select v-model="schoolUserRole.detailsForUser.schoolClass" :options="schoolClassesOptions"
-                      :option-label="option => option.name" label="Клас">
-              <template v-slot:prepend>
-                <q-icon name="settings_accessibility"/>
-              </template>
-            </q-select>
-          </div>
-          <div v-if="isDetailsForParent(schoolUserRole.detailsForUser)">
-            <q-input v-model="schoolUserRole.detailsForUser.child.phoneNumber" class="q-pa-sm"
-                     label="Телефонен номер на ученика"
-                     mask="##########"/>
-            <q-select v-model="schoolUserRole.detailsForUser.child.role.detailsForUser.schoolClass"
-                      :options="schoolClassesOptions"
-                      :option-label="option => option.name" label="Клас">
-              <template v-slot:prepend>
-                <q-icon name="settings_accessibility"/>
-              </template>
+            <div v-if="isDetailsForStudent(schoolUserRole.detailsForUser)">
+                <q-select v-model="schoolUserRole.detailsForUser.schoolClass" :option-label="option => option.name"
+                          :options="schoolClassesOptions" label="Клас">
+                    <template v-slot:prepend>
+                        <q-icon name="settings_accessibility"/>
+                    </template>
+                </q-select>
+            </div>
+            <div v-if="isDetailsForTeacher(schoolUserRole.detailsForUser)">
+                <q-select v-model="schoolUserRole.detailsForUser.subjects" :option-label="option => option.name"
+                          :options="subjects" label="Квалифициран учител по:">
+                    <template v-slot:prepend>
+                        <q-icon name="settings_accessibility"/>
+                    </template>
+                </q-select>
+            </div>
+            <div v-if="isDetailsForParent(schoolUserRole.detailsForUser)">
+                <q-input v-model="schoolUserRole.detailsForUser.child.phoneNumber" class="q-pa-sm"
+                         label="Телефонен номер на ученика"
+                         mask="##########"/>
+                <q-select v-model="schoolUserRole.detailsForUser.child.role.detailsForUser.schoolClass"
+                          :option-label="option => option.name"
+                          :options="schoolClassesOptions" label="Клас">
+                    <template v-slot:prepend>
+                        <q-icon name="settings_accessibility"/>
+                    </template>
             </q-select>
           </div>
 
@@ -89,8 +97,10 @@ import {useDialogPluginComponent, useQuasar} from "quasar";
 import {
     DetailsForParent,
     DetailsForStudent,
+    DetailsForTeacher,
     isDetailsForParent,
     isDetailsForStudent,
+    isDetailsForTeacher,
     OneRoleUser,
     SchoolRole
 } from "../model/User";
@@ -114,6 +124,7 @@ const props = defineProps<{
     schoolPeriodsWithSchoolIds: SchoolPeriodWithSchoolIds[],
     allSchoolClassesOptions: SchoolClass[],
     disablePeriodAndSchoolSelections?: boolean,
+    subjects: string[]
 }>()
 
 const roleOptions = Object.keys(SchoolRole)
@@ -127,21 +138,24 @@ watch(() => schoolUserRole.school, async () => {
         }
 )
 watch(() => schoolUserRole.role, () => {
-  switch (schoolUserRole.role) {
-    case SchoolRole.STUDENT: {
-      schoolUserRole.detailsForUser = new DetailsForStudent(<SchoolClass>{}, null)
-      break
+    switch (schoolUserRole.role) {
+        case SchoolRole.STUDENT: {
+            schoolUserRole.detailsForUser = new DetailsForStudent(<SchoolClass>{}, null)
+            break
+        }
+        case SchoolRole.PARENT: {
+            schoolUserRole.detailsForUser = new DetailsForParent(<OneRoleUser><unknown>{role: <SchoolUserRole><unknown>{detailsForUser: new DetailsForStudent(<SchoolClass>{}, null)}})
+            break
+        }
+        case SchoolRole.TEACHER: {
+            schoolUserRole.detailsForUser = new DetailsForTeacher([])
+            break
+        }
+        case SchoolRole.ADMIN: {
+            schoolUserRole.detailsForUser = null
+            break
+        }
     }
-    case SchoolRole.PARENT: {
-      schoolUserRole.detailsForUser = new DetailsForParent(<OneRoleUser><unknown>{role: <SchoolUserRole><unknown>{detailsForUser: new DetailsForStudent(<SchoolClass>{}, null)}})
-      break
-    }
-    case SchoolRole.TEACHER:
-    case SchoolRole.ADMIN: {
-      schoolUserRole.detailsForUser = null
-      break
-    }
-  }
 })
 
 const submit = () => {

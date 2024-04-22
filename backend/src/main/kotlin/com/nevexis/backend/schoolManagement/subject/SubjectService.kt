@@ -54,6 +54,8 @@ class SubjectService : BaseService() {
                     )
             }
 
+    fun getAllSubjects() = db.selectFrom(SUBJECT).fetchInto(String::class.java)
+
 
     fun getAllSubjectsBySchoolClassId(
         schoolClassId: BigDecimal,

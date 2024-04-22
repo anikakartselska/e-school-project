@@ -2,10 +2,10 @@ package com.nevexis.backend.schoolManagement.users
 
 import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.school_class.SchoolClassService
-import com.nevexis.backend.schoolManagement.users.roles.SchoolRolesService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
 import com.nevexis.`demo-project`.jooq.tables.records.ParentStudentRecord
 import com.nevexis.`demo-project`.jooq.tables.records.StudentSchoolClassRecord
+import com.nevexis.`demo-project`.jooq.tables.records.TeacherQualifiedSubjectRecord
 import com.nevexis.`demo-project`.jooq.tables.references.*
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -16,11 +16,6 @@ import java.math.BigDecimal
 
 @Service
 class UserDetailsService : BaseService() {
-
-    @Autowired
-    @Lazy
-    private lateinit var schoolUserRolesService: SchoolRolesService
-
 
     @Autowired
     private lateinit var schoolClassService: SchoolClassService
@@ -35,11 +30,14 @@ class UserDetailsService : BaseService() {
     ) {
         schoolUserRoles.mapNotNull {
             when (it.role) {
-                SchoolRole.ADMIN, SchoolRole.TEACHER -> null
-                SchoolRole.STUDENT -> createStudentClassRecordForSchoolUserRole(it, dsl)
-                SchoolRole.PARENT -> createParentStudentRecordForSchoolUserRole(it, dsl)
+                SchoolRole.ADMIN -> null
+                SchoolRole.STUDENT -> listOf(createStudentClassRecordForSchoolUserRole(it, dsl))
+                SchoolRole.PARENT -> listOf(createParentStudentRecordForSchoolUserRole(it, dsl))
+                SchoolRole.TEACHER -> createTeacherQualifiedSubjectRecordForSchoolUserRole(it, dsl)
             }
-        }.apply { dsl.batchStore(this).execute() }
+        }.apply {
+            dsl.batchStore(this.flatten()).execute()
+        }
     }
 
     private fun createStudentClassRecordForSchoolUserRole(
@@ -76,6 +74,27 @@ class UserDetailsService : BaseService() {
         }
     }
 
+
+    private fun createTeacherQualifiedSubjectRecordForSchoolUserRole(
+        schoolUserRole: SchoolUserRole,
+        dsl: DSLContext
+    ): List<TeacherQualifiedSubjectRecord> {
+        if (schoolUserRole.detailsForUser !is DetailsForUser.DetailsForTeacher) {
+            error("User with ${schoolUserRole.userId} does not have teacher details")
+        }
+        return dsl.selectFrom(TEACHER_QUALIFIED_SUBJECT).where(
+            TEACHER_QUALIFIED_SUBJECT.TEACHER_ID.eq(schoolUserRole.userId!!.toBigDecimal())
+                .and(TEACHER_QUALIFIED_SUBJECT.SUBJECT_NAME.`in`(schoolUserRole.detailsForUser.qualifiedSubjects))
+        ).fetch().plus(schoolUserRole.detailsForUser.qualifiedSubjects.map { subject ->
+            dsl.newRecord(TEACHER_QUALIFIED_SUBJECT).apply {
+                subjectName = subject
+                teacherId = schoolUserRole.userId.toBigDecimal()
+            }
+        }).distinctBy { it.subjectName }
+
+    }
+
+
     fun getParentDetailsPerSchoolUserRolesAndPeriodId(
         schoolUserRoles: List<SchoolUserRole>,
         periodId: BigDecimal
@@ -90,7 +109,6 @@ class UserDetailsService : BaseService() {
                 }
             }
     }
-
 
     fun getStudentDetailsPerSchoolUserRolesAndPeriodId(
         schoolUserRoles: List<SchoolUserRole>,
@@ -124,6 +142,18 @@ class UserDetailsService : BaseService() {
                 )
             }
 
+    fun getTeacherDetails(
+        teacherIds: List<BigDecimal>,
+    ): List<DetailsForUser.DetailsForTeacher> {
+        if (teacherIds.isEmpty()) {
+            return emptyList()
+        }
+        return db.selectFrom(TEACHER_QUALIFIED_SUBJECT).where(TEACHER_QUALIFIED_SUBJECT.TEACHER_ID.`in`(teacherIds))
+            .fetch().groupBy { it.teacherId }.map { (_, recordsForCurrentTeacher) ->
+                DetailsForUser.DetailsForTeacher(recordsForCurrentTeacher.map { it.subjectName!! })
+            }
+    }
+
 
     fun getUserDetailsPerSchoolUserRole(
         schoolUserRole: SchoolUserRole,
@@ -140,6 +170,8 @@ class UserDetailsService : BaseService() {
                 periodId
             ).firstOrNull()
 
+            SchoolRole.TEACHER -> getTeacherDetails(listOf(schoolUserRole.userId!!.toBigDecimal())).firstOrNull()
+
             else -> null
         }
 
@@ -150,6 +182,7 @@ class UserDetailsService : BaseService() {
         when (role) {
             SchoolRole.STUDENT -> getStudentDetailsPerSchoolUserRolesAndPeriodId(schoolUserRoles, periodId)
             SchoolRole.PARENT -> getParentDetailsPerSchoolUserRolesAndPeriodId(schoolUserRoles, periodId)
+            SchoolRole.TEACHER -> getTeacherDetails(schoolUserRoles.map { it.userId!!.toBigDecimal() })
             else -> null
         }
     }.flatten()

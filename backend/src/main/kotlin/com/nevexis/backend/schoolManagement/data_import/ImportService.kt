@@ -36,6 +36,7 @@ class ImportService : BaseService() {
     @Autowired
     private lateinit var requestService: RequestService
 
+
     fun createRequestsFromUsersExcel(
         byteArray: ByteArray,
         periodId: BigDecimal,
@@ -78,13 +79,26 @@ class ImportService : BaseService() {
                             periodId
                         )
                         val schoolUserRole = when (schoolRole) {
-                            SchoolRole.ADMIN, SchoolRole.TEACHER -> SchoolUserRole(
+                            SchoolRole.ADMIN -> SchoolUserRole(
                                 userId = existingUser?.id,
                                 period = period,
                                 school = school,
                                 role = schoolRole,
                                 status = RequestStatus.PENDING,
                                 detailsForUser = null
+                            )
+
+                            SchoolRole.TEACHER -> SchoolUserRole(
+                                userId = existingUser?.id,
+                                period = period,
+                                school = school,
+                                role = schoolRole,
+                                status = RequestStatus.PENDING,
+                                detailsForUser = DetailsForUser.DetailsForTeacher(
+                                    qualifiedSubjects = DataFormatter().formatCellValue(
+                                        row.getCell(9)
+                                    ).replace("\\s".toRegex(), "").split(",")
+                                )
                             )
 
                             SchoolRole.STUDENT -> SchoolUserRole(

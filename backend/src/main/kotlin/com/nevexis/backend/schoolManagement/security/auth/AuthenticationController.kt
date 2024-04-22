@@ -10,6 +10,7 @@ import com.nevexis.backend.schoolManagement.school_period.SchoolPeriod
 import com.nevexis.backend.schoolManagement.school_period.SchoolPeriodService
 import com.nevexis.backend.schoolManagement.security.JwtService
 import com.nevexis.backend.schoolManagement.security.reset_password.PasswordResetService
+import com.nevexis.backend.schoolManagement.subject.SubjectService
 import com.nevexis.backend.schoolManagement.users.User
 import com.nevexis.backend.schoolManagement.users.roles.SchoolRolesService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
@@ -53,6 +54,9 @@ class AuthenticationController {
 
     @Autowired
     private lateinit var requestService: RequestService
+
+    @Autowired
+    private lateinit var subjectService: SubjectService
 
     @PostMapping("/authenticate")
     suspend fun authenticate(
@@ -113,6 +117,8 @@ class AuthenticationController {
     @GetMapping("/get-all-school-classes")
     suspend fun getAllSchoolClasses(): List<SchoolClass> = schoolClassService.getSchoolClasses()
 
+    @GetMapping("/get-all-subjects")
+    suspend fun getAllSubjects(): List<String> = subjectService.getAllSubjects()
 
     @GetMapping("/get-all-periods")
     suspend fun getAllSchoolPeriods(): List<SchoolPeriod> = schoolPeriodService.fetchAllSchoolPeriods()

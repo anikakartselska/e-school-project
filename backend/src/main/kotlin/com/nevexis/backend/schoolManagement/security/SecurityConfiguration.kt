@@ -57,7 +57,8 @@ class SecurityConfiguration {
                 "/auth/find-user-with-all-its-roles-by-phone-number",
                 "/auth/create-requests",
                 "/auth/reset-password-request",
-                "/auth/update-password"
+                "/auth/update-password",
+                "/auth/get-all-subjects"
             )
             .permitAll()
             .anyExchange().authenticated()

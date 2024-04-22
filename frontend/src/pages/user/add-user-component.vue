@@ -121,7 +121,8 @@ import {
     findUserWithAllItsRolesByPhoneNumber,
     getAllSchoolClasses,
     getAllSchoolPeriodsWithTheSchoolsTheyAreStarted,
-    getAllSchools
+    getAllSchools,
+    getAllSubjects
 } from "../../services/RequestService";
 import AddRoleDialog from "../add-role-dialog.vue";
 import {confirmActionPromiseDialogWithCancelButton, translationOfGender} from "../../utils";
@@ -171,14 +172,16 @@ let step = $ref(1)
 const allSchools = await getAllSchools()
 const allSchoolClasses = await getAllSchoolClasses()
 const allSchoolPeriods = await getAllSchoolPeriodsWithTheSchoolsTheyAreStarted()
+const allSubjects = await getAllSubjects()
 const addNewRole = async () => quasar.dialog({
-  component: AddRoleDialog,
-  componentProps: {
-    role: <SchoolUserRole>{},
-    schoolOptions: allSchools,
-    allSchoolClassesOptions: allSchoolClasses,
-    schoolPeriodsWithSchoolIds: allSchoolPeriods
-  },
+    component: AddRoleDialog,
+    componentProps: {
+        role: <SchoolUserRole>{},
+        schoolOptions: allSchools,
+        allSchoolClassesOptions: allSchoolClasses,
+        schoolPeriodsWithSchoolIds: allSchoolPeriods,
+        subjects: allSubjects
+    },
 }).onOk(async (payload) => {
   const schoolUserRole = payload.item as SchoolUserRole
   if (schoolUserRole.role == SchoolRole.PARENT) {

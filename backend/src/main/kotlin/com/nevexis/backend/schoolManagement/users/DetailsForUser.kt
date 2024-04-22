@@ -1,4 +1,3 @@
-
 package com.nevexis.backend.schoolManagement.users
 
 import com.nevexis.backend.schoolManagement.school_class.SchoolClass
@@ -22,6 +21,14 @@ sealed class DetailsForUser {
     data class DetailsForParent(
         val child: OneRoleUser
     ) : DetailsForUser()
+
+
+    @Serializable
+    @SerialName("DetailsForTeacher")
+    data class DetailsForTeacher(
+        val qualifiedSubjects: List<String>
+    ) : DetailsForUser()
+
 }
 
 object DetailsForUserSerializer :
@@ -29,6 +36,7 @@ object DetailsForUserSerializer :
     override fun selectDeserializer(element: JsonElement) = when {
         "child" in element.jsonObject -> DetailsForUser.DetailsForParent.serializer()
         "schoolClass" in element.jsonObject -> DetailsForUser.DetailsForStudent.serializer()
+        "qualifiedSubjects" in element.jsonObject -> DetailsForUser.DetailsForTeacher.serializer()
         else -> error("There are no other details for user")
     }
 }

@@ -1,4 +1,4 @@
-import {DetailsForParent, DetailsForStudent, DetailsForUser, SchoolRole} from "./User";
+import {DetailsForParent, DetailsForStudent, DetailsForTeacher, DetailsForUser, SchoolRole} from "./User";
 import {RequestStatus} from "./RequestStatus";
 import {School} from "./School";
 import {translationOfRoles} from "../utils";
@@ -30,7 +30,7 @@ export const constructDetailsMessage = (schoolUserRole: SchoolUserRole) => {
             break;
         }
         case SchoolRole.TEACHER: {
-            detailsMessage = ''
+            detailsMessage = ` - по ${(schoolUserRole.detailsForUser as DetailsForTeacher).subjects.join(",")}`
             break;
         }
         case SchoolRole.PARENT: {

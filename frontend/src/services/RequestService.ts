@@ -98,6 +98,9 @@ export const getAllSchoolPeriods = async (): Promise<SchoolPeriod[]> =>
 export const getAllSchoolPeriodsWithTheSchoolsTheyAreStarted = async (): Promise<SchoolPeriodWithSchoolIds[]> =>
         await auth.get<SchoolPeriodWithSchoolIds[]>('/get-all-school-periods-with-school-ids').then(p => p.data)
 
+export const getAllSubjects = async (): Promise<String[]> =>
+        await auth.get<String[]>('/get-all-subjects').then(p => p.data)
+
 export const findStudentByPhoneNumberPeriodAndSchoolClass = async (phoneNumber,
                                                                    periodId,
                                                                    schoolClassId): Promise<OneRoleUser> =>

@@ -78,7 +78,7 @@ export enum Gender {
 
 export type DetailsForUser =
         DetailsForStudent
-        | DetailsForParent
+        | DetailsForParent | DetailsForTeacher
 
 export class DetailsForStudent {
     schoolClass: SchoolClass | null
@@ -99,8 +99,19 @@ export class DetailsForParent {
     }
 }
 
+export class DetailsForTeacher {
+    subjects: string[]
+
+    constructor(subjects: string[]) {
+        this.subjects = subjects
+    }
+}
+
 export const isDetailsForParent = (detailsForUser: DetailsForUser): detailsForUser is DetailsForParent =>
         detailsForUser instanceof DetailsForParent || (detailsForUser && 'child' in detailsForUser)
 
 export const isDetailsForStudent = (detailsForUser: DetailsForUser): detailsForUser is DetailsForStudent =>
         detailsForUser instanceof DetailsForStudent || (detailsForUser && 'numberInClass' in detailsForUser)
+
+export const isDetailsForTeacher = (detailsForUser: DetailsForUser): detailsForUser is DetailsForTeacher =>
+        detailsForUser instanceof DetailsForTeacher || (detailsForUser && 'subjects' in detailsForUser)
