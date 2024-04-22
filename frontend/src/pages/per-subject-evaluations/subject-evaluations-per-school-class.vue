@@ -3,7 +3,26 @@
         <div class="col-2"></div>
         <div class="col-8">
             <q-page class="page-content" padding>
-                <div style="margin-top: 30px;">
+                <div>
+                    <div class="text-h4">
+                        Предмет: {{ subject.name }}
+                    </div>
+                    <div class="text-h5">
+                        Преподавател:
+                        <router-link :to="`/user/${subject.teacher.id}/${periodId}/${schoolId}`"
+                                     active-class="text-negative" class="text-primary"
+                                     exact-active-class="text-negative">
+                            {{ subject.teacher.firstName }} {{ subject.teacher.lastName }}
+                        </router-link>
+                    </div>
+                    <div class="text-h5">
+                        Клас:
+                        <router-link :to="`/school-class/${schoolClass.id}/${periodId}/${schoolId}/students`"
+                                     active-class="text-negative" class="text-primary"
+                                     exact-active-class="text-negative">
+                            {{ schoolClass.name }}
+                        </router-link>
+                    </div>
                     <div class="row">
                         <div class="col-12">
                             <q-tabs dense>
@@ -41,15 +60,20 @@
 </template>
 
 <script lang="ts" setup>
-import {fetchSubjectById, getEvaluationForSubjectAndSchoolClass} from "../../services/RequestService";
+import {
+    fetchSubjectById,
+    getEvaluationForSubjectAndSchoolClass,
+    getSchoolClassById
+} from "../../services/RequestService";
 import {$ref} from "vue/macros";
 
 const props = defineProps<{
-  schoolClassId: number,
-  subjectId: number,
-  periodId: number,
-  schoolId: number
+    schoolClassId: number,
+    subjectId: number,
+    periodId: number,
+    schoolId: number
 }>()
+const schoolClass = $ref(await getSchoolClassById(props.schoolClassId, props.periodId))
 let subject = $ref(await fetchSubjectById(props.subjectId, props.periodId, props.schoolId))
 let studentWithEvaluationDTO = $ref(await getEvaluationForSubjectAndSchoolClass(props.subjectId, props.periodId, props.schoolId, props.schoolClassId))
 

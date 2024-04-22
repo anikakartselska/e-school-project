@@ -1,8 +1,9 @@
 import {UserView} from "./User";
+import {SchoolClass} from "./SchoolClass";
 
 export interface Subject {
     id: number,
-    name: String,
+    name: string,
     teacher: UserView,
     forClass: number
 }
@@ -10,8 +11,6 @@ export interface Subject {
 
 export interface SubjectWithSchoolClassInformation {
     id: number,
-    name: string,
-    schoolClass: string,
-    schoolId: number,
-    schoolPeriodId: number
+    subjectName: string,
+    schoolClass: SchoolClass,
 }

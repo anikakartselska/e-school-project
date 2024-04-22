@@ -1,12 +1,12 @@
 package com.nevexis.backend.schoolManagement.subject
 
 import com.nevexis.backend.schoolManagement.BaseService
+import com.nevexis.backend.schoolManagement.school_class.SchoolClassService
 import com.nevexis.backend.schoolManagement.users.SchoolRole
 import com.nevexis.backend.schoolManagement.users.UserService
 import com.nevexis.`demo-project`.jooq.tables.records.SubjectRecord
 import com.nevexis.`demo-project`.jooq.tables.references.*
 import org.jooq.Record
-import org.jooq.impl.DSL
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
@@ -17,19 +17,40 @@ class SubjectService : BaseService() {
     @Autowired
     private lateinit var userService: UserService
 
+    @Autowired
+    private lateinit var schoolClassService: SchoolClassService
+
     fun getAllSubjectsTaughtByTeacher(
         teacherId: BigDecimal,
         periodId: BigDecimal,
         schoolId: BigDecimal
     ): List<SubjectWithSchoolClassInformation> =
-        db.select(SUBJECT.asterisk(), SCHOOL_CLASS_SUBJECT.asterisk(), SCHOOL_CLASS.NAME.`as`("SCHOOL_CLASS_NAME"))
+        db.select(
+            SUBJECT.asterisk(),
+            SCHOOL_CLASS_SUBJECT.asterisk(),
+            SCHOOL_CLASS.asterisk(),
+            USER.asterisk(),
+            SCHOOL_USER_ROLE.asterisk(),
+            SCHOOL_USER.asterisk(),
+            SCHOOL_USER_PERIOD.asterisk()
+        )
             .from(SUBJECT)
             .leftJoin(SCHOOL_CLASS_SUBJECT).on(SUBJECT.ID.eq(SCHOOL_CLASS_SUBJECT.SUBJECT_ID))
             .leftJoin(SCHOOL_CLASS).on(SCHOOL_CLASS_SUBJECT.SCHOOL_CLASS_ID.eq(SCHOOL_CLASS.ID))
+            .leftJoin(SCHOOL_USER_ROLE)
+            .on(SCHOOL_CLASS.MAIN_TEACHER_ROLE_ID.eq(SCHOOL_USER_ROLE.ID))
+            .leftJoin(USER).on(
+                SCHOOL_USER_ROLE.USER_ID.eq(
+                    USER.ID
+                )
+            ).leftJoin(SCHOOL_USER)
+            .on(SCHOOL_USER.USER_ID.eq(USER.ID))
+            .leftJoin(SCHOOL_USER_PERIOD)
+            .on(SCHOOL_USER_PERIOD.SCHOOL_USER_ID.eq(SCHOOL_USER.ID))
             .fetch().map { record ->
                 record.into(SubjectRecord::class.java)
                     .into(SubjectWithSchoolClassInformation::class.java).copy(
-                        schoolClass = record.get(DSL.field("SCHOOL_CLASS_NAME", String::class.java))
+                        schoolClass = schoolClassService.mapRecordToInternalModel(record)
                     )
             }
 

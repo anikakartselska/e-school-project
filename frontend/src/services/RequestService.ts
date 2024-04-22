@@ -64,25 +64,6 @@ export const getEvaluationForSubjectAndSchoolClass = async (subjectId, periodId,
         }).then(p => p.data)
 
 
-export const getAllStudentsFromClass = async (schoolClassId, periodId): Promise<StudentView[]> =>
-        await api.get<StudentView[]>('/get-all-students-from-class', {
-            params: {
-                schoolClassId,
-                periodId
-            }
-        }).then(p => p.data)
-
-export const getSubjectsEvaluationsBySchoolClass = async (subjectId, schoolClassId,
-                                                          periodId, schoolId): Promise<SubjectWithEvaluationDTO[]> =>
-        await api.get<SubjectWithEvaluationDTO[]>('/get-all-evaluations-from-subject-in-school-class', {
-            params: {
-                subjectId,
-                schoolClassId,
-                schoolId,
-                periodId
-            }
-        }).then(p => p.data)
-
 export const getAllSubjectsInSchoolClass = async (schoolClassId,
                                                   periodId, schoolId): Promise<Subject[]> =>
         await api.get<Subject[]>('/get-subjects-by-school-class', {
@@ -352,4 +333,23 @@ export const saveEvaluations = async (evaluations, periodId, schoolId): Promise<
             params: {periodId: periodId, schoolId: schoolId},
             headers: {'Content-Type': 'application/json'}
         })
+
+export const updateEvaluations = async (evaluations, periodId, schoolId): Promise<AxiosResponse<StudentWithEvaluationDTO[]>> =>
+        await api.post<StudentWithEvaluationDTO[]>(`/update-evaluations`, evaluations, {
+            params: {periodId: periodId, schoolId: schoolId},
+            headers: {'Content-Type': 'application/json'}
+        })
+
+export const fetchStudentById = async (studentId,
+                                       schoolClassId,
+                                       periodId): Promise<StudentView> =>
+        await api.get<StudentView>('/get-student-by-id-school-and-period', {
+            params: {
+                studentId,
+                schoolClassId,
+                periodId
+            }
+        }).then(p => p.data)
+
+
 

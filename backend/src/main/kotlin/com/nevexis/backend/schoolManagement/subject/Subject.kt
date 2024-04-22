@@ -1,5 +1,6 @@
 package com.nevexis.backend.schoolManagement.subject
 
+import com.nevexis.backend.schoolManagement.school_class.SchoolClass
 import com.nevexis.backend.schoolManagement.users.UserView
 import kotlinx.serialization.Serializable
 import java.math.BigDecimal
@@ -15,7 +16,5 @@ data class Subject(
 data class SubjectWithSchoolClassInformation(
     val id: BigDecimal,
     val name: String,
-    val schoolClass: String?,
-    val schoolId: BigDecimal,
-    val schoolPeriodId: BigDecimal
+    val schoolClass: SchoolClass? = null,
 )

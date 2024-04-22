@@ -198,6 +198,21 @@ class EvaluationService : BaseService() {
         )
     }
 
+    fun updateEvaluations(
+        evaluations: List<StudentWithEvaluationDTO>,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ) {
+        val evaluationRecords = evaluations.map { evaluationDto ->
+            mapToEvaluationToEvaluationRecords(
+                evaluationDto.grades.plus(evaluationDto.feedbacks).plus(evaluationDto.absences),
+                schoolId,
+                periodId
+            )
+        }.flatten()
+        db.batchUpdate(evaluationRecords).execute()
+    }
+
     fun saveEvaluations(
         evaluations: List<StudentWithEvaluationDTO>,
         schoolId: BigDecimal,
@@ -235,6 +250,7 @@ class EvaluationService : BaseService() {
 
         return evaluationsWithId
     }
+
 
     private fun mapToEvaluationToEvaluationRecords(
         evaluations: List<Evaluation>,

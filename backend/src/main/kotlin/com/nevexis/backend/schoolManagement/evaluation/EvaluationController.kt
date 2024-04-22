@@ -28,6 +28,7 @@ class EvaluationController {
         @RequestParam schoolClassId: BigDecimal
     ) = evaluationService.getAllEvaluationsForStudent(studentId, periodId, schoolId, schoolClassId)
 
+
     @PostMapping("/get-evaluation-for-subject-and-school-class")
     fun getEvaluationForSubjectAndSchoolClass(
         @RequestParam subjectId: BigDecimal,
@@ -47,4 +48,12 @@ class EvaluationController {
         @RequestParam periodId: BigDecimal,
         @RequestParam schoolId: BigDecimal,
     ) = evaluationService.saveEvaluations(evaluations, periodId, schoolId)
+
+    @PostMapping("/update-evaluations")
+    fun updateEvaluations(
+        @RequestBody evaluations: List<StudentWithEvaluationDTO>,
+        @RequestParam periodId: BigDecimal,
+        @RequestParam schoolId: BigDecimal,
+    ) = evaluationService.updateEvaluations(evaluations, periodId, schoolId)
+
 }

@@ -16,6 +16,13 @@
                  outline
                  @click="addNewAbsences()"
           />
+          <q-btn class="q-ml-sm"
+                 color="secondary"
+                 icon="check"
+                 label="Извини отсъствия"
+                 outline
+                 @click="updateAbsences()"
+          />
       </template>
       <template v-slot:header-cell-total="props">
           <q-th>
@@ -27,16 +34,16 @@
                   <div class="col-4 text-center">
                       Неизвинени
                   </div>
-          <q-separator vertical/>
-          <div class="col-4 text-center">
-            Общо
-          </div>
-        </div>
-      </q-th>
-    </template>
-    <template v-slot:body-cell-absences="props">
-      <q-td class="text-center">
-        <q-btn v-for="absence in props.row.absences.filter(it=>it.semester === semester)"
+                  <q-separator vertical/>
+                  <div class="col-4 text-center">
+                      Общо
+                  </div>
+              </div>
+          </q-th>
+      </template>
+      <template v-slot:body-cell-absences="props">
+          <q-td class="text-center">
+              <q-btn v-for="absence in props.row.absences.filter(it=>it.semester === semester)"
                v-if="props.row.student.firstName !== undefined"
                :class="`q-ma-xs ${getAbsenceBackgroundColor(absence)}`"
                :label="absenceMap.get(absence.evaluationValue.absence)"
@@ -101,8 +108,9 @@ import {Subject} from "../../model/Subject";
 import {StudentView} from "../../model/User";
 import {useQuasar} from "quasar";
 import AddAbsencesDialog from "./add-absences-dialog.vue";
-import {saveEvaluations} from "../../services/RequestService";
+import {saveEvaluations, updateEvaluations} from "../../services/RequestService";
 import {periodId, schoolId} from "../../model/constants";
+import UpdateAbsencesDialog from "./update-absences-dialog.vue";
 
 const props = defineProps<{
     evaluations: StudentWithEvaluationDTO[],
@@ -145,6 +153,32 @@ const addNewAbsences = async () => quasar.dialog({
     )
 })
 
+const updateAbsences = async () => quasar.dialog({
+    component: UpdateAbsencesDialog,
+    componentProps: {
+        evaluations: props.evaluations,
+        subject: props.subject,
+        semester: props.semester
+    },
+}).onOk(async (payload) => {
+    await updateEvaluations(payload.item, periodId.value, schoolId.value).then(e => {
+                const updatedAbsences = payload.item
+                const allAbsences = (<Evaluation[]>updatedAbsences.map(it => it.absences)).flat(1)
+                absences.forEach(studentEvaluations => {
+                            const updatedAbsencesForCurrentStudent = updatedAbsences.find(v => v.student.id == studentEvaluations.student.id)?.absences
+                            if (studentEvaluations.student.id == 10000) {
+                                studentEvaluations.absences = studentEvaluations.absences.map(absence =>
+                                        allAbsences.find(oldAbsence => oldAbsence.id == absence.id) ? allAbsences.find(oldAbsence => oldAbsence.id == absence.id)!! : absence)
+                            }
+                            studentEvaluations.absences = studentEvaluations.absences.map(absence =>
+                                    updatedAbsencesForCurrentStudent.find(it => it.id == absence.id) ? updatedAbsencesForCurrentStudent.find(it => it.id == absence.id) : absence)
+
+                        }
+                )
+            }
+    )
+})
+
 const columns = [
     {
         name: "numberInClass",
@@ -160,16 +194,16 @@ const columns = [
         field: (row: StudentWithEvaluationDTO) => row?.student?.firstName != undefined ? `${row?.student?.firstName} ${row?.student?.middleName} ${row?.student?.lastName}` : 'Общо',
         sortable: true
     },
-  {
-    name: "absences",
-    align: "center",
-    label: "Отсъствия",
-  },
-  {
-    name: "total",
-    align: "center",
-    label: "Общо"
-  }
+    {
+        name: "absences",
+        align: "center",
+        label: "Отсъствия",
+    },
+    {
+        name: "total",
+        align: "center",
+        label: "Общо"
+    }
 ]
 const visibleColumns = [...columns].filter(it => props.semester !== Semester.YEARLY || it.name != 'absences').map(it => it.name)
 

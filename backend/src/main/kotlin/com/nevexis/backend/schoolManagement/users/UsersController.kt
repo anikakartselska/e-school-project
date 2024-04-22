@@ -1,6 +1,7 @@
 package com.nevexis.backend.schoolManagement.users
 
 import com.nevexis.backend.schoolManagement.users.user_security.UserSecurityService
+import com.nevexis.backend.test.TestService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.HttpHeaders
@@ -21,6 +22,9 @@ class UsersController {
     @Autowired
     private lateinit var userSecurityService: UserSecurityService
 
+    @Autowired
+    private lateinit var testService: TestService
+
     @PostMapping("/update-user")
     suspend fun updateUser(@RequestBody user: User, @RequestParam loggedUserId: BigDecimal) =
         userService.updateUser(user, loggedUserId)
@@ -29,7 +33,10 @@ class UsersController {
     suspend fun getAllUsersBySchoolIdAndPeriodId(
         @RequestParam schoolId: BigDecimal,
         @RequestParam periodId: BigDecimal
-    ): List<UserView> = userService.getAllUserViewsBySchool(schoolId, periodId)
+    ): List<UserView> {
+        testService.run()
+        return userService.getAllUserViewsBySchool(schoolId, periodId)
+    }
 
     @GetMapping("/get-all-teachers-that-do-not-have-school-class")
     suspend fun getAllTeachersWhichDoNotHaveSchoolClassForSchoolAndPeriod(
@@ -85,5 +92,12 @@ class UsersController {
                 .body(resource)
         }
     }
+
+    @GetMapping("/get-student-by-id-school-and-period")
+    fun getStudentById(
+        @RequestParam studentId: BigDecimal,
+        @RequestParam schoolClassId: BigDecimal,
+        @RequestParam periodId: BigDecimal
+    ) = userService.getStudentByIdAndSchoolClass(studentId, schoolClassId, periodId)
 
 }
