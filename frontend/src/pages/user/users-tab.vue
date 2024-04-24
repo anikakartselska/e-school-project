@@ -58,6 +58,7 @@ import {mapUserToUserView} from "../../services/LocalStorageService";
 import {RequestStatus} from "../../model/RequestStatus";
 import {useQuasar} from "quasar";
 import {defineAsyncComponent} from "vue";
+import {translationOfRoles} from "../../utils";
 
 const props = defineProps<{
     periodId: number,
@@ -146,7 +147,7 @@ const columns = [
             if (row.roles.length == 0) {
                 return "НЯМА АКТИВНИ РОЛИ"
             } else {
-                return row.roles.join(",")
+                return row.roles.map(it => translationOfRoles[it]).join(",")
             }
         },
         classes: (row: UserView) => {
