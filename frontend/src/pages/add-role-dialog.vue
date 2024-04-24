@@ -47,12 +47,12 @@
               </q-item>
             </template>
           </q-select>
-          <q-select v-model="schoolUserRole.role" :options="roleOptions"
-                    :option-label="option => translationOfRoles[option]" label="Роля">
-            <template v-slot:prepend>
-              <q-icon name="settings_accessibility"/>
-            </template>
-          </q-select>
+            <q-select v-model="schoolUserRole.role" :option-label="option => translationOfRoles[option]"
+                      :options="roleOptions" label="Роля">
+                <template v-slot:prepend>
+                    <q-icon name="settings_accessibility"/>
+                </template>
+            </q-select>
             <div v-if="isDetailsForStudent(schoolUserRole.detailsForUser)">
                 <q-select v-model="schoolUserRole.detailsForUser.schoolClass" :option-label="option => option.name"
                           :options="schoolClassesOptions" label="Клас">
@@ -62,8 +62,9 @@
                 </q-select>
             </div>
             <div v-if="isDetailsForTeacher(schoolUserRole.detailsForUser)">
-                <q-select v-model="schoolUserRole.detailsForUser.subjects" :option-label="option => option.name"
-                          :options="subjects" label="Квалифициран учител по:">
+                <q-select v-model="schoolUserRole.detailsForUser.qualifiedSubjects"
+                          :options="subjects" label="Квалифициран учител по:" multiple stack-labels
+                          use-chips>
                     <template v-slot:prepend>
                         <q-icon name="settings_accessibility"/>
                     </template>
@@ -79,13 +80,13 @@
                     <template v-slot:prepend>
                         <q-icon name="settings_accessibility"/>
                     </template>
-            </q-select>
-          </div>
+                </q-select>
+            </div>
 
-          <q-card-actions align="right">
-            <q-btn label="Добави" color="primary" @click="submit"/>
-            <q-btn label="Отказ" class="q-ml-sm" color="primary" flat @click="onDialogCancel"/>
-          </q-card-actions>
+            <q-card-actions align="right">
+                <q-btn color="primary" label="Добави" @click="submit"/>
+                <q-btn class="q-ml-sm" color="primary" flat label="Отказ" @click="onDialogCancel"/>
+            </q-card-actions>
         </q-form>
       </q-card-section>
     </q-card>

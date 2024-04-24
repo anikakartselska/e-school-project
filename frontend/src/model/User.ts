@@ -100,10 +100,10 @@ export class DetailsForParent {
 }
 
 export class DetailsForTeacher {
-    subjects: string[]
+    qualifiedSubjects: string[]
 
     constructor(subjects: string[]) {
-        this.subjects = subjects
+        this.qualifiedSubjects = subjects
     }
 }
 

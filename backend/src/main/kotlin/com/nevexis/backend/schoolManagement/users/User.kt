@@ -60,6 +60,18 @@ data class StudentView(
     val numberInClass: Int?,
 )
 
+@Serializable
+data class TeacherView(
+    val id: Int,
+    val email: String,
+    val firstName: String,
+    val middleName: String,
+    val lastName: String,
+    val username: String,
+    val qualifiedSubjects: Set<String>,
+)
+
+
 enum class SchoolRole {
     ADMIN, TEACHER, STUDENT, PARENT;
 

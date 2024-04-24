@@ -1,7 +1,10 @@
 package com.nevexis.backend.schoolManagement.users
 
+import com.nevexis.backend.schoolManagement.school.SchoolService
+import com.nevexis.backend.schoolManagement.school_class.SchoolClassService
+import com.nevexis.backend.schoolManagement.subject.SubjectService
 import com.nevexis.backend.schoolManagement.users.user_security.UserSecurityService
-import com.nevexis.backend.test.TestService
+import com.nevexis.backend.test.SchoolProgramGenerationService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.HttpHeaders
@@ -23,7 +26,16 @@ class UsersController {
     private lateinit var userSecurityService: UserSecurityService
 
     @Autowired
-    private lateinit var testService: TestService
+    private lateinit var schoolProgramGenerationService: SchoolProgramGenerationService
+
+    @Autowired
+    private lateinit var schoolClassService: SchoolClassService
+
+    @Autowired
+    private lateinit var schoolService: SchoolService
+
+    @Autowired
+    private lateinit var subjectService: SubjectService
 
     @PostMapping("/update-user")
     suspend fun updateUser(@RequestBody user: User, @RequestParam loggedUserId: BigDecimal) =
@@ -34,7 +46,17 @@ class UsersController {
         @RequestParam schoolId: BigDecimal,
         @RequestParam periodId: BigDecimal
     ): List<UserView> {
-        testService.run()
+
+        val schoolClassesWithPlan =
+            schoolClassService.getAllSchoolClassesFromSchoolAndPeriodWithPlans(schoolId, periodId)
+        val teacherViews = userService.getAllApprovedTeachersFromSchool(schoolId, periodId)
+        val subjects = subjectService.getAllSubjects()
+        val rooms = schoolService.getAllRoomsFromSchool(schoolId)
+        println(schoolClassesWithPlan)
+
+        val test = schoolProgramGenerationService.generateSchedule(teacherViews, schoolClassesWithPlan, subjects, rooms)
+        println(test)
+
         return userService.getAllUserViewsBySchool(schoolId, periodId)
     }
 

@@ -10,6 +10,8 @@ import com.nevexis.backend.schoolManagement.users.UserView
 import com.nevexis.backend.schoolManagement.users.roles.SchoolRolesService
 import com.nevexis.`demo-project`.jooq.tables.records.SchoolClassRecord
 import com.nevexis.`demo-project`.jooq.tables.references.*
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.jooq.DSLContext
 import org.jooq.Record
 import org.jooq.impl.DSL
@@ -94,12 +96,12 @@ class SchoolClassService : BaseService() {
     }
 
     fun getSchoolClassById(schoolClassId: BigDecimal, dsl: DSLContext = db) =
-        studentSchoolClassRecordSelectOnConditionStep(dsl).where(SCHOOL_CLASS.ID.eq(schoolClassId)).fetchAny()?.map {
+        schoolClassRecordSelectOnConditionStep(dsl).where(SCHOOL_CLASS.ID.eq(schoolClassId)).fetchAny()?.map {
             mapRecordToInternalModel(it)
         } ?: error("School class with id:${schoolClassId} does not exist")
 
     fun getSchoolClassByNameSchoolAndPeriod(name: String, schoolId: BigDecimal, periodId: BigDecimal, dsl: DSLContext) =
-        studentSchoolClassRecordSelectOnConditionStep(dsl).where(
+        schoolClassRecordSelectOnConditionStep(dsl).where(
             SCHOOL_CLASS.NAME.eq(name),
             SCHOOL_CLASS.SCHOOL_ID.eq(schoolId),
             SCHOOL_CLASS.SCHOOL_PERIOD_ID.eq(periodId)
@@ -108,22 +110,28 @@ class SchoolClassService : BaseService() {
         } ?: throw SMSError("NOT_FOUND", "School class $name does not exist")
 
     fun getSchoolClasses(dsl: DSLContext = db): List<SchoolClass> =
-        studentSchoolClassRecordSelectOnConditionStep(dsl).orderBy(SCHOOL_CLASS.NAME)
+        schoolClassRecordSelectOnConditionStep(dsl).orderBy(SCHOOL_CLASS.NAME)
             .fetch().map {
                 mapRecordToInternalModel(it)
             }
 
 
     fun getAllSchoolClassesFromSchoolAndPeriod(schoolId: BigDecimal, periodId: BigDecimal) =
-        studentSchoolClassRecordSelectOnConditionStep().where(
+        schoolClassRecordSelectOnConditionStep().where(
             SCHOOL_CLASS.SCHOOL_PERIOD_ID.eq(periodId).and(SCHOOL_CLASS.SCHOOL_ID.eq(schoolId))
         )
             .orderBy(SCHOOL_CLASS.NAME).map {
                 mapRecordToInternalModel(it)
             }
 
+    fun getAllSchoolClassesFromSchoolAndPeriodWithPlans(schoolId: BigDecimal, periodId: BigDecimal) =
+        schoolClassRecordSelectOnConditionStepJoinedWithPlan().where(
+            SCHOOL_CLASS.SCHOOL_PERIOD_ID.eq(periodId).and(SCHOOL_CLASS.SCHOOL_ID.eq(schoolId))
+        ).map {
+            mapRecordToInternalModelWithPlan(it)
+        }
 
-    private fun studentSchoolClassRecordSelectOnConditionStep(dsl: DSLContext = db) =
+    private fun schoolClassRecordSelectOnConditionStep(dsl: DSLContext = db) =
         dsl.select(
             SCHOOL_CLASS.asterisk(), USER.asterisk(), SCHOOL_USER_ROLE.asterisk(), SCHOOL_USER.asterisk(),
             SCHOOL_USER_PERIOD.asterisk()
@@ -140,11 +148,39 @@ class SchoolClassService : BaseService() {
             .leftJoin(SCHOOL_USER_PERIOD)
             .on(SCHOOL_USER_PERIOD.SCHOOL_USER_ID.eq(SCHOOL_USER.ID))
 
+    private fun schoolClassRecordSelectOnConditionStepJoinedWithPlan(dsl: DSLContext = db) =
+        dsl.select(
+            SCHOOL_CLASS.asterisk(), USER.asterisk(), SCHOOL_USER_ROLE.asterisk(), SCHOOL_USER.asterisk(),
+            SCHOOL_USER_PERIOD.asterisk(), SCHOOL_PLAN_FOR_CLASSES.asterisk()
+        )
+            .from(SCHOOL_CLASS)
+            .leftJoin(SCHOOL_USER_ROLE)
+            .on(SCHOOL_CLASS.MAIN_TEACHER_ROLE_ID.eq(SCHOOL_USER_ROLE.ID))
+            .leftJoin(USER).on(
+                SCHOOL_USER_ROLE.USER_ID.eq(
+                    USER.ID
+                )
+            ).leftJoin(SCHOOL_USER)
+            .on(SCHOOL_USER.USER_ID.eq(USER.ID))
+            .leftJoin(SCHOOL_USER_PERIOD)
+            .on(SCHOOL_USER_PERIOD.SCHOOL_USER_ID.eq(SCHOOL_USER.ID))
+            .leftJoin(SCHOOL_PLAN_FOR_CLASSES)
+            .on(SCHOOL_PLAN_FOR_CLASSES.ID.eq(SCHOOL_CLASS.PLAN_ID))
+
 
     fun mapRecordToInternalModel(it: Record): SchoolClass {
         val role = SchoolRole.valueOf(it.get(SCHOOL_USER_ROLE.ROLE)!!)
         return it.into(SchoolClassRecord::class.java).mapToInternalModel(
             mainTeacher = userService.mapToUserView(it, listOf(role))
+        )
+    }
+
+    fun mapRecordToInternalModelWithPlan(it: Record): SchoolClassWithPlan {
+        val role = SchoolRole.valueOf(it.get(SCHOOL_USER_ROLE.ROLE)!!)
+        val plan = Json.decodeFromString<Map<String, Int>>(it.get(SCHOOL_PLAN_FOR_CLASSES.PLAN)!!)
+        return it.into(SchoolClassRecord::class.java).mapToInternalModelWithPlan(
+            mainTeacher = userService.mapToUserView(it, listOf(role)),
+            plan = plan
         )
     }
 
@@ -155,6 +191,14 @@ class SchoolClassService : BaseService() {
         schoolId = schoolId!!.toInt(),
         schoolPeriodId = schoolPeriodId!!.toInt()
     )
+
+    private fun SchoolClassRecord.mapToInternalModelWithPlan(mainTeacher: UserView, plan: Map<String, Int>) =
+        SchoolClassWithPlan(
+            id = id?.toInt(),
+            name = name!!,
+            mainTeacher = mainTeacher,
+            plan = plan
+        )
 
     fun getSchoolClassSeqNextVal(): BigDecimal =
         db.select(DSL.field("SCHOOL_CLASS_SEQ.nextval")).from("DUAL")

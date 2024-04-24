@@ -144,7 +144,7 @@
                                 редактирате данни, които са въведени в базата данни
                               </q-tooltip>
                             </q-btn>
-                            <span class="q-pt-xs q-pl-lg">
+                            <span class="q-pt-xs q-pl-lg col-7">
                             {{
                                 constructSchoolUserRoleMessage(role)
                               }}
@@ -152,9 +152,12 @@
                             Кликни за повече информация
                           </q-tooltip></span>
                             <q-space/>
-                            <span :class="`${getRequestStatusColorClass(role.status)} q-pt-xs q-pr-sm`">
+                            <div style="vertical-align: middle">
+                            <span :class="`${getRequestStatusColorClass(role.status)} q-pt-xs q-pr-sm`"
+                                  style="vertical-align: middle">
                                   {{ translationOfRequestStatusForRole[role.status] }}
                               </span>
+                            </div>
                             <div v-if="isAdminAndNotCurrentUser">
                               <q-btn v-if="role.status===RequestStatus.REJECTED" class="float-right"
                                      color="secondary" icon="done"
@@ -229,6 +232,7 @@ import {
     getAllSchoolClasses,
     getAllSchoolPeriodsWithTheSchoolsTheyAreStarted,
     getAllSchools,
+    getAllSubjects,
     getUserProfilePicture,
     updateUser,
     updateUserProfilePicture
@@ -263,6 +267,7 @@ let user = $ref(cloneDeep(databaseUser))
 const allSchools = await getAllSchools()
 const allSchoolClasses = await getAllSchoolClasses()
 const allSchoolPeriods = await getAllSchoolPeriodsWithTheSchoolsTheyAreStarted()
+const allSubjects = await getAllSubjects()
 const currentUser = getCurrentUser()
 const isCurrentUser = currentUser.id == user.id
 const isAdminAndNotCurrentUser = !isCurrentUser && currentUser.role.role == SchoolRole.ADMIN
@@ -315,7 +320,8 @@ const addNewRole = async () => quasar.dialog({
     schoolOptions: allSchools,
     allSchoolClassesOptions: allSchoolClasses,
     schoolPeriodsWithSchoolIds: allSchoolPeriods,
-    disablePeriodAndSchoolSelections: isAdminAndNotCurrentUser
+    disablePeriodAndSchoolSelections: isAdminAndNotCurrentUser,
+    subjects: allSubjects
   },
 }).onOk(async (payload) => {
   const schoolUserRole = payload.item as SchoolUserRole
@@ -342,7 +348,8 @@ const updateRole = async (role) => {
       role: role,
       schoolOptions: allSchools,
       allSchoolClassesOptions: allSchoolClasses,
-      schoolPeriodsWithSchoolIds: allSchoolPeriods
+      schoolPeriodsWithSchoolIds: allSchoolPeriods,
+      subjects: allSubjects
     },
   }).onOk(async (payload) => {
     const schoolUserRole = payload.item as SchoolUserRole

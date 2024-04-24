@@ -54,7 +54,7 @@ class SubjectService : BaseService() {
                     )
             }
 
-    fun getAllSubjects() = db.selectFrom(SUBJECT).fetchInto(String::class.java)
+    fun getAllSubjects(): List<String> = db.select(SUBJECT_NAME.NAME).from(SUBJECT_NAME).fetchInto(String::class.java)
 
 
     fun getAllSubjectsBySchoolClassId(

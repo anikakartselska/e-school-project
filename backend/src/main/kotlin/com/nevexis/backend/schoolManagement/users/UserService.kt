@@ -69,6 +69,34 @@ class UserService : UserBaseService() {
         }
     }
 
+    fun getAllApprovedTeachersFromSchool(
+        schoolId: BigDecimal,
+        periodId: BigDecimal,
+        dsl: DSLContext = db
+    ): List<TeacherView> {
+        return recordSelectOnConditionStepJoinedWithUserRoles(dsl).where(
+            SCHOOL_USER.SCHOOL_ID.eq(schoolId).and(
+                SCHOOL_USER_PERIOD.PERIOD_ID.eq(periodId)
+                    .and(SCHOOL_USER_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
+                    .and(SCHOOL_USER_ROLE.ROLE.eq(SchoolRole.TEACHER.name))
+                    .and(SCHOOL_USER_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
+            )
+        ).fetch().map {
+            val schoolUserRole = schoolUserRolesService.mapToModel(it)
+            it.into(UserRecord::class.java).let { userRecord ->
+                TeacherView(
+                    id = userRecord.id!!.toInt(),
+                    email = userRecord.email!!,
+                    firstName = userRecord.firstName!!,
+                    middleName = userRecord.middleName!!,
+                    lastName = userRecord.lastName!!,
+                    username = userRecord.username!!,
+                    qualifiedSubjects = (schoolUserRole.detailsForUser as DetailsForUser.DetailsForTeacher).qualifiedSubjects.toSet()
+                )
+            }
+        }.distinctBy { it.id }
+    }
+
     fun getAllTeachersWhichDoNotHaveSchoolClassForSchoolAndPeriod(schoolId: BigDecimal, periodId: BigDecimal) =
         recordSelectOnConditionStepJoinedWithUserRoles().where(SCHOOL_ROLE_PERIOD.PERIOD_ID.eq(periodId))
             .and(SCHOOL_ROLE_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))

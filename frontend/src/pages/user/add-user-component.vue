@@ -204,7 +204,8 @@ const updateRole = async (role) => {
       role: role,
       schoolOptions: allSchools,
       allSchoolClassesOptions: allSchoolClasses,
-      schoolPeriodsWithSchoolIds: allSchoolPeriods
+      schoolPeriodsWithSchoolIds: allSchoolPeriods,
+      subjects: allSubjects
     },
   }).onOk(async (payload) => {
     const schoolUserRole = payload.item as SchoolUserRole
