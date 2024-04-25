@@ -10,6 +10,7 @@ import {SchoolPeriod, SchoolPeriodWithSchoolIds} from "../model/SchoolPeriod";
 import {Request} from "../model/Request";
 import {Evaluation} from "../model/Evaluation";
 import {StudentWithEvaluationDTO} from "../model/StudentWithEvaluationDTO";
+import {Calendar} from "../model/Calendar";
 
 export const login = async (email: string, password: string): Promise<AxiosResponse> =>
         await axios.post<string>(`/authenticate`, {username: email, password}, {
@@ -354,5 +355,12 @@ export const fetchStudentById = async (studentId,
             }
         }).then(p => p.data)
 
-
+export const fetchSchoolCalendarForSchoolAndPeriod = async (schoolId,
+                                                            periodId): Promise<Calendar> =>
+        await api.get<Calendar>('/fetch-school-calendar-for-school-and-period', {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId
+            }
+        }).then(p => p.data)
 

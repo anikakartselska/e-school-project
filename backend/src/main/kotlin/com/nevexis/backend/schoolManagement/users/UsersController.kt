@@ -2,9 +2,9 @@ package com.nevexis.backend.schoolManagement.users
 
 import com.nevexis.backend.schoolManagement.school.SchoolService
 import com.nevexis.backend.schoolManagement.school_class.SchoolClassService
+import com.nevexis.backend.schoolManagement.school_schedule.SchoolProgramGenerationService
 import com.nevexis.backend.schoolManagement.subject.SubjectService
 import com.nevexis.backend.schoolManagement.users.user_security.UserSecurityService
-import com.nevexis.backend.test.SchoolProgramGenerationService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.HttpHeaders
@@ -54,7 +54,12 @@ class UsersController {
         val rooms = schoolService.getAllRoomsFromSchool(schoolId)
         println(schoolClassesWithPlan)
 
-        val test = schoolProgramGenerationService.generateSchedule(teacherViews, schoolClassesWithPlan, subjects, rooms)
+        val test = schoolProgramGenerationService.generatePlannedSchoolLessonsForEachClass(
+            teacherViews,
+            schoolClassesWithPlan,
+            subjects,
+            rooms
+        )
         println(test)
 
         return userService.getAllUserViewsBySchool(schoolId, periodId)

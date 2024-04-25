@@ -213,6 +213,7 @@ const left = $ref(true)
 const pages = [{to: `/users/${periodId.value}/${schoolId.value}/all`, label: "Потребители", show: true},
   {to: `/requests/${periodId.value}/${schoolId.value}/user-requests`, label: "Заявки", show: true},
   {to: `/school-classes/${periodId.value}/${schoolId.value}`, label: "Класове", show: true},
+  {to: `/calendar`, label: "Учебен Календар", show: true},
 ]
 
 </script>

@@ -1,6 +1,7 @@
-package com.nevexis.backend.schoolManagement.school_schedule
+package com.nevexis.backend.schoolManagement.school_lessons
 
 import com.nevexis.backend.schoolManagement.school_class.SchoolClassWithPlan
+import com.nevexis.backend.schoolManagement.school_schedule.WorkingHour
 import com.nevexis.backend.schoolManagement.users.TeacherView
 
 data class PlannedSchoolLesson(

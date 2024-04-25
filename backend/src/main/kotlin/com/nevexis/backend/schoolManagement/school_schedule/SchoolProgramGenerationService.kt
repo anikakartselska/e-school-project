@@ -1,8 +1,8 @@
-package com.nevexis.backend.test
+package com.nevexis.backend.schoolManagement.school_schedule
 
 import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.school_class.SchoolClassWithPlan
-import com.nevexis.backend.schoolManagement.school_schedule.*
+import com.nevexis.backend.schoolManagement.school_lessons.PlannedSchoolLesson
 import com.nevexis.backend.schoolManagement.users.TeacherView
 import org.springframework.stereotype.Service
 import java.util.stream.Collectors
@@ -15,19 +15,19 @@ class SchoolProgramGenerationService : BaseService() {
     private val mutationRate = 0.015
     private val tournamentSize = 5
 
-    fun generateSchedule(
+    fun generatePlannedSchoolLessonsForEachClass(
         teachers: List<TeacherView>,
         schoolClasses: List<SchoolClassWithPlan>,
         subjects: List<String>,
         rooms: List<String>
-    ): Schedule {
+    ): List<PlannedSchoolLesson> {
         var population = populate(teachers, schoolClasses, subjects, rooms)
 
         while (population.schedules.first().fitness < 1) {
             population = evolvePopulation(population, teachers, schoolClasses, subjects, rooms)
             println(population.schedules.first().fitness)
         }
-        return population.schedules.first()
+        return population.schedules.first().planedSchoolLessons
     }
 
     fun generateProgram(
