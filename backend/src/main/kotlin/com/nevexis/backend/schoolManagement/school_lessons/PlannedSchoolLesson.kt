@@ -3,7 +3,9 @@ package com.nevexis.backend.schoolManagement.school_lessons
 import com.nevexis.backend.schoolManagement.school_class.SchoolClassWithPlan
 import com.nevexis.backend.schoolManagement.school_schedule.WorkingHour
 import com.nevexis.backend.schoolManagement.users.TeacherView
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class PlannedSchoolLesson(
     val room: String,
     val workingHour: WorkingHour,

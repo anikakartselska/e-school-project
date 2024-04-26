@@ -63,6 +63,16 @@ export interface UserSecurity {
     role: SchoolUserRole
 }
 
+export interface TeacherView {
+    id: number,
+    email: string,
+    firstName: string,
+    middleName: string,
+    lastName: string,
+    username: string,
+    qualifiedSubjects: string[],
+}
+
 export enum SchoolRole {
     ADMIN = "ADMIN",
     TEACHER = "TEACHER",

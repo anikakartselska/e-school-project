@@ -11,6 +11,7 @@ import {Request} from "../model/Request";
 import {Evaluation} from "../model/Evaluation";
 import {StudentWithEvaluationDTO} from "../model/StudentWithEvaluationDTO";
 import {Calendar} from "../model/Calendar";
+import {PlannedSchoolLesson} from "../model/PlannedSchoolLesson";
 
 export const login = async (email: string, password: string): Promise<AxiosResponse> =>
         await axios.post<string>(`/authenticate`, {username: email, password}, {
@@ -364,3 +365,17 @@ export const fetchSchoolCalendarForSchoolAndPeriod = async (schoolId,
             }
         }).then(p => p.data)
 
+// @GetMapping("/get-planned-school-lessons-for-school")
+// suspend fun getPlannedSchoolLessonsForSchool(
+//         @RequestParam schoolId: BigDecimal,
+// @RequestParam periodId: BigDecimal
+// ): List<PlannedSchoolLesson> = plannedSchoolLessonsService.getPlannedSchoolLessonsForSchoolAndPeriod(schoolId, periodId)
+
+export const fetchPlannedSchoolLessonsForSchool = async (schoolId,
+                                                         periodId): Promise<PlannedSchoolLesson[]> =>
+        await api.get<PlannedSchoolLesson[]>('/get-planned-school-lessons-for-school', {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId
+            }
+        }).then(p => p.data)

@@ -11,27 +11,27 @@
                   <q-route-tab label="Добавяне на потребители" to="import-users"/>
               </q-tabs>
             </div>
-            <div class="col-12">
-                <router-view v-slot="{ Component }"
-                             :periodId="props.periodId"
-                             :schoolId="props.schoolId">
-                    <template v-if="Component">
-                        <suspense>
-                            <component :is="Component">
-                            </component>
-                            <template #fallback>
-                                <div class="centered-div">
-                                    <q-spinner
-                                            :thickness="2"
-                                            color="primary"
-                                            size="5.5em"
-                        />
-                      </div>
-                    </template>
-                  </suspense>
-                </template>
-              </router-view>
-            </div>
+              <div class="col-12">
+                  <router-view v-slot="{ Component }"
+                               :periodId="props.periodId"
+                               :schoolId="props.schoolId">
+                      <template v-if="Component">
+                          <suspense>
+                              <component :is="Component">
+                              </component>
+                              <template #fallback>
+                                  <div class="centered-div">
+                                      <q-spinner
+                                              :thickness="2"
+                                              color="primary"
+                                              size="5.5em"
+                                      />
+                                  </div>
+                              </template>
+                          </suspense>
+                      </template>
+                  </router-view>
+              </div>
           </div>
         </div>
       </q-page>
@@ -44,6 +44,7 @@
 import {watch} from "vue";
 import {useRouter} from "vue-router";
 import {periodId, schoolId} from "../../model/constants";
+import {fetchPlannedSchoolLessonsForSchool} from "../../services/RequestService";
 
 const props = defineProps<{
     periodId: number,
@@ -55,6 +56,8 @@ const route = useRouter()
 
 schoolId.value = props.schoolId.toString()
 periodId.value = props.periodId.toString()
+
+const schoolPlannedLessons = await fetchPlannedSchoolLessonsForSchool(props.schoolId, props.periodId)
 
 watch(() => [schoolId.value, periodId.value], () => {
     const currentRouterFullPathSplit = route.currentRoute.value.fullPath.split("/");

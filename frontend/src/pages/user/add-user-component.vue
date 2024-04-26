@@ -174,14 +174,15 @@ const allSchoolClasses = await getAllSchoolClasses()
 const allSchoolPeriods = await getAllSchoolPeriodsWithTheSchoolsTheyAreStarted()
 const allSubjects = await getAllSubjects()
 const addNewRole = async () => quasar.dialog({
-    component: AddRoleDialog,
-    componentProps: {
-        role: <SchoolUserRole>{},
-        schoolOptions: allSchools,
-        allSchoolClassesOptions: allSchoolClasses,
-        schoolPeriodsWithSchoolIds: allSchoolPeriods,
-        subjects: allSubjects
-    },
+  component: AddRoleDialog,
+  componentProps: {
+    role: <SchoolUserRole>{},
+    schoolOptions: allSchools,
+    allSchoolClassesOptions: allSchoolClasses,
+    schoolPeriodsWithSchoolIds: allSchoolPeriods,
+    subjects: allSubjects,
+    userId: null
+  },
 }).onOk(async (payload) => {
   const schoolUserRole = payload.item as SchoolUserRole
   if (schoolUserRole.role == SchoolRole.PARENT) {
@@ -205,7 +206,8 @@ const updateRole = async (role) => {
       schoolOptions: allSchools,
       allSchoolClassesOptions: allSchoolClasses,
       schoolPeriodsWithSchoolIds: allSchoolPeriods,
-      subjects: allSubjects
+      subjects: allSubjects,
+      userId: null
     },
   }).onOk(async (payload) => {
     const schoolUserRole = payload.item as SchoolUserRole

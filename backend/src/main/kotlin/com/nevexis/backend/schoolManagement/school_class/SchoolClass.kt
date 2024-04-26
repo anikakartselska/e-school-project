@@ -12,6 +12,7 @@ data class SchoolClass(
     val schoolPeriodId: Int
 )
 
+@Serializable
 data class SchoolClassWithPlan(
     val id: Int? = null,
     val name: String,

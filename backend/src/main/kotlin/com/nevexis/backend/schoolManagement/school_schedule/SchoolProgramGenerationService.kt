@@ -15,6 +15,7 @@ class SchoolProgramGenerationService : BaseService() {
     private val mutationRate = 0.015
     private val tournamentSize = 5
 
+
     fun generatePlannedSchoolLessonsForEachClass(
         teachers: List<TeacherView>,
         schoolClasses: List<SchoolClassWithPlan>,
@@ -30,7 +31,7 @@ class SchoolProgramGenerationService : BaseService() {
         return population.schedules.first().planedSchoolLessons
     }
 
-    fun generateProgram(
+    private fun generateProgram(
         teachersList: List<TeacherView>,
         schoolClasses: List<SchoolClassWithPlan>,
         subjects: List<String>,
@@ -38,6 +39,15 @@ class SchoolProgramGenerationService : BaseService() {
     ): List<PlannedSchoolLesson> {
         val subjectToTeachersTeachingIt = subjects.associateWith { subject ->
             teachersList.filter { teacher -> teacher.qualifiedSubjects.contains(subject) }
+        }
+        val subjectsToMaxCountLessons = subjects.associateWith { subject ->
+            schoolClasses.mapNotNull { it.plan[subject] }.sum()
+        }
+        val tt = subjectsToMaxCountLessons.values.sum() / 3
+        require(
+            subjects.find { (subjectsToMaxCountLessons[it]!! / subjectToTeachersTeachingIt[it]!!.size) > tt } == null
+        ) {
+            println("test")
         }
         return schoolClasses.asSequence().map { schoolClass ->
             val allSubjectHoursCount = schoolClass.plan.values.sum()
@@ -51,6 +61,8 @@ class SchoolProgramGenerationService : BaseService() {
                     )
                 }
             }.flatten().toMutableList()
+            val subjectToTeacherView =
+                subjectToTeachersTeachingIt.mapValues { (_, values) -> values[customNextInt(0, values.size - 1)] }
 
             (1..allSubjectHoursCount).toList().map {
                 val availableSubjects =
@@ -73,10 +85,7 @@ class SchoolProgramGenerationService : BaseService() {
                 PlannedSchoolLesson(
                     room = rooms[customNextInt(0, rooms.size - 1)],
                     workingHour = workingHour,
-                    teacher = subjectToTeachersTeachingIt[subject]!![customNextInt(
-                        0,
-                        subjectToTeachersTeachingIt[subject]!!.size - 1
-                    )],
+                    teacher = subjectToTeacherView[subject]!!,
                     subject = subject,
                     schoolClass = schoolClass,
                 )
@@ -84,7 +93,7 @@ class SchoolProgramGenerationService : BaseService() {
         }.flatten().toList()
     }
 
-    fun calculateFitness(planedSchoolLessons: List<PlannedSchoolLesson>): Double {
+    private fun calculateFitness(planedSchoolLessons: List<PlannedSchoolLesson>): Double {
         val schoolLessonsGroupedByTeacherAndTime = planedSchoolLessons.groupBy { Pair(it.teacher, it.workingHour) }
         val schoolLessonsGroupedBySchoolClassAndTime =
             planedSchoolLessons.groupBy { Pair(it.schoolClass, it.workingHour) }
@@ -94,16 +103,40 @@ class SchoolProgramGenerationService : BaseService() {
 
         val schoolLessonsGroupedBySchoolClassAndSubject =
             planedSchoolLessons.groupBy { Pair(it.schoolClass, it.subject) }
-                .mapValues { (_, lessons) ->
-                    if (lessons.map { it.teacher }.distinct().size == 1) {
-                        0
-                    } else {
-                        1
+        val countOfClasses =
+            planedSchoolLessons.groupBy { it.schoolClass }.mapValues { (_, values) -> values.groupBy { it.subject } }
+                .map { (key, value) ->
+                    value.map { (subject, lessons) ->
+                        if (key.plan[subject] == lessons.size) {
+                            0
+                        } else {
+                            1
+                        }
                     }
-                }.values.sum()
+                }.flatten().sum()
+//        schoolLessonsGroupedBySchoolClassAndSubject.mapValues { (_, lessons) -> lessons.size }
+//            .map { (key, value) ->
+//                if (key.first.plan[key.second] == value) {
+//                    0
+//                } else {
+//                    1
+//                }
+//            }.sum()
+        val teacherTeachingSubjectOfTheSameClass =
+            schoolLessonsGroupedBySchoolClassAndSubject.mapValues { (_, lessons) ->
+                if (lessons.map { it.teacher }.distinct().size == 1) {
+                    0
+                } else {
+                    1
+                }
+            }.values.sum()
 
         val repeatableTeacherClasses = schoolLessonsGroupedByTeacherAndTime.map { (_, values) ->
-            values.size - 1
+            if (values.size < 2) {
+                0
+            } else {
+                1
+            }
         }.sum()
         val repeatableRooms = schoolLessonsGroupedByRoom.map { (_, values) ->
             values.size - 1
@@ -125,15 +158,20 @@ class SchoolProgramGenerationService : BaseService() {
         }.sum()
 
         val numberOfConflicts =
-            repeatableTeacherClasses + repeatableRooms + schoolLessonsGroupedBySchoolClassAndSubject + repeatableSchoolClassLessons + notConsecutiveClasses
-        return 1 / (numberOfConflicts + 1.0)
+            countOfClasses + repeatableRooms + repeatableSchoolClassLessons + repeatableTeacherClasses + teacherTeachingSubjectOfTheSameClass
+//             + // + notConsecutiveClasses +
+        val fitness = 1 / (numberOfConflicts + 1.0)
+        if (fitness > 0.1) {
+//            println()
+        }
+        return fitness
     }
 
-    fun populate(
+    private fun populate(
         teachers: List<TeacherView>, schoolClasses: List<SchoolClassWithPlan>, subjects: List<String>,
         rooms: List<String>
     ): Population {
-        return Population((1..50).toList().parallelStream()
+        return Population((1..100).toList().parallelStream()
             .map {
                 val schedule = generateProgram(teachers, schoolClasses, subjects, rooms)
                 Schedule(schedule, calculateFitness(schedule))
@@ -142,17 +180,18 @@ class SchoolProgramGenerationService : BaseService() {
 
     }
 
-    fun evolvePopulation(
+    private fun evolvePopulation(
         pop: Population,
         teachers: List<TeacherView>,
         schoolClasses: List<SchoolClassWithPlan>,
         subjects: List<String>,
         rooms: List<String>
     ): Population {
-        return Population((0 until pop.schedules.size).toList().parallelStream().map {
-            if (it < 10) {
-                pop.schedules.first()
-            } else {
+        return Population(
+            (0 until pop.schedules.size).toList().parallelStream().map {
+                if (it < 10) {
+                    pop.schedules.first()
+                } else {
                 val indiv1 = tournamentSelection(pop)
                 val indiv2 = tournamentSelection(pop)
                 val newIndiv = crossover(indiv1, indiv2)
@@ -166,7 +205,7 @@ class SchoolProgramGenerationService : BaseService() {
 
     }
 
-    fun crossover(schedule1: Schedule, schedule2: Schedule): Schedule {
+    private fun crossover(schedule1: Schedule, schedule2: Schedule): Schedule {
         val schoolLessons = (0 until schedule1.planedSchoolLessons.size).toList().parallelStream().map {
             if (Math.random() <= uniformRate) {
                 schedule1.planedSchoolLessons[it]
@@ -177,7 +216,7 @@ class SchoolProgramGenerationService : BaseService() {
         return Schedule(schoolLessons, calculateFitness(schoolLessons))
     }
 
-    fun mutate(
+    private fun mutate(
         schedule: Schedule,
         teachers: List<TeacherView>,
         schoolClasses: List<SchoolClassWithPlan>,
@@ -199,13 +238,13 @@ class SchoolProgramGenerationService : BaseService() {
         return Schedule(schoolLessons, calculateFitness(schoolLessons))
     }
 
-    fun tournamentSelection(pop: Population): Schedule {
+    private fun tournamentSelection(pop: Population): Schedule {
         return (0 until tournamentSize).toList().map {
             pop.schedules[(Math.random() * pop.schedules.size).toInt()]
         }.maxBy { it.fitness }
     }
 
-    fun isConsecutive(numbers: List<Int>): Boolean {
+    private fun isConsecutive(numbers: List<Int>): Boolean {
         val sortedList = numbers.sorted()
         for (i in 1 until sortedList.size) {
             if (sortedList[i] != sortedList[i - 1] + 1) {
@@ -215,7 +254,7 @@ class SchoolProgramGenerationService : BaseService() {
         return true
     }
 
-    fun customNextInt(from: Int, until: Int): Int {
+    private fun customNextInt(from: Int, until: Int): Int {
         return if (from == until) {
             from
         } else {

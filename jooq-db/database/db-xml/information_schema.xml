@@ -46,6 +46,13 @@
         <table>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>PLANNED_SCHOOL_LESSON</table_name>
+            <table_type>BASE TABLE</table_type>
+            <comment></comment>
+        </table>
+        <table>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
             <table_name>REQUEST</table_name>
             <table_type>BASE TABLE</table_type>
             <comment></comment>
@@ -629,6 +636,58 @@
         <column>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>PLANNED_SCHOOL_LESSON</table_name>
+            <column_name>ID</column_name>
+            <data_type>numeric</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>1</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>PLANNED_SCHOOL_LESSON</table_name>
+            <column_name>SCHOOL_ID</column_name>
+            <data_type>numeric</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>2</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>PLANNED_SCHOOL_LESSON</table_name>
+            <column_name>SCHOOL_PERIOD_ID</column_name>
+            <data_type>numeric</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>3</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>PLANNED_SCHOOL_LESSON</table_name>
+            <column_name>PLANNED_SCHOOL_LESSONS</column_name>
+            <data_type>clob</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>4</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
             <table_name>REQUEST</table_name>
             <column_name>ID</column_name>
             <data_type>numeric</data_type>
@@ -995,9 +1054,9 @@
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>SCHOOL_LESSON</table_name>
             <column_name>START_TIME_OF_LESSON</column_name>
-            <data_type>date</data_type>
+            <data_type>timestamp</data_type>
             <character_maximum_length>0</character_maximum_length>
-            <numeric_precision>0</numeric_precision>
+            <numeric_precision>6</numeric_precision>
             <numeric_scale>0</numeric_scale>
             <ordinal_position>2</ordinal_position>
             <is_nullable>false</is_nullable>
@@ -1008,9 +1067,9 @@
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>SCHOOL_LESSON</table_name>
             <column_name>END_TIME_OF_LESSON</column_name>
-            <data_type>date</data_type>
+            <data_type>timestamp</data_type>
             <character_maximum_length>0</character_maximum_length>
-            <numeric_precision>0</numeric_precision>
+            <numeric_precision>6</numeric_precision>
             <numeric_scale>0</numeric_scale>
             <ordinal_position>3</ordinal_position>
             <is_nullable>false</is_nullable>
@@ -1777,6 +1836,16 @@
         <table_constraint>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>PK_PLANNED_SCHOOL_LESSON</constraint_name>
+            <constraint_type>PRIMARY KEY</constraint_type>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>PLANNED_SCHOOL_LESSON</table_name>
+            <enforced>true</enforced>
+        </table_constraint>
+        <table_constraint>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
             <constraint_name>PK_REQUEST</constraint_name>
             <constraint_type>PRIMARY KEY</constraint_type>
             <table_catalog></table_catalog>
@@ -2055,6 +2124,16 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>PASSWORD_RESET_TOKEN</table_name>
+        </key_column_usage>
+        <key_column_usage>
+            <column_name>ID</column_name>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>PK_PLANNED_SCHOOL_LESSON</constraint_name>
+            <ordinal_position>1</ordinal_position>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>PLANNED_SCHOOL_LESSON</table_name>
         </key_column_usage>
         <key_column_usage>
             <column_name>ID</column_name>

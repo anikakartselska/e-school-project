@@ -47,46 +47,46 @@
               </q-item>
             </template>
           </q-select>
-            <q-select v-model="schoolUserRole.role" :option-label="option => translationOfRoles[option]"
-                      :options="roleOptions" label="Роля">
-                <template v-slot:prepend>
-                    <q-icon name="settings_accessibility"/>
-                </template>
+          <q-select v-model="schoolUserRole.role" :option-label="option => translationOfRoles[option]"
+                    :options="roleOptions" label="Роля">
+            <template v-slot:prepend>
+              <q-icon name="settings_accessibility"/>
+            </template>
+          </q-select>
+          <div v-if="isDetailsForStudent(schoolUserRole.detailsForUser)">
+            <q-select v-model="schoolUserRole.detailsForUser.schoolClass" :option-label="option => option.name"
+                      :options="schoolClassesOptions" label="Клас">
+              <template v-slot:prepend>
+                <q-icon name="settings_accessibility"/>
+              </template>
             </q-select>
-            <div v-if="isDetailsForStudent(schoolUserRole.detailsForUser)">
-                <q-select v-model="schoolUserRole.detailsForUser.schoolClass" :option-label="option => option.name"
-                          :options="schoolClassesOptions" label="Клас">
-                    <template v-slot:prepend>
-                        <q-icon name="settings_accessibility"/>
-                    </template>
-                </q-select>
-            </div>
-            <div v-if="isDetailsForTeacher(schoolUserRole.detailsForUser)">
-                <q-select v-model="schoolUserRole.detailsForUser.qualifiedSubjects"
-                          :options="subjects" label="Квалифициран учител по:" multiple stack-labels
-                          use-chips>
-                    <template v-slot:prepend>
-                        <q-icon name="settings_accessibility"/>
-                    </template>
-                </q-select>
-            </div>
-            <div v-if="isDetailsForParent(schoolUserRole.detailsForUser)">
-                <q-input v-model="schoolUserRole.detailsForUser.child.phoneNumber" class="q-pa-sm"
-                         label="Телефонен номер на ученика"
-                         mask="##########"/>
-                <q-select v-model="schoolUserRole.detailsForUser.child.role.detailsForUser.schoolClass"
-                          :option-label="option => option.name"
-                          :options="schoolClassesOptions" label="Клас">
-                    <template v-slot:prepend>
-                        <q-icon name="settings_accessibility"/>
-                    </template>
-                </q-select>
-            </div>
+          </div>
+          <div v-if="isDetailsForTeacher(schoolUserRole.detailsForUser)">
+            <q-select v-model="schoolUserRole.detailsForUser.qualifiedSubjects"
+                      :options="subjects" label="Квалифициран учител по:" multiple stack-labels
+                      use-chips>
+              <template v-slot:prepend>
+                <q-icon name="settings_accessibility"/>
+              </template>
+            </q-select>
+          </div>
+          <div v-if="isDetailsForParent(schoolUserRole.detailsForUser)">
+            <q-input v-model="schoolUserRole.detailsForUser.child.phoneNumber" class="q-pa-sm"
+                     label="Телефонен номер на ученика"
+                     mask="##########"/>
+            <q-select v-model="schoolUserRole.detailsForUser.child.role.detailsForUser.schoolClass"
+                      :option-label="option => option.name"
+                      :options="schoolClassesOptions" label="Клас">
+              <template v-slot:prepend>
+                <q-icon name="settings_accessibility"/>
+              </template>
+            </q-select>
+          </div>
 
-            <q-card-actions align="right">
-                <q-btn color="primary" label="Добави" @click="submit"/>
-                <q-btn class="q-ml-sm" color="primary" flat label="Отказ" @click="onDialogCancel"/>
-            </q-card-actions>
+          <q-card-actions align="right">
+            <q-btn color="primary" label="Добави" @click="submit"/>
+            <q-btn class="q-ml-sm" color="primary" flat label="Отказ" @click="onDialogCancel"/>
+          </q-card-actions>
         </q-form>
       </q-card-section>
     </q-card>
@@ -120,12 +120,13 @@ const quasar = useQuasar()
 defineEmits([...useDialogPluginComponent.emits])
 
 const props = defineProps<{
-    role: SchoolUserRole,
-    schoolOptions: School[],
-    schoolPeriodsWithSchoolIds: SchoolPeriodWithSchoolIds[],
-    allSchoolClassesOptions: SchoolClass[],
-    disablePeriodAndSchoolSelections?: boolean,
-    subjects: string[]
+  role: SchoolUserRole,
+  schoolOptions: School[],
+  schoolPeriodsWithSchoolIds: SchoolPeriodWithSchoolIds[],
+  allSchoolClassesOptions: SchoolClass[],
+  disablePeriodAndSchoolSelections?: boolean,
+  subjects: string[],
+  userId: number
 }>()
 
 const roleOptions = Object.keys(SchoolRole)
@@ -139,29 +140,29 @@ watch(() => schoolUserRole.school, async () => {
         }
 )
 watch(() => schoolUserRole.role, () => {
-    switch (schoolUserRole.role) {
-        case SchoolRole.STUDENT: {
-            schoolUserRole.detailsForUser = new DetailsForStudent(<SchoolClass>{}, null)
-            break
-        }
-        case SchoolRole.PARENT: {
-            schoolUserRole.detailsForUser = new DetailsForParent(<OneRoleUser><unknown>{role: <SchoolUserRole><unknown>{detailsForUser: new DetailsForStudent(<SchoolClass>{}, null)}})
-            break
-        }
-        case SchoolRole.TEACHER: {
-            schoolUserRole.detailsForUser = new DetailsForTeacher([])
-            break
-        }
-        case SchoolRole.ADMIN: {
-            schoolUserRole.detailsForUser = null
-            break
-        }
+  switch (schoolUserRole.role) {
+    case SchoolRole.STUDENT: {
+      schoolUserRole.detailsForUser = new DetailsForStudent(<SchoolClass>{}, null)
+      break
     }
+    case SchoolRole.PARENT: {
+      schoolUserRole.detailsForUser = new DetailsForParent(<OneRoleUser><unknown>{role: <SchoolUserRole><unknown>{detailsForUser: new DetailsForStudent(<SchoolClass>{}, null)}})
+      break
+    }
+    case SchoolRole.TEACHER: {
+      schoolUserRole.detailsForUser = new DetailsForTeacher([])
+      break
+    }
+    case SchoolRole.ADMIN: {
+      schoolUserRole.detailsForUser = null
+      break
+    }
+  }
 })
 
 const submit = () => {
   onDialogOK({
-    item: schoolUserRole
+    item: {...schoolUserRole, userId: props.userId}
   })
 }
 

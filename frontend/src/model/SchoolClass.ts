@@ -7,3 +7,10 @@ export interface SchoolClass {
     schoolId: number,
     schoolPeriodId: number
 }
+
+export interface SchoolClassWithPlan {
+    id: number | null,
+    name: string,
+    mainTeacher: UserView | null
+    plan: Map<string, number>
+}

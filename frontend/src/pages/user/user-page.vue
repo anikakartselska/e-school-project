@@ -321,7 +321,8 @@ const addNewRole = async () => quasar.dialog({
     allSchoolClassesOptions: allSchoolClasses,
     schoolPeriodsWithSchoolIds: allSchoolPeriods,
     disablePeriodAndSchoolSelections: isAdminAndNotCurrentUser,
-    subjects: allSubjects
+    subjects: allSubjects,
+    userId: user.id
   },
 }).onOk(async (payload) => {
   const schoolUserRole = payload.item as SchoolUserRole
@@ -349,7 +350,8 @@ const updateRole = async (role) => {
       schoolOptions: allSchools,
       allSchoolClassesOptions: allSchoolClasses,
       schoolPeriodsWithSchoolIds: allSchoolPeriods,
-      subjects: allSubjects
+      subjects: allSubjects,
+      userId: user.id
     },
   }).onOk(async (payload) => {
     const schoolUserRole = payload.item as SchoolUserRole
