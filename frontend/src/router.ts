@@ -32,6 +32,7 @@ import SubjectGradesTab from "./pages/per-subject-evaluations/subject-grades-tab
 import SubjectAbsenceTab from "./pages/per-subject-evaluations/subject-absence-tab.vue";
 import SubjectFeedbackTab from "./pages/per-subject-evaluations/subject-feedback-tab.vue";
 import CalendarPage from "./pages/administration/calendar-page.vue";
+import ProgramPage from "./pages/administration/program-page.vue";
 
 const routes = [
     {
@@ -119,6 +120,12 @@ const routes = [
                 path: '/calendar/:periodId(\\d+)/:schoolId(\\d+)',
                 component: CalendarPage,
                 name: 'calendar',
+                props: true
+            },
+            {
+                path: '/program/:periodId(\\d+)/:schoolId(\\d+)',
+                component: ProgramPage,
+                name: 'program',
                 props: true
             },
             {
@@ -214,6 +221,12 @@ const routes = [
         path: '/calendar',
         redirect: to => {
             return {path: `/calendar/${periodId.value}/${schoolId.value}`}
+        },
+    },
+    {
+        path: '/program',
+        redirect: to => {
+            return {path: `/program/${periodId.value}/${schoolId.value}`}
         },
     },
 ]

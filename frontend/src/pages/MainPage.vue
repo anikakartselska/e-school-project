@@ -214,6 +214,7 @@ const pages = [{to: `/users/${periodId.value}/${schoolId.value}/all`, label: "П
   {to: `/requests/${periodId.value}/${schoolId.value}/user-requests`, label: "Заявки", show: true},
   {to: `/school-classes/${periodId.value}/${schoolId.value}`, label: "Класове", show: true},
   {to: `/calendar`, label: "Учебен Календар", show: true},
+  {to: `/program`, label: "Седмичен разпис", show: true},
 ]
 
 </script>

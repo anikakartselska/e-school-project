@@ -44,7 +44,6 @@
 import {watch} from "vue";
 import {useRouter} from "vue-router";
 import {periodId, schoolId} from "../../model/constants";
-import {fetchPlannedSchoolLessonsForSchool} from "../../services/RequestService";
 
 const props = defineProps<{
     periodId: number,
@@ -57,7 +56,6 @@ const route = useRouter()
 schoolId.value = props.schoolId.toString()
 periodId.value = props.periodId.toString()
 
-const schoolPlannedLessons = await fetchPlannedSchoolLessonsForSchool(props.schoolId, props.periodId)
 
 watch(() => [schoolId.value, periodId.value], () => {
     const currentRouterFullPathSplit = route.currentRoute.value.fullPath.split("/");

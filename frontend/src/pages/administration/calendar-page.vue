@@ -1,7 +1,7 @@
 <template>
-  <div class="bg-sms row">
+    <div class="bg-sms row">
     <div class="col-2"></div>
-    <div class="col-8">
+        <div class="col-8">
       <q-page class="page-content" padding>
         <div class="text-h4">
           Календар
@@ -9,31 +9,55 @@
         <q-separator class="q-mt-md q-mb-md"/>
         <div class="row">
           <div class="col-6">
-            Начало на учебната година: <span class="text-primary">{{
+              Начало на учебната година: <span class="text-primary">{{
               formatToBulgarian(calendar.beginningOfYear)
-            }}</span><br>
-            Край на първи срок: <span class="text-primary"> {{ formatToBulgarian(calendar.endOfFirstSemester) }}</span>
-            <br>
-            Начало на първи срок: <span class="text-primary">{{
-              formatToBulgarian(calendar.beginningOfSecondSemester)
-            }}</span><br>
-            Край на учебната година: <span class="text-primary"> {{
+              }}</span><br>
+              Край на първи срок: <span class="text-primary"> {{
               formatToBulgarian(calendar.endOfFirstSemester)
-            }}</span> <br>
-            <div v-for="schoolClass in classes">
-              {{ `${schoolClass} клас: ` }}<span class="text-primary"> {{
-                formatToBulgarian(calendar.classToEndOfYearDate[schoolClass])
+              }}</span>
+              <br>
+              Начало на първи срок: <span class="text-primary">{{
+              formatToBulgarian(calendar.beginningOfSecondSemester)
+              }}</span><br>
+              Край на учебната година:<br>
+              <div v-for="schoolClass in classes">
+                  {{ `${schoolClass} клас: ` }}<span class="text-primary"> {{
+                  formatToBulgarian(calendar.classToEndOfYearDate[schoolClass])
+                  }}</span> <br>
+              </div>
+              <q-separator class="q-mr-xl q-mt-md q-mb-md"/>
+              <div class="text-h6">
+                  Празници
+              </div>
+              <div v-for="restDay in calendar.restDays">
+                  {{ restDay.holidayName }}: <span class="text-primary"> {{
+                  `${formatToBulgarian(restDay.from)} - ${formatToBulgarian(restDay.to)}`
+                  }}</span> <br>
+              </div>
+              <q-separator class="q-mr-xl q-mt-md q-mb-md"/>
+              <div class="text-h6">
+                  График
+              </div>
+              Първа смяна: <br>
+              Начало на учебните занятия: <span class="text-primary"> {{
+              calendar.firstShiftSchedule.startOfClasses
               }}</span> <br>
-            </div>
-            <q-separator class="q-mr-xl q-mt-md q-mb-md"/>
-            <div class="text-h6">
-              Празници
-            </div>
-            <div v-for="restDay in calendar.restDays">
-              {{ restDay.holidayName }}: <span class="text-primary"> {{
-                `${formatToBulgarian(restDay.from)} - ${formatToBulgarian(restDay.to)}`
+              Продълцителност на часовете: <span class="text-primary"> {{
+              `${calendar.firstShiftSchedule.durationOfClasses} мин.`
               }}</span> <br>
-            </div>
+              Продължителност на междучасията: <span class="text-primary"> {{
+              `${calendar.firstShiftSchedule.breakDuration} мин.`
+              }}</span> <br>
+              Втора смяна: <br>
+              Начало на учебните занятия: <span class="text-primary"> {{
+              calendar.secondShiftSchedule.startOfClasses
+              }}</span> <br>
+              Продълцителност на часовете: <span class="text-primary"> {{
+              `${calendar.secondShiftSchedule.durationOfClasses} мин.`
+              }}</span> <br>
+              Продължителност на междучасията: <span class="text-primary"> {{
+              `${calendar.secondShiftSchedule.breakDuration} мин.`
+              }}</span> <br>
           </div>
           <div class="col">
             <q-date v-model="selectedDate" :events="events" :locale="daysAndMonthsInBulgarian"
@@ -96,12 +120,6 @@ watch(() => selectedDate, () => {
         }
 )
 
-// Example usage
-const fromDate = "2024-01-01";
-const toDate = "2024-01-03";
-const targetDate = "2024/01/07";
-
-console.log(isDateInRange(targetDate, fromDate, toDate));
 </script>
 
 <style scoped>

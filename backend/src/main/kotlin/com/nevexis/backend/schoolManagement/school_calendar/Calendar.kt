@@ -1,10 +1,13 @@
 @file:UseSerializers(
-    LocalDateSerializer::class
+    LocalDateSerializer::class,
+    LocalDateTimeSerializer::class
 )
+
 
 package com.nevexis.backend.schoolManagement.school_calendar
 
 import com.nevexis.backend.serializers.LocalDateSerializer
+import com.nevexis.backend.serializers.LocalDateTimeSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import java.time.LocalDate
@@ -16,6 +19,8 @@ data class Calendar(
     val beginningOfSecondSemester: LocalDate,
     val classToEndOfYearDate: Map<Int, LocalDate>,
     val restDays: List<RestDay>,
+    val firstShiftSchedule: DailySchedule,
+    val secondShiftSchedule: DailySchedule
 )
 
 @Serializable
@@ -24,3 +29,14 @@ data class RestDay(
     val to: LocalDate,
     val holidayName: String
 )
+
+@Serializable
+data class DailySchedule(
+    val startOfClasses: String,
+    val durationOfClasses: Int,
+    val breakDuration: Int
+)
+
+enum class Shift {
+    FIRST, SECOND
+}
