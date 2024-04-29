@@ -1,7 +1,6 @@
-package com.nevexis.backend.schoolManagement.school_lessons
+package com.nevexis.backend.schoolManagement.school_schedule
 
 import com.nevexis.backend.schoolManagement.school_class.SchoolClassWithPlan
-import com.nevexis.backend.schoolManagement.school_schedule.WorkingHour
 import com.nevexis.backend.schoolManagement.users.TeacherView
 import kotlinx.serialization.Serializable
 

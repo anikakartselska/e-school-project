@@ -189,7 +189,8 @@ class SchoolClassService : BaseService() {
         name = name!!,
         mainTeacher = mainTeacher,
         schoolId = schoolId!!.toInt(),
-        schoolPeriodId = schoolPeriodId!!.toInt()
+        schoolPeriodId = schoolPeriodId!!.toInt(),
+        shifts = Json.decodeFromString(this.shifts!!)
     )
 
     private fun SchoolClassRecord.mapToInternalModelWithPlan(mainTeacher: UserView, plan: Map<String, Int>) =
@@ -197,7 +198,8 @@ class SchoolClassService : BaseService() {
             id = id?.toInt(),
             name = name!!,
             mainTeacher = mainTeacher,
-            plan = plan
+            plan = plan,
+            shifts = Json.decodeFromString(this.shifts!!)
         )
 
     fun getSchoolClassSeqNextVal(): BigDecimal =

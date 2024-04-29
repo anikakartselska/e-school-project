@@ -365,11 +365,6 @@ export const fetchSchoolCalendarForSchoolAndPeriod = async (schoolId,
             }
         }).then(p => p.data)
 
-// @GetMapping("/get-planned-school-lessons-for-school")
-// suspend fun getPlannedSchoolLessonsForSchool(
-//         @RequestParam schoolId: BigDecimal,
-// @RequestParam periodId: BigDecimal
-// ): List<PlannedSchoolLesson> = plannedSchoolLessonsService.getPlannedSchoolLessonsForSchoolAndPeriod(schoolId, periodId)
 
 export const fetchPlannedSchoolLessonsForSchool = async (schoolId,
                                                          periodId): Promise<PlannedSchoolLesson[]> =>

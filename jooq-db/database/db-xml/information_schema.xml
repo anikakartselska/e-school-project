@@ -1000,6 +1000,19 @@
         <column>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_CLASS</table_name>
+            <column_name>SHIFTS</column_name>
+            <data_type>varchar</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>7</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
             <table_name>SCHOOL_CLASS_SUBJECT</table_name>
             <column_name>SCHOOL_CLASS_ID</column_name>
             <data_type>numeric</data_type>
@@ -1164,6 +1177,45 @@
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
             <ordinal_position>10</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_LESSON</table_name>
+            <column_name>WEEK</column_name>
+            <data_type>numeric</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>11</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_LESSON</table_name>
+            <column_name>SEMESTER</column_name>
+            <data_type>varchar</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>12</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_LESSON</table_name>
+            <column_name>DAY_OF_WEEK</column_name>
+            <data_type>varchar</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>13</ordinal_position>
             <is_nullable>true</is_nullable>
             <comment></comment>
         </column>
@@ -1580,19 +1632,6 @@
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
             <ordinal_position>5</ordinal_position>
-            <is_nullable>true</is_nullable>
-            <comment></comment>
-        </column>
-        <column>
-            <table_catalog></table_catalog>
-            <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>SUBJECT</table_name>
-            <column_name>FOR_CLASS</column_name>
-            <data_type>numeric</data_type>
-            <character_maximum_length>0</character_maximum_length>
-            <numeric_precision>0</numeric_precision>
-            <numeric_scale>0</numeric_scale>
-            <ordinal_position>6</ordinal_position>
             <is_nullable>true</is_nullable>
             <comment></comment>
         </column>

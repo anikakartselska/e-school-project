@@ -3,7 +3,6 @@ package com.nevexis.backend.schoolManagement.school_schedule
 import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.school.SchoolService
 import com.nevexis.backend.schoolManagement.school_class.SchoolClassService
-import com.nevexis.backend.schoolManagement.school_lessons.PlannedSchoolLesson
 import com.nevexis.backend.schoolManagement.subject.SubjectService
 import com.nevexis.backend.schoolManagement.users.UserService
 import com.nevexis.`demo-project`.jooq.tables.references.PLANNED_SCHOOL_LESSON

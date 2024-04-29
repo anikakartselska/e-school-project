@@ -2,7 +2,6 @@ package com.nevexis.backend.schoolManagement.school_schedule
 
 import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.school_class.SchoolClassWithPlan
-import com.nevexis.backend.schoolManagement.school_lessons.PlannedSchoolLesson
 import com.nevexis.backend.schoolManagement.users.TeacherView
 import org.springframework.stereotype.Service
 import java.util.stream.Collectors

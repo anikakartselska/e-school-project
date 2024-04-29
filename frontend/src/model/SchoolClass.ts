@@ -5,12 +5,24 @@ export interface SchoolClass {
     name: string,
     mainTeacher: UserView,
     schoolId: number,
-    schoolPeriodId: number
+    schoolPeriodId: number,
+    shifts: ShiftsForSemesters
 }
 
 export interface SchoolClassWithPlan {
     id: number | null,
     name: string,
     mainTeacher: UserView | null
-    plan: Map<string, number>
+    plan: Map<string, number>,
+    shifts: ShiftsForSemesters
+}
+
+
+export interface ShiftsForSemesters {
+    firstSemester: Shift,
+    secondSemester: Shift,
+}
+
+export enum Shift {
+    FIRST, SECOND
 }

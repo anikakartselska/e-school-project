@@ -4,8 +4,7 @@ import {SchoolClass} from "./SchoolClass";
 export interface Subject {
     id: number,
     name: string,
-    teacher: UserView,
-    forClass: number
+    teacher: UserView
 }
 
 

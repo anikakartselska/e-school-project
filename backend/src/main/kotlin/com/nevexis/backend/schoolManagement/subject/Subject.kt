@@ -9,8 +9,7 @@ import java.math.BigDecimal
 data class Subject(
     val id: Int,
     val name: String,
-    val teacher: UserView?,
-    val forClass: Int
+    val teacher: UserView?
 )
 
 data class SubjectWithSchoolClassInformation(

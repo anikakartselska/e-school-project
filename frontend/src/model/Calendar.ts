@@ -3,7 +3,10 @@ export interface Calendar {
     endOfFirstSemester: string,
     beginningOfSecondSemester: string,
     classToEndOfYearDate: Map<number, string>,
+    firstSemesterWeeksCount: number,
+    classToSecondSemesterWeeksCount: Map<number, number>,
     restDays: RestDay[],
+    examDays: RestDay[],
     firstShiftSchedule: DailySchedule,
     secondShiftSchedule: DailySchedule
 }

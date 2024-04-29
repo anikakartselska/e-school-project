@@ -2,11 +2,15 @@ package com.nevexis.backend.schoolManagement.subject
 
 import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.school_class.SchoolClassService
+import com.nevexis.backend.schoolManagement.school_period.Semester
+import com.nevexis.backend.schoolManagement.school_schedule.PlannedSchoolLesson
 import com.nevexis.backend.schoolManagement.users.SchoolRole
 import com.nevexis.backend.schoolManagement.users.UserService
 import com.nevexis.`demo-project`.jooq.tables.records.SubjectRecord
 import com.nevexis.`demo-project`.jooq.tables.references.*
+import org.jooq.DSLContext
 import org.jooq.Record
+import org.jooq.impl.DSL
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
@@ -56,6 +60,36 @@ class SubjectService : BaseService() {
 
     fun getAllSubjects(): List<String> = db.select(SUBJECT_NAME.NAME).from(SUBJECT_NAME).fetchInto(String::class.java)
 
+    fun generateSubjectRecordsFromPlannedSchoolLessons(
+        plannedSchoolLessons: List<PlannedSchoolLesson>,
+        schoolId: BigDecimal,
+        periodId: BigDecimal,
+        semester: Semester,
+        dsl: DSLContext,
+    ) = plannedSchoolLessons.distinctBy { Pair(it.subject, it.teacher) }.map { plannedSchoolLesson ->
+        val subjectRecord = dsl.selectFrom(SUBJECT).where(
+            SUBJECT.NAME.eq(plannedSchoolLesson.subject).and(
+                SUBJECT.TEACHER_ID.eq(plannedSchoolLesson.teacher.id.toBigDecimal())
+                    .and(SUBJECT.SCHOOL_ID.eq(schoolId))
+                    .and(SUBJECT.SCHOOL_PERIOD_ID.eq(periodId))
+            )
+        ).fetchAny() ?: dsl.newRecord(SUBJECT).apply {
+            id = getSubjectSeqNextVal()
+            name = plannedSchoolLesson.subject
+            teacherId = plannedSchoolLesson.teacher.id.toBigDecimal()
+            this.schoolId = schoolId
+            schoolPeriodId = periodId
+        }
+
+        subjectRecord to dsl.newRecord(SCHOOL_CLASS_SUBJECT).apply {
+            this.semester = semester.name
+            this.schoolClassId = plannedSchoolLesson.schoolClass.id?.toBigDecimal()
+            this.subjectId = subjectRecord.id
+        }
+    }.let { pairs ->
+        dsl.batchStore(pairs.map { listOf(it.first, it.second) }.flatten()).execute()
+        pairs.map { it.first }
+    }
 
     fun getAllSubjectsBySchoolClassId(
         schoolClassId: BigDecimal,
@@ -106,9 +140,13 @@ class SubjectService : BaseService() {
             Subject(
                 id = (it as SubjectRecord).id!!.toInt(),
                 name = it.name!!,
-                teacher = userService.mapToUserView(record, listOf(SchoolRole.TEACHER)),
-                forClass = it.forClass!!.toInt(),
+                teacher = userService.mapToUserView(record, listOf(SchoolRole.TEACHER))
             )
         }
+
+    fun getSubjectSeqNextVal(): BigDecimal =
+        db.select(DSL.field("SUBJECT_SEQ.nextval")).from("DUAL")
+            .fetchOne()!!.map { it.into(BigDecimal::class.java) }
+
 
 }
