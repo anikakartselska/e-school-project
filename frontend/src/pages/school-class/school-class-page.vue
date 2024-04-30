@@ -22,6 +22,7 @@
               <q-tabs dense>
                 <q-route-tab label="Ученици" to="students"/>
                 <q-route-tab label="Предмети" to="subjects"/>
+                <q-route-tab label="Програма" to="program"/>
                 <q-route-tab label="Оценки" to="grades"/>
                 <q-route-tab label="Отзиви" to="remarks"/>
                 <q-route-tab label="Отсъствия" to="absences"/>

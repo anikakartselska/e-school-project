@@ -2,6 +2,7 @@ package com.nevexis.backend.schoolManagement.school_lessons
 
 import com.nevexis.backend.schoolManagement.school_class.SchoolClass
 import com.nevexis.backend.schoolManagement.school_period.Semester
+import com.nevexis.backend.schoolManagement.school_schedule.WorkingHour
 import com.nevexis.backend.schoolManagement.subject.Subject
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -16,5 +17,6 @@ data class SchoolLesson(
     val room: Int,
     val taken: Boolean = false,
     val week: Int,
-    val semester: Semester
+    val semester: Semester,
+    val workingDay: WorkingHour
 )

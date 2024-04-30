@@ -81,11 +81,15 @@ class SubjectService : BaseService() {
             schoolPeriodId = periodId
         }
 
-        subjectRecord to dsl.newRecord(SCHOOL_CLASS_SUBJECT).apply {
+        subjectRecord to (dsl.selectFrom(SCHOOL_CLASS_SUBJECT).where(
+            SCHOOL_CLASS_SUBJECT.SEMESTER.eq(semester.name)
+                .and(SCHOOL_CLASS_SUBJECT.SCHOOL_CLASS_ID.eq(plannedSchoolLesson.schoolClass.id?.toBigDecimal()))
+                .and(SCHOOL_CLASS_SUBJECT.SUBJECT_ID.eq(subjectRecord.id))
+        ).fetchAny() ?: dsl.newRecord(SCHOOL_CLASS_SUBJECT).apply {
             this.semester = semester.name
             this.schoolClassId = plannedSchoolLesson.schoolClass.id?.toBigDecimal()
             this.subjectId = subjectRecord.id
-        }
+        })
     }.let { pairs ->
         dsl.batchStore(pairs.map { listOf(it.first, it.second) }.flatten()).execute()
         pairs.map { it.first }

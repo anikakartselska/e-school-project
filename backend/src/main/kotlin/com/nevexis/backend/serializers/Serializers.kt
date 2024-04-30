@@ -43,7 +43,7 @@ object LocalDateSerializer : KSerializer<LocalDate> {
 }
 
 @OptIn(ExperimentalSerializationApi::class)
-@Serializer(forClass = LocalDate::class)
+@Serializer(forClass = LocalDateTime::class)
 object LocalDateTimeSerializer : KSerializer<LocalDateTime> {
     private val formatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 

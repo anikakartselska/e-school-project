@@ -105,6 +105,7 @@ export const isDateInRange = (targetDate: string, fromDate: string, toDate: stri
     // Check if the target date falls within the range
     return target >= from && target <= to;
 }
+
 export const notifyForError = (title: string, caption: string, setTimeout: boolean = false) =>
         Notify.create({
             message: title,

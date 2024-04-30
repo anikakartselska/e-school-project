@@ -40,6 +40,12 @@ data class DailySchedule(
     val breakDuration: Int
 )
 
+data class Week(
+    val weekNumber: Int,
+    val startDate: LocalDate,
+    val endDate: LocalDate
+)
+
 enum class Shift {
     FIRST, SECOND
 }

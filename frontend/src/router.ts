@@ -33,6 +33,9 @@ import SubjectAbsenceTab from "./pages/per-subject-evaluations/subject-absence-t
 import SubjectFeedbackTab from "./pages/per-subject-evaluations/subject-feedback-tab.vue";
 import CalendarPage from "./pages/administration/calendar-page.vue";
 import ProgramPage from "./pages/administration/program-page.vue";
+import SchoolClassLessonsTab from "./pages/school-class/school-class-lessons-tab.vue";
+import SchoolLessonPage from "./pages/school-lesson/school-lesson-page.vue";
+import SchoolLessonInformation from "./pages/school-lesson/school-lesson-information.vue";
 
 const routes = [
     {
@@ -102,6 +105,10 @@ const routes = [
                         component: SchoolClassSubjectsTab
                     },
                     {
+                        path: 'program',
+                        component: SchoolClassLessonsTab
+                    },
+                    {
                         path: 'grades',
                         component: SchoolClassGradesTab
                     },
@@ -158,6 +165,29 @@ const routes = [
                 component: SubjectEvaluationsPerSchoolClass,
                 props: true,
                 children: [
+                    {
+                        path: 'grades',
+                        component: SubjectGradesTab
+                    },
+                    {
+                        path: 'absences',
+                        component: SubjectAbsenceTab
+                    },
+                    {
+                        path: 'feedbacks',
+                        component: SubjectFeedbackTab
+                    }
+                ],
+            },
+            {
+                path: '/school-lesson/:periodId(\\d+)/:schoolId(\\d+)/:schoolLessonId(\\d+)',
+                component: SchoolLessonPage,
+                props: true,
+                children: [
+                    {
+                        path: 'lesson',
+                        component: SchoolLessonInformation
+                    },
                     {
                         path: 'grades',
                         component: SubjectGradesTab

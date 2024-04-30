@@ -10,8 +10,9 @@ import {SchoolPeriod, SchoolPeriodWithSchoolIds} from "../model/SchoolPeriod";
 import {Request} from "../model/Request";
 import {Evaluation} from "../model/Evaluation";
 import {StudentWithEvaluationDTO} from "../model/StudentWithEvaluationDTO";
-import {Calendar} from "../model/Calendar";
+import {Calendar, Week} from "../model/Calendar";
 import {PlannedSchoolLesson} from "../model/PlannedSchoolLesson";
+import {SchoolLesson} from "../model/SchoolLesson";
 
 export const login = async (email: string, password: string): Promise<AxiosResponse> =>
         await axios.post<string>(`/authenticate`, {username: email, password}, {
@@ -372,5 +373,35 @@ export const fetchPlannedSchoolLessonsForSchool = async (schoolId,
             params: {
                 schoolId: schoolId,
                 periodId: periodId
+            }
+        }).then(p => p.data)
+
+export const fetchWeeksForSchoolClassSchoolAndPeriod = async (schoolClassName, schoolId,
+                                                              periodId): Promise<Week[]> =>
+        await api.get<Week[]>('/fetch-weeks-for-school-class-school-and-period', {
+            params: {
+                schoolClassName: schoolClassName,
+                schoolId: schoolId,
+                periodId: periodId
+            }
+        }).then(p => p.data)
+
+export const fetchSchoolLessonsForSchoolClassWeekSchoolAndPeriod = async (schoolClassId,
+                                                                          weekNumber,
+                                                                          schoolId,
+                                                                          periodId): Promise<SchoolLesson[]> =>
+        await api.get<SchoolLesson[]>('/fetch-school-lessons-for-school-class-week-school-and-period', {
+            params: {
+                schoolClassId: schoolClassId,
+                weekNumber: weekNumber,
+                schoolId: schoolId,
+                periodId: periodId,
+            }
+        }).then(p => p.data)
+
+export const fetchSchoolLessonById = async (schoolLessonId): Promise<SchoolLesson> =>
+        await api.get<SchoolLesson>('fetch-school-lesson-by-id', {
+            params: {
+                schoolLessonId: schoolLessonId
             }
         }).then(p => p.data)

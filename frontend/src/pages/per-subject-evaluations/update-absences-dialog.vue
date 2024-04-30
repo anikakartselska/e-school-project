@@ -51,7 +51,6 @@ import {absenceMap, getAbsenceBackgroundColor} from "../../services/helper-servi
 import {AbsenceValue, Evaluation} from "../../model/Evaluation";
 import {StudentView} from "../../model/User";
 import {Subject} from "../../model/Subject";
-import {Semester} from "../../model/SchoolPeriod";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
 const quasar = useQuasar()
@@ -59,7 +58,6 @@ defineEmits([...useDialogPluginComponent.emits])
 
 const props = defineProps<{
   subject: Subject,
-  semester: Semester,
   evaluations: StudentWithEvaluationDTO[]
 }>()
 const studentEvaluations = $ref([...props.evaluations].map(it => {

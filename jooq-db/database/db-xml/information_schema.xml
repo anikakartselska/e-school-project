@@ -1222,6 +1222,19 @@
         <column>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_LESSON</table_name>
+            <column_name>WORKING_HOUR</column_name>
+            <data_type>varchar</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>14</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
             <table_name>SCHOOL_PERIOD</table_name>
             <column_name>ID</column_name>
             <data_type>numeric</data_type>
@@ -2230,6 +2243,16 @@
             <constraint_schema>DEMO_PROJECT</constraint_schema>
             <constraint_name>PK_SCHOOL_CLASS_SUBJECT</constraint_name>
             <ordinal_position>2</ordinal_position>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>SCHOOL_CLASS_SUBJECT</table_name>
+        </key_column_usage>
+        <key_column_usage>
+            <column_name>SEMESTER</column_name>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>PK_SCHOOL_CLASS_SUBJECT</constraint_name>
+            <ordinal_position>3</ordinal_position>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>SCHOOL_CLASS_SUBJECT</table_name>

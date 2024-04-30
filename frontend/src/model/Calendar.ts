@@ -11,6 +11,12 @@ export interface Calendar {
     secondShiftSchedule: DailySchedule
 }
 
+export interface Week {
+    weekNumber: number,
+    startDate: string,
+    endDate: string
+}
+
 export interface RestDay {
     from: string,
     to: string,

@@ -2,6 +2,7 @@ package com.nevexis.backend.schoolManagement.school_schedule
 
 import com.nevexis.backend.schoolManagement.school_calendar.CalendarService
 import com.nevexis.backend.schoolManagement.school_lessons.SchoolLessonService
+import com.nevexis.backend.schoolManagement.school_period.Semester
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
@@ -20,12 +21,18 @@ class PlannedSchoolLessonController {
     @Autowired
     private lateinit var calendarService: CalendarService
 
+
     @GetMapping("/get-planned-school-lessons-for-school")
     suspend fun getPlannedSchoolLessonsForSchool(
         @RequestParam schoolId: BigDecimal,
         @RequestParam periodId: BigDecimal
-    ): List<PlannedSchoolLesson> =
-        plannedSchoolLessonsService.getPlannedSchoolLessonsForSchoolAndPeriod(schoolId, periodId)
+    ): List<PlannedSchoolLesson> {
+        val calendar = calendarService.getSchoolCalendarForSchoolAndPeriod(schoolId, periodId)
+        val plannedSchoolLessons =
+            plannedSchoolLessonsService.getPlannedSchoolLessonsForSchoolAndPeriod(schoolId, periodId)
+        schoolLessonService.createSchoolLessons(plannedSchoolLessons, calendar!!, Semester.SECOND, periodId, schoolId)
+        return plannedSchoolLessons
+    }
 
 
 }

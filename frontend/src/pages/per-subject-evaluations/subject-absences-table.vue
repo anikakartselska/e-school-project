@@ -44,16 +44,16 @@
       <template v-slot:body-cell-absences="props">
           <q-td class="text-center">
               <q-btn v-for="absence in props.row.absences.filter(it=>it.semester === semester)"
-               v-if="props.row.student.firstName !== undefined"
-               :class="`q-ma-xs ${getAbsenceBackgroundColor(absence)}`"
-               :label="absenceMap.get(absence.evaluationValue.absence)"
-               flat
-               rounded>
-          <q-popup-proxy>
-            <q-banner>
-              Въведен от:<span class="text-primary">{{
-                absence.createdBy.firstName
-              }} {{ absence.createdBy.lastName }}</span><br/>
+                     v-if="props.row.student.firstName !== undefined"
+                     :class="`q-ma-xs ${getAbsenceBackgroundColor(absence)}`"
+                     :label="absenceMap.get(absence.evaluationValue.absence)"
+                     flat
+                     rounded>
+                  <q-popup-proxy>
+                      <q-banner>
+                          Въведен от:<span class="text-primary">{{
+                          absence.createdBy.firstName
+                          }} {{ absence.createdBy.lastName }}</span><br/>
               Дата:<span class="text-primary">{{
                 absence.evaluationDate
               }}</span><br/>
@@ -111,11 +111,13 @@ import AddAbsencesDialog from "./add-absences-dialog.vue";
 import {saveEvaluations, updateEvaluations} from "../../services/RequestService";
 import {periodId, schoolId} from "../../model/constants";
 import UpdateAbsencesDialog from "./update-absences-dialog.vue";
+import {SchoolLesson} from "../../model/SchoolLesson";
 
 const props = defineProps<{
     evaluations: StudentWithEvaluationDTO[],
     semester: Semester,
-    subject: Subject
+    subject: Subject,
+    lesson?: SchoolLesson | null,
 }>()
 
 const absences: StudentWithEvaluationDTO[] = $ref(props.evaluations ? [...props.evaluations] : [])
@@ -136,7 +138,8 @@ const addNewAbsences = async () => quasar.dialog({
     componentProps: {
         evaluations: props.evaluations,
         subject: props.subject,
-        semester: props.semester
+        semester: props.semester,
+        lesson: props.lesson
     },
 }).onOk(async (payload) => {
     await saveEvaluations(payload.item, periodId.value, schoolId.value).then(e => {
@@ -157,8 +160,7 @@ const updateAbsences = async () => quasar.dialog({
     component: UpdateAbsencesDialog,
     componentProps: {
         evaluations: props.evaluations,
-        subject: props.subject,
-        semester: props.semester
+        subject: props.subject
     },
 }).onOk(async (payload) => {
     await updateEvaluations(payload.item, periodId.value, schoolId.value).then(e => {

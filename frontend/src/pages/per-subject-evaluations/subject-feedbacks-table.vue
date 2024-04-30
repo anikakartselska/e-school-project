@@ -9,24 +9,24 @@
           separator="cell"
           title="Отзиви"
   >
-      <template v-if="semester !== Semester.YEARLY" v-slot:top-right>
-          <q-btn color="primary"
-                 icon="add_circle_outline"
-                 label="Добави отзиви за повече ученици"
-                 outline
-                 @click="addNewFeedbacks()"
-          />
-      </template>
-      <template v-slot:header-cell-total="props">
-          <q-th>
-              <div class="row">
-                  <div class="col text-center">
-                      Позитивни
-                  </div>
-                  <q-separator vertical/>
-                  <div class="col-4 text-center">
-                      Негативни
-                  </div>
+    <template v-if="semester !== Semester.YEARLY" v-slot:top-right>
+      <q-btn color="primary"
+             icon="add_circle_outline"
+             label="Добави отзиви за повече ученици"
+             outline
+             @click="addNewFeedbacks()"
+      />
+    </template>
+    <template v-slot:header-cell-total="props">
+      <q-th>
+        <div class="row">
+          <div class="col text-center">
+            Позитивни
+          </div>
+          <q-separator vertical/>
+          <div class="col-4 text-center">
+            Негативни
+          </div>
           <q-separator vertical/>
           <div class="col-4 text-center">
             Общо
@@ -107,60 +107,63 @@ import {saveEvaluations} from "../../services/RequestService";
 import {periodId, schoolId} from "../../model/constants";
 import {useQuasar} from "quasar";
 import AddFeedbacksDialog from "./add-feedbacks-dialog.vue";
+import {SchoolLesson} from "../../model/SchoolLesson";
 
 const props = defineProps<{
-    evaluations: StudentWithEvaluationDTO[],
-    semester: Semester,
-    subject: Subject
+  evaluations: StudentWithEvaluationDTO[],
+  semester: Semester,
+  subject: Subject,
+  lesson?: SchoolLesson | null
 }>()
 const feedbacks: StudentWithEvaluationDTO[] = $ref(props.evaluations ? [...props.evaluations] : [])
 feedbacks.push(
         {
-            feedbacks: props.evaluations?.map(it => it.feedbacks).flat(1)?.filter((it: Evaluation) => it.semester == props.semester || props.semester == Semester.YEARLY),
-            student: <StudentView><unknown>{id: 10000},
-            grades: [],
-            absences: []
+          feedbacks: props.evaluations?.map(it => it.feedbacks).flat(1)?.filter((it: Evaluation) => it.semester == props.semester || props.semester == Semester.YEARLY),
+          student: <StudentView><unknown>{id: 10000},
+          grades: [],
+          absences: []
         })
 const getRowKey = (row) => {
-    return row?.student ? row?.student : '1000'
+  return row?.student ? row?.student : '1000'
 }
 const quasar = useQuasar()
 const addNewFeedbacks = async () => quasar.dialog({
-    component: AddFeedbacksDialog,
-    componentProps: {
-        evaluations: props.evaluations,
-        subject: props.subject,
-        semester: props.semester
-    },
+  component: AddFeedbacksDialog,
+  componentProps: {
+    evaluations: props.evaluations,
+    subject: props.subject,
+    semester: props.semester,
+    lesson: props.lesson
+  },
 }).onOk(async (payload) => {
-    await saveEvaluations(payload.item, periodId.value, schoolId.value).then(e => {
-                const newlyAddedFeedbacks = e.data
-                feedbacks.forEach(studentEvaluations => {
-                            const newlyAddedFeedbacksForCurrentStudent = newlyAddedFeedbacks.find(v => v.student.id == studentEvaluations.student.id)?.feedbacks
-                            if (studentEvaluations.student.id == 10000) {
-                                studentEvaluations.feedbacks = studentEvaluations.feedbacks.concat(newlyAddedFeedbacks.map(it => it.feedbacks).flat(1))
-                            }
-                            studentEvaluations.feedbacks = studentEvaluations.feedbacks.concat(newlyAddedFeedbacksForCurrentStudent ? newlyAddedFeedbacksForCurrentStudent : [])
-                        }
-                )
-            }
-    )
+  await saveEvaluations(payload.item, periodId.value, schoolId.value).then(e => {
+            const newlyAddedFeedbacks = e.data
+            feedbacks.forEach(studentEvaluations => {
+                      const newlyAddedFeedbacksForCurrentStudent = newlyAddedFeedbacks.find(v => v.student.id == studentEvaluations.student.id)?.feedbacks
+                      if (studentEvaluations.student.id == 10000) {
+                        studentEvaluations.feedbacks = studentEvaluations.feedbacks.concat(newlyAddedFeedbacks.map(it => it.feedbacks).flat(1))
+                      }
+                      studentEvaluations.feedbacks = studentEvaluations.feedbacks.concat(newlyAddedFeedbacksForCurrentStudent ? newlyAddedFeedbacksForCurrentStudent : [])
+                    }
+            )
+          }
+  )
 })
 const columns = [
-    {
-        name: "numberInClass",
-        label: "Номер в клас",
-        align: "center",
-        field: (row: StudentWithEvaluationDTO) => row?.student?.numberInClass != undefined ? `${row?.student?.numberInClass}` : '',
-        sortable: true
-    },
-    {
-        name: "student",
-        label: "Име на ученика",
-        align: "center",
-        field: (row: StudentWithEvaluationDTO) => row?.student?.firstName != undefined ? `${row?.student?.firstName} ${row?.student?.middleName} ${row?.student?.lastName}` : 'Общо',
-        sortable: true
-    },
+  {
+    name: "numberInClass",
+    label: "Номер в клас",
+    align: "center",
+    field: (row: StudentWithEvaluationDTO) => row?.student?.numberInClass != undefined ? `${row?.student?.numberInClass}` : '',
+    sortable: true
+  },
+  {
+    name: "student",
+    label: "Име на ученика",
+    align: "center",
+    field: (row: StudentWithEvaluationDTO) => row?.student?.firstName != undefined ? `${row?.student?.firstName} ${row?.student?.middleName} ${row?.student?.lastName}` : 'Общо',
+    sortable: true
+  },
   {
     name: "feedbacks",
     align: "center",

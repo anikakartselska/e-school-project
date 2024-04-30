@@ -76,6 +76,7 @@ import {getCurrentUserAsUserView} from "../../services/LocalStorageService";
 import {Subject} from "../../model/Subject";
 import {Semester} from "../../model/SchoolPeriod";
 import {formatToDate} from "../../utils";
+import {SchoolLesson} from "../../model/SchoolLesson";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
 const quasar = useQuasar()
@@ -84,7 +85,8 @@ defineEmits([...useDialogPluginComponent.emits])
 const props = defineProps<{
   subject: Subject,
   semester: Semester,
-  evaluations: StudentWithEvaluationDTO[]
+  evaluations: StudentWithEvaluationDTO[],
+  lesson: SchoolLesson | null
 }>()
 const currentUser = getCurrentUserAsUserView()
 const studentEvaluations = $ref([...props.evaluations].map(it => {
@@ -107,7 +109,7 @@ const addAbsence = (absenceValue: AbsenceValue, student: StudentView) => {
     id: null,
     subject: props.subject,
     student: student,
-    schoolLessonId: null,
+    schoolLessonId: props.lesson?.id,
     evaluationDate: formatToDate(new Date()),
     evaluationType: EvaluationType.ABSENCE,
     evaluationValue: absenceValue,
