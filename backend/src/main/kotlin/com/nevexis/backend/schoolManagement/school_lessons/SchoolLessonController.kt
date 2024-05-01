@@ -24,6 +24,19 @@ class SchoolLessonController {
         periodId
     )
 
+    @GetMapping("/fetch-school-lessons-for-teacher-week-school-and-period")
+    suspend fun fetchSchoolLessonsForTeacherWeekSchoolAndPeriod(
+        @RequestParam teacherId: BigDecimal,
+        @RequestParam weekNumber: BigDecimal,
+        @RequestParam schoolId: BigDecimal,
+        @RequestParam periodId: BigDecimal
+    ): List<SchoolLesson> = schoolLessonService.getSchoolLessonsForTeacherWeekSchoolAndPeriod(
+        teacherId,
+        weekNumber,
+        schoolId,
+        periodId
+    )
+
     @GetMapping("/fetch-school-lesson-by-id")
     suspend fun fetchSchoolLessonById(
         @RequestParam schoolLessonId: BigDecimal
@@ -31,4 +44,8 @@ class SchoolLessonController {
         schoolLessonId
     )
 
+    @PostMapping("/update-school-lesson")
+    fun updateSchoolLesson(
+        @RequestBody schoolLesson: SchoolLesson
+    ) = schoolLessonService.updateSchoolLesson(schoolLesson)
 }

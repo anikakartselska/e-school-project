@@ -194,7 +194,8 @@ class EvaluationService : BaseService() {
             evaluationType = EvaluationType.valueOf(it.evaluationType!!),
             evaluationValue = Json.decodeFromString(it.evaluationValue!!),
             semester = Semester.valueOf(it.semester!!),
-            createdBy = userService.mapToUserView(record.into(UserRecord::class.java), emptyList())
+            createdBy = userService.mapToUserView(record.into(UserRecord::class.java), emptyList()),
+            comment = it.comment
         )
     }
 
@@ -269,6 +270,7 @@ class EvaluationService : BaseService() {
             userId = evaluation.student.id.toBigDecimal()
             semester = evaluation.semester.name
             createdBy = evaluation.createdBy.id.toBigDecimal()
+            comment = evaluation.comment
         }
     }
 

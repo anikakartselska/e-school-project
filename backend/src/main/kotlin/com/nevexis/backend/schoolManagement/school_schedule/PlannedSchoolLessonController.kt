@@ -30,7 +30,7 @@ class PlannedSchoolLessonController {
         val calendar = calendarService.getSchoolCalendarForSchoolAndPeriod(schoolId, periodId)
         val plannedSchoolLessons =
             plannedSchoolLessonsService.getPlannedSchoolLessonsForSchoolAndPeriod(schoolId, periodId)
-        schoolLessonService.createSchoolLessons(plannedSchoolLessons, calendar!!, Semester.SECOND, periodId, schoolId)
+        schoolLessonService.createSchoolLessons(plannedSchoolLessons, calendar!!, Semester.FIRST, periodId, schoolId)
         return plannedSchoolLessons
     }
 

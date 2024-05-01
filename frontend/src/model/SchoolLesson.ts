@@ -2,6 +2,7 @@ import {Subject} from "./Subject";
 import {SchoolClass} from "./SchoolClass";
 import {WorkingHour} from "./PlannedSchoolLesson";
 import {Semester} from "./SchoolPeriod";
+import {UserView} from "./User";
 
 export interface SchoolLesson {
     id: number,
@@ -15,4 +16,10 @@ export interface SchoolLesson {
     week: number,
     semester: Semester,
     workingDay: WorkingHour
+    teacher: UserView,
+    status: SchoolLessonStatus
+}
+
+enum SchoolLessonStatus {
+    FREE, NORMAL, SUBSTITUTION
 }

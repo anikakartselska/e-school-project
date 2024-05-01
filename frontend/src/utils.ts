@@ -28,6 +28,20 @@ export const translationOfRequestStatusForRole = {
     PENDING: "ИЗЧАКВАЩА",
     REJECTED: "НЕАКТИВНА",
 }
+
+export const translationOfSemester = {
+    FIRST: "Първи срок",
+    SECOND: "Втори срок",
+    YEARLY: "Годишна",
+}
+
+export const translationOfWorkingDays = {
+    MONDAY: "Понеделник",
+    TUESDAY: "Вторник",
+    WEDNESDAY: "Сряда",
+    THURSDAY: "Четвъртък",
+    FRIDAY: "Петък"
+}
 export const getRangeOf = (start, stop, step) => Array.from({length: ((stop - start) / step) + 1}, (_, i) => start + (i * step))
 
 
@@ -69,15 +83,31 @@ export const formatToBulgarian = (dateToFormat: string | null) => {
     }
     return date.formatDate(new Date(dateToFormat), 'DD.MM.YYYY');
 };
+
+export const dateTimeToBulgarianLocaleString = (date) => {
+    if (!date) return ''
+
+    let dateToConvert: Date = date
+
+    if (typeof date === 'string') {
+        dateToConvert = new Date(date)
+    }
+
+    return dateToConvert.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    })
+}
 export const formatWithDash = (dateToFormat: string | null) => {
     if (dateToFormat == null || dateToFormat == '') {
         return null
     }
     return date.formatDate(new Date(dateToFormat), 'YYYY/MM/DD');
 };
-export const isNumberArray = (arr: any[]) => {
-    return Array.isArray(arr) && arr.every(element => typeof element === 'number');
-}
 export const getDatesInRange = (startDateStr: string, endDateStr: string): Date[] => {
     // Parse the date strings into Date objects
     const startDate = new Date(startDateStr.replace(/\//g, '-')); // Replace '/' with '-' for cross-browser compatibility

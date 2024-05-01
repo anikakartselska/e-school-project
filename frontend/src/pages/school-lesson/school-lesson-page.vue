@@ -5,7 +5,7 @@
       <q-page class="page-content" padding>
         <div style="margin-top: 30px;">
           <div class="row">
-            <div class="col-8">
+            <div class="col-12" style="text-align: center">
               <!--                            <div class="text-h4">-->
               <!--                                Клас: {{ schoolClass.name }}-->
               <!--                            </div>-->
@@ -31,6 +31,8 @@
                            :evaluations="studentWithEvaluationDTO"
                            :lesson="lesson"
                            :subject="lesson.subject"
+                           :periodId="periodId"
+                           :schoolId="schoolId"
               >
               </router-view>
             </div>
@@ -52,7 +54,7 @@ const props = defineProps<{
   schoolId: number,
   schoolLessonId: number
 }>()
-console.log(props)
+
 const lesson = $ref(await fetchSchoolLessonById(props.schoolLessonId))
 const quasar = useQuasar()
 let studentWithEvaluationDTO = $ref(await getEvaluationForSubjectAndSchoolClass(lesson.subject.id, props.periodId, props.schoolId, lesson.schoolClass.id))

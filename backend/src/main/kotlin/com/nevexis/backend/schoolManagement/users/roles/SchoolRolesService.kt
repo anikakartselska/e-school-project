@@ -133,7 +133,7 @@ class SchoolRolesService : BaseService() {
                 mapToModel(it)
             }
 
-    fun getAllUserRolesForPeriodAndSchool(
+    fun getAllSchoolUserRolesForPeriodAndSchool(
         userId: BigDecimal,
         schoolId: BigDecimal,
         periodId: BigDecimal
@@ -143,6 +143,21 @@ class SchoolRolesService : BaseService() {
                 .and(SCHOOL_USER_ROLE.SCHOOL_ID.eq(schoolId))
         ).fetch().map {
             mapToModel(it)
+        }
+
+    fun getAllApprovedSchoolRolesForPeriodAndSchool(
+        userId: BigDecimal,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ): List<SchoolRole> =
+        schoolRolesRecordSelectOnConditionStep(db).where(
+            SCHOOL_USER_ROLE.USER_ID.eq(userId).and(SCHOOL_ROLE_PERIOD.PERIOD_ID.eq(periodId))
+                .and(SCHOOL_USER_ROLE.SCHOOL_ID.eq(schoolId))
+                .and(
+                    SCHOOL_ROLE_PERIOD.STATUS.eq(RequestStatus.APPROVED.name)
+                )
+        ).fetch().map {
+            SchoolRole.valueOf(it.get(SCHOOL_USER_ROLE.ROLE, String::class.java))
         }
 
     fun getAllApprovedRolesFromSchoolForPeriod(schoolId: BigDecimal, periodId: BigDecimal) =

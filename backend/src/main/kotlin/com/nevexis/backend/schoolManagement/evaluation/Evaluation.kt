@@ -23,7 +23,8 @@ data class Evaluation(
     val evaluationType: EvaluationType,
     val evaluationValue: EvaluationValue,
     val semester: Semester,
-    val createdBy: UserView
+    val createdBy: UserView,
+    val comment: String? = null
 )
 
 enum class EvaluationType {

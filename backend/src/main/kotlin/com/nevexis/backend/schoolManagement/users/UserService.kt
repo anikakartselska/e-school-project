@@ -1,5 +1,6 @@
 package com.nevexis.backend.schoolManagement.users
 
+import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.requests.RequestService
 import com.nevexis.backend.schoolManagement.requests.RequestStatus
 import com.nevexis.`demo-project`.jooq.tables.records.UserRecord
@@ -51,7 +52,7 @@ class UserService : UserBaseService() {
         val allUserRoles = if (userId?.equals(principalName.toBigDecimal()) == true) {
             schoolUserRolesService.getAllUserRoles(id)
         } else {
-            schoolUserRolesService.getAllUserRolesForPeriodAndSchool(id, schoolId, periodId)
+            schoolUserRolesService.getAllSchoolUserRolesForPeriodAndSchool(id, schoolId, periodId)
         }
         mapUserRecordToUserModel(record, allUserRoles)
     } ?: error("User with id:${id} does not exist in current school and period")
@@ -67,6 +68,23 @@ class UserService : UserBaseService() {
             val userId = it.get(USER.ID, BigDecimal::class.java)
             mapToUserView(it, rolesForSchoolGroupedByUserId[userId] ?: emptyList())
         }
+    }
+
+    fun getUserViewsById(
+        userId: BigDecimal,
+        schoolId: BigDecimal,
+        periodId: BigDecimal,
+        dsl: DSLContext = db
+    ): UserView {
+        val roles =
+            schoolUserRolesService.getAllApprovedSchoolRolesForPeriodAndSchool(userId, schoolId, periodId)
+        return recordSelectOnConditionStep(dsl).where(
+            SCHOOL_USER.SCHOOL_ID.eq(schoolId).and(
+                SCHOOL_USER_PERIOD.PERIOD_ID.eq(periodId)
+            ).and(USER.ID.eq(userId))
+        ).fetchAny()?.let {
+            mapToUserView(it, roles)
+        } ?: throw SMSError("NOT_FOUND", "User with id:${userId} does not exist")
     }
 
     fun getAllApprovedTeachersFromSchool(

@@ -11,7 +11,8 @@ export interface Evaluation {
     evaluationType: EvaluationType,
     evaluationValue: EvaluationValue,
     semester: Semester,
-    createdBy: UserView
+    createdBy: UserView,
+    comment: string | null
 }
 
 export type EvaluationValue = FeedbackValue | AbsenceValue | GradeValue

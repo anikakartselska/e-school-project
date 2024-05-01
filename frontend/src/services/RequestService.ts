@@ -346,6 +346,11 @@ export const updateEvaluations = async (evaluations, periodId, schoolId): Promis
             headers: {'Content-Type': 'application/json'}
         })
 
+export const updateSchoolLesson = async (schoolLesson: SchoolLesson): Promise<any> =>
+        await api.post<any>(`/update-school-lesson`, schoolLesson, {
+            headers: {'Content-Type': 'application/json'}
+        })
+
 export const fetchStudentById = async (studentId,
                                        schoolClassId,
                                        periodId): Promise<StudentView> =>
@@ -393,6 +398,19 @@ export const fetchSchoolLessonsForSchoolClassWeekSchoolAndPeriod = async (school
         await api.get<SchoolLesson[]>('/fetch-school-lessons-for-school-class-week-school-and-period', {
             params: {
                 schoolClassId: schoolClassId,
+                weekNumber: weekNumber,
+                schoolId: schoolId,
+                periodId: periodId,
+            }
+        }).then(p => p.data)
+
+export const fetchSchoolLessonsForTeacherWeekSchoolAndPeriod = async (teacherId,
+                                                                      weekNumber,
+                                                                      schoolId,
+                                                                      periodId): Promise<SchoolLesson[]> =>
+        await api.get<SchoolLesson[]>('/fetch-school-lessons-for-teacher-week-school-and-period', {
+            params: {
+                teacherId: teacherId,
                 weekNumber: weekNumber,
                 schoolId: schoolId,
                 periodId: periodId,

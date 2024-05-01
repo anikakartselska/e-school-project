@@ -10,6 +10,8 @@ import com.nevexis.backend.schoolManagement.school_period.Semester
 import com.nevexis.backend.schoolManagement.school_schedule.PlannedSchoolLesson
 import com.nevexis.backend.schoolManagement.subject.Subject
 import com.nevexis.backend.schoolManagement.subject.SubjectService
+import com.nevexis.backend.schoolManagement.users.UserService
+import com.nevexis.backend.schoolManagement.users.UserView
 import com.nevexis.`demo-project`.jooq.tables.records.SchoolLessonRecord
 import com.nevexis.`demo-project`.jooq.tables.records.SubjectRecord
 import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_LESSON
@@ -35,6 +37,9 @@ class SchoolLessonService : BaseService() {
     @Autowired
     private lateinit var schoolClassService: SchoolClassService
 
+    @Autowired
+    private lateinit var userService: UserService
+
     fun getSchoolLessonById(schoolLessonId: BigDecimal): SchoolLesson =
         db.selectFrom(SCHOOL_LESSON)
             .where(
@@ -47,9 +52,36 @@ class SchoolLessonService : BaseService() {
                     schoolLessonRecord.schoolId!!
                 )!!
                 val schoolClass = schoolClassService.getSchoolClassById(schoolLessonRecord.schoolClassId!!)
-                mapRecordToInternalModel(schoolLessonRecord, subject, schoolClass)
+                val teacher = if (subject.teacher?.id!!.toBigDecimal() == schoolLessonRecord.teacherId) {
+                    subject.teacher
+                } else {
+                    userService.getUserViewsById(
+                        schoolLessonRecord.teacherId!!,
+                        schoolLessonRecord.schoolPeriodId!!,
+                        schoolLessonRecord.schoolId!!
+                    )
+                }
+                mapRecordToInternalModel(schoolLessonRecord, subject, schoolClass, teacher)
             } ?: throw SMSError("DATA_NOT_FOUND", "School lesson with id:${schoolLessonId} does not exist")
 
+    fun updateSchoolLesson(schoolLesson: SchoolLesson) {
+        db.selectFrom(SCHOOL_LESSON).where(SCHOOL_LESSON.ID.eq(schoolLesson.id)).fetchAny()
+            ?.apply {
+                id = schoolLesson.id
+                startTimeOfLesson = schoolLesson.startTimeOfLesson
+                endTimeOfLesson = schoolLesson.endTimeOfLesson
+                subjectId = schoolLesson.subject.id.toBigDecimal()
+                lessonTopic = schoolLesson.lessonTopic
+                room = schoolLesson.room.toString()
+                taken = if (schoolLesson.taken) {
+                    "Y"
+                } else {
+                    "N"
+                }
+                teacherId = schoolLesson.teacher.id.toBigDecimal()
+                status = schoolLesson.status.name
+            }?.update()
+    }
 
     fun getSchoolLessonsForSchoolClassWeekSchoolAndPeriod(
         schoolClassId: BigDecimal,
@@ -67,7 +99,37 @@ class SchoolLessonService : BaseService() {
             ).fetch()
             .map {
                 val subject = subjectService.getSubjectsById(it.subjectId!!, periodId, schoolId)!!
-                mapRecordToInternalModel(it, subject, schoolClass)
+                val teacher = if (subject.teacher?.id!!.toBigDecimal() == it.teacherId) {
+                    subject.teacher
+                } else {
+                    userService.getUserViewsById(it.teacherId!!, periodId, schoolId)
+                }
+                mapRecordToInternalModel(it, subject, schoolClass, teacher)
+            }.sortedWith(compareBy(
+                { it.workingDay.workingDays.order },
+                { it.workingDay.hour }
+            ))
+
+    }
+
+    fun getSchoolLessonsForTeacherWeekSchoolAndPeriod(
+        teacherId: BigDecimal,
+        weekNumber: BigDecimal,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ): List<SchoolLesson> {
+        val teacher = userService.getUserViewsById(teacherId, periodId, schoolId)
+        return db.selectFrom(SCHOOL_LESSON)
+            .where(
+                SCHOOL_LESSON.TEACHER_ID.eq(teacherId)
+                    .and(SCHOOL_LESSON.WEEK.eq(weekNumber))
+                    .and(SCHOOL_LESSON.SCHOOL_ID.eq(schoolId))
+                    .and(SCHOOL_LESSON.SCHOOL_PERIOD_ID.eq(periodId))
+            ).fetch()
+            .map {
+                val schoolClass = schoolClassService.getSchoolClassById(it.schoolClassId!!)
+                val subject = subjectService.getSubjectsById(it.subjectId!!, periodId, schoolId)!!
+                mapRecordToInternalModel(it, subject, schoolClass, teacher)
             }.sortedWith(compareBy(
                 { it.workingDay.workingDays.order },
                 { it.workingDay.hour }
@@ -195,13 +257,16 @@ class SchoolLessonService : BaseService() {
             week = date.get(weekFields.weekOfYear()).toBigDecimal()
             this.semester = semester.name
             this.workingHour = Json.encodeToString(plannedSchoolLesson.workingHour)
+            this.status = SchoolLessonStatus.NORMAL.name
+            this.teacherId = plannedSchoolLesson.teacher.id.toBigDecimal()
         }
     }
 
     private fun mapRecordToInternalModel(
         it: SchoolLessonRecord,
         subject: Subject,
-        schoolClass: SchoolClass
+        schoolClass: SchoolClass,
+        teacher: UserView
     ) = SchoolLesson(
         id = it.id!!,
         startTimeOfLesson = it.startTimeOfLesson!!,
@@ -213,7 +278,9 @@ class SchoolLessonService : BaseService() {
         taken = it.taken == "Y",
         week = it.week!!.toInt(),
         semester = Semester.valueOf(it.semester!!),
-        workingDay = Json.decodeFromString(it.workingHour!!)
+        workingDay = Json.decodeFromString(it.workingHour!!),
+        teacher = teacher,
+        status = SchoolLessonStatus.valueOf(it.status!!)
     )
 
     fun getSchoolLessonSeqNextVal(): BigDecimal =
