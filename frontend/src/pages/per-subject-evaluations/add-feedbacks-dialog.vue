@@ -84,7 +84,6 @@ import {Semester} from "../../model/SchoolPeriod";
 import {Evaluation, EvaluationType, Feedback, FeedbackValue} from "../../model/Evaluation";
 import {feedbacksMap, feedbacksMapTranslation} from "../../services/helper-services/EvaluationService";
 import {StudentView} from "../../model/User";
-import {formatToDate} from "../../utils";
 import {SchoolLesson} from "../../model/SchoolLesson";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
@@ -120,7 +119,6 @@ const createFeedBack = (feedback: Feedback, student: StudentView) => {
     subject: props.subject,
     student: student,
     schoolLessonId: props.lesson?.id,
-    evaluationDate: formatToDate(new Date()),
     evaluationType: EvaluationType.FEEDBACK,
     evaluationValue: <FeedbackValue>{feedback: feedback},
     semester: props.semester,

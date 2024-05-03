@@ -84,6 +84,8 @@ class NotificationServiceMailServerImpl(private var mailServerConfig: MailServer
     private fun constructHtml(templateType: TemplateType, context: Map<String, String>?): String {
         val htmlContent = when (templateType) {
             TemplateType.RESET_PASSWORD -> javaClass.getResource("/mail/reset-password-template.html")
+            TemplateType.EVALUATION_ENTER -> javaClass.getResource("/mail/add-evaluation-template.html")
+            TemplateType.EVALUATION_UPDATE -> javaClass.getResource("/mail/update-evaluation-template.html")
         }?.readText() ?: ""
 
         return context?.toList()?.fold(htmlContent) { html, (key, value) ->

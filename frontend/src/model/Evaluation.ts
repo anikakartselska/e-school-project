@@ -1,13 +1,14 @@
 import {StudentView, UserView} from "./User";
 import {Subject} from "./Subject";
 import {Semester} from "./SchoolPeriod";
+import {Nullable} from "./Nullable";
 
 export interface Evaluation {
     id: number | null,
     student: StudentView,
     subject: Subject,
     schoolLessonId: number | null,
-    evaluationDate: string,
+    evaluationDate: Nullable<Date>,
     evaluationType: EvaluationType,
     evaluationValue: EvaluationValue,
     semester: Semester,

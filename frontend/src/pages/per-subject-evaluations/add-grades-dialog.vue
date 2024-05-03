@@ -75,7 +75,6 @@ import {StudentView} from "../../model/User";
 import {getCurrentUserAsUserView} from "../../services/LocalStorageService";
 import {Subject} from "../../model/Subject";
 import {Semester} from "../../model/SchoolPeriod";
-import {formatToDate} from "../../utils";
 import {SchoolLesson} from "../../model/SchoolLesson";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
@@ -111,7 +110,6 @@ const addGrade = (grade: Grade, student: StudentView) => {
     subject: props.subject,
     student: student,
     schoolLessonId: props.lesson?.id,
-    evaluationDate: formatToDate(new Date()),
     evaluationType: EvaluationType.GRADE,
     evaluationValue: <GradeValue>{grade: grade, finalGrade: props.finalGrade},
     semester: props.semester,

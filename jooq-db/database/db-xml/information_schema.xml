@@ -456,9 +456,9 @@
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>EVALUATION</table_name>
             <column_name>EVALUATION_DATE</column_name>
-            <data_type>date</data_type>
+            <data_type>timestamp</data_type>
             <character_maximum_length>0</character_maximum_length>
-            <numeric_precision>0</numeric_precision>
+            <numeric_precision>6</numeric_precision>
             <numeric_scale>0</numeric_scale>
             <ordinal_position>4</ordinal_position>
             <is_nullable>true</is_nullable>

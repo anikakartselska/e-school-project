@@ -61,7 +61,7 @@
 </template>
 
 <script lang="ts" setup>
-import {useDialogPluginComponent, useQuasar} from "quasar";
+import {date, useDialogPluginComponent, useQuasar} from "quasar";
 import {StudentWithEvaluationDTO} from "../../model/StudentWithEvaluationDTO";
 import {$ref} from "vue/macros";
 import {
@@ -75,7 +75,6 @@ import {StudentView} from "../../model/User";
 import {getCurrentUserAsUserView} from "../../services/LocalStorageService";
 import {Subject} from "../../model/Subject";
 import {Semester} from "../../model/SchoolPeriod";
-import {formatToDate} from "../../utils";
 import {SchoolLesson} from "../../model/SchoolLesson";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
@@ -110,7 +109,6 @@ const addAbsence = (absenceValue: AbsenceValue, student: StudentView) => {
     subject: props.subject,
     student: student,
     schoolLessonId: props.lesson?.id,
-    evaluationDate: formatToDate(new Date()),
     evaluationType: EvaluationType.ABSENCE,
     evaluationValue: absenceValue,
     semester: props.semester,

@@ -1,5 +1,6 @@
 package com.nevexis.backend.schoolManagement.evaluation
 
+import com.nevexis.backend.compareToByMatchingPk
 import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.school_class.SchoolClass
@@ -21,12 +22,15 @@ import org.jooq.impl.DSL
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 @Service
 class EvaluationService : BaseService() {
 
     @Autowired
     private lateinit var userService: UserService
+
+    @Autowired private lateinit var evaluationNotificationService: EvaluationNotificationService
 
     @Autowired
     private lateinit var subjectService: SubjectService
@@ -204,15 +208,30 @@ class EvaluationService : BaseService() {
         schoolId: BigDecimal,
         periodId: BigDecimal
     ) {
-        val evaluationRecords = evaluations.map { evaluationDto ->
-            mapToEvaluationToEvaluationRecords(
-                evaluationDto.grades.plus(evaluationDto.feedbacks).plus(evaluationDto.absences),
-                schoolId,
-                periodId
-            )
+        val allEvaluations = evaluations.map { evaluationDto ->
+            evaluationDto.grades.plus(evaluationDto.feedbacks).plus(evaluationDto.absences)
         }.flatten()
-        db.batchUpdate(evaluationRecords).execute()
+
+        val evaluationRecordToEvaluation = allEvaluations.mapNotNull { evaluation ->
+            val updatedEvaluationRecord = mapToEvaluationToEvaluationRecord(evaluation, schoolId, periodId)
+            val evaluationRecordFromDatabase =
+                db.selectFrom(EVALUATION).where(EVALUATION.ID.eq(evaluation.id?.toBigDecimal())).fetchAny()!!
+            if (updatedEvaluationRecord.compareToByMatchingPk(evaluationRecordFromDatabase) == 0) {
+                null
+            } else {
+                updatedEvaluationRecord to Pair(evaluation, evaluationRecordFromDatabase)
+            }
+        }
+        val evaluationRecords = evaluationRecordToEvaluation.map { it.first }
+        db.batchUpdate(evaluationRecords).execute().also {
+            evaluationNotificationService.sendEmailForEvaluationsUpdate(
+                evaluationRecordToEvaluation.map { it.second },
+                periodId,
+                schoolId
+            )
+        }
     }
+
 
     fun saveEvaluations(
         evaluations: List<StudentWithEvaluationDTO>,
@@ -223,17 +242,17 @@ class EvaluationService : BaseService() {
             evaluationDto.copy(
                 absences = evaluationDto.absences.mapNotNull {
                     if (it.id == null) {
-                        it.copy(id = getEvaluationSeqNextVal().toInt())
+                        it.copy(id = getEvaluationSeqNextVal().toInt(), evaluationDate = LocalDateTime.now())
                     } else null
                 },
                 grades = evaluationDto.grades.mapNotNull {
                     if (it.id == null) {
-                        it.copy(id = getEvaluationSeqNextVal().toInt())
+                        it.copy(id = getEvaluationSeqNextVal().toInt(), evaluationDate = LocalDateTime.now())
                     } else null
                 },
                 feedbacks = evaluationDto.feedbacks.mapNotNull {
                     if (it.id == null) {
-                        it.copy(id = getEvaluationSeqNextVal().toInt())
+                        it.copy(id = getEvaluationSeqNextVal().toInt(), evaluationDate = LocalDateTime.now())
                     } else null
                 },
             )
@@ -241,38 +260,49 @@ class EvaluationService : BaseService() {
         }
 
         val evaluationRecords = evaluationsWithId.map { evaluationDto ->
-            mapToEvaluationToEvaluationRecords(
+            mapToEvaluationsToEvaluationRecords(
                 evaluationDto.grades.plus(evaluationDto.feedbacks).plus(evaluationDto.absences),
                 schoolId,
                 periodId
             )
         }.flatten()
-        db.batchInsert(evaluationRecords).execute()
-
+        db.batchInsert(evaluationRecords).execute().also {
+            evaluationNotificationService.sendEmailForEvaluationsCreation(evaluationsWithId.map {
+                it.absences + it.feedbacks + it.grades
+            }.flatten(), periodId, schoolId)
+        }
         return evaluationsWithId
     }
 
 
-    private fun mapToEvaluationToEvaluationRecords(
+    private fun mapToEvaluationsToEvaluationRecords(
         evaluations: List<Evaluation>,
         schoolId: BigDecimal,
         periodId: BigDecimal
     ) = evaluations.map { evaluation ->
-        db.newRecord(EVALUATION, evaluation).apply {
-            id = evaluation.id?.toBigDecimal()
-            subjectId = evaluation.subject.id.toBigDecimal()
-            schoolLessonId = evaluation.schoolLessonId?.toBigDecimal()
-            evaluationDate = evaluation.evaluationDate
-            evaluationType = evaluation.evaluationType.name
-            evaluationValue = Json.encodeToString(evaluation.evaluationValue)
-            this.schoolId = schoolId
-            schoolPeriodId = periodId
-            userId = evaluation.student.id.toBigDecimal()
-            semester = evaluation.semester.name
-            createdBy = evaluation.createdBy.id.toBigDecimal()
-            comment = evaluation.comment
-        }
+        mapToEvaluationToEvaluationRecord(evaluation, schoolId, periodId)
     }
+
+
+    private fun mapToEvaluationToEvaluationRecord(
+        evaluation: Evaluation,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ) = db.newRecord(EVALUATION, evaluation).apply {
+        id = evaluation.id?.toBigDecimal()
+        subjectId = evaluation.subject.id.toBigDecimal()
+        schoolLessonId = evaluation.schoolLessonId?.toBigDecimal()
+        evaluationDate = evaluation.evaluationDate ?: LocalDateTime.now()
+        evaluationType = evaluation.evaluationType.name
+        evaluationValue = Json.encodeToString(evaluation.evaluationValue)
+        this.schoolId = schoolId
+        schoolPeriodId = periodId
+        userId = evaluation.student.id.toBigDecimal()
+        semester = evaluation.semester.name
+        createdBy = evaluation.createdBy.id.toBigDecimal()
+        comment = evaluation.comment
+    }
+
 
     fun getEvaluationSeqNextVal(): BigDecimal =
         db.select(DSL.field("EVALUATION_SEQ.nextval")).from("DUAL")

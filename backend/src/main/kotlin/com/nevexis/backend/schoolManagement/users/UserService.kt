@@ -19,6 +19,12 @@ class UserService : UserBaseService() {
     @Lazy
     private lateinit var requestService: RequestService
 
+    companion object {
+        private val PARENT_USER = USER.`as`("Parent")
+        private val PARENT_USER_ROLE = SCHOOL_USER_ROLE.`as`("ParentUserRole")
+        private val PARENT_ROLE_PERIOD = SCHOOL_ROLE_PERIOD.`as`("ParentRolePeriod")
+    }
+
     fun updateUser(user: User, loggedUserId: BigDecimal) {
         db.transaction { transaction ->
             transaction.dsl().selectFrom(USER).where(USER.ID.eq(user.id?.toBigDecimal()))
@@ -264,6 +270,30 @@ class UserService : UserBaseService() {
         return db.select(USER.PROFILE_IMAGE).from(USER).where(USER.ID.eq(userId))
             .fetchAny()?.getValue(USER.PROFILE_IMAGE)
 
+    }
+
+    fun getParentEmailsFromListOfStudentIds(
+        studentIds: List<BigDecimal>,
+        periodId: BigDecimal,
+        schoolId: BigDecimal
+    ): Map<BigDecimal, String> {
+        return db.select(USER.ID, PARENT_USER.EMAIL).from(PARENT_USER)
+            .leftJoin(PARENT_USER_ROLE)
+            .on(PARENT_USER_ROLE.USER_ID.eq(PARENT_USER.ID))
+            .leftJoin(PARENT_ROLE_PERIOD)
+            .on(PARENT_ROLE_PERIOD.SCHOOL_USER_ROLE_ID.eq(PARENT_USER_ROLE.ID))
+            .leftJoin(PARENT_STUDENT)
+            .on(PARENT_STUDENT.PARENT_SCHOOL_USER_ROLE_ID.eq(PARENT_USER_ROLE.ID))
+            .leftJoin(SCHOOL_USER_ROLE)
+            .on(SCHOOL_USER_ROLE.ID.eq(PARENT_STUDENT.STUDENT_SCHOOL_USER_ROLE_ID))
+            .leftJoin(USER)
+            .on(USER.ID.eq(SCHOOL_USER_ROLE.USER_ID))
+            .where(PARENT_ROLE_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
+            .and(PARENT_ROLE_PERIOD.PERIOD_ID.eq(periodId))
+            .and(PARENT_USER_ROLE.SCHOOL_ID.eq(schoolId))
+            .and(USER.ID.`in`(studentIds)).fetch().associate {
+                it.get(USER.ID, BigDecimal::class.java) to it.get(PARENT_USER.EMAIL)!!
+            }
     }
 
 
