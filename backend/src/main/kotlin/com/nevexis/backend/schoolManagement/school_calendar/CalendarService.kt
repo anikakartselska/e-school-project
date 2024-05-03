@@ -27,6 +27,14 @@ class CalendarService : BaseService() {
             Json.decodeFromString<Calendar>(it)
         }
 
+    fun getSchoolWeeksForSchoolClass(
+        schoolClassName: String,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ) = getSchoolCalendarForSchoolAndPeriod(schoolId, periodId)?.let {
+        it.firstSemesterWeeksCount + (it.classToSecondSemesterWeeksCount[schoolClassName.dropLast(1).toInt()] ?: 0)
+    } ?: 0
+
     fun getWeeksForSchoolClassSchoolAndPeriod(
         schoolClassName: String,
         schoolId: BigDecimal,

@@ -18,6 +18,13 @@ class CalendarController {
         @RequestParam periodId: BigDecimal
     ): Calendar? = calendarService.getSchoolCalendarForSchoolAndPeriod(schoolId, periodId)
 
+    @GetMapping("/fetch-school-weeks-for-school-class")
+    fun fetchSchoolWeeksForSchoolClass(
+        @RequestParam schoolClassName: String,
+        @RequestParam schoolId: BigDecimal,
+        @RequestParam periodId: BigDecimal
+    ) = calendarService.getSchoolWeeksForSchoolClass(schoolClassName, schoolId, periodId)
+
     @GetMapping("/fetch-weeks-for-school-class-school-and-period")
     fun fetchWeeksForSchoolClassSchoolAndPeriod(
         @RequestParam schoolClassName: String,

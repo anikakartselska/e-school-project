@@ -13,6 +13,7 @@ import {StudentWithEvaluationDTO} from "../model/StudentWithEvaluationDTO";
 import {Calendar, Week} from "../model/Calendar";
 import {PlannedSchoolLesson} from "../model/PlannedSchoolLesson";
 import {SchoolLesson} from "../model/SchoolLesson";
+import {SubjectAndClassesCount} from "../model/SubjectAndClassesCount";
 
 export const login = async (email: string, password: string): Promise<AxiosResponse> =>
         await axios.post<string>(`/authenticate`, {username: email, password}, {
@@ -359,6 +360,21 @@ export const fetchStudentById = async (studentId,
                 studentId,
                 schoolClassId,
                 periodId
+            }
+        }).then(p => p.data)
+
+export const getPlanForSchoolClass = async (schoolClass): Promise<SubjectAndClassesCount[]> =>
+        await api.post<SubjectAndClassesCount[]>('/get-plan-for-school-class', schoolClass, {
+            headers: {'Content-Type': 'application/json'}
+        }).then(p => p.data)
+
+export const fetchSchoolWeeksForSchoolClass = async (schoolClassName, schoolId,
+                                                     periodId): Promise<number> =>
+        await api.get<number>('/fetch-school-weeks-for-school-class', {
+            params: {
+                schoolClassName: schoolClassName,
+                schoolId: schoolId,
+                periodId: periodId
             }
         }).then(p => p.data)
 

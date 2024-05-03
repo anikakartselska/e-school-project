@@ -4,6 +4,8 @@ import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.data_import.ImportService
 import com.nevexis.backend.schoolManagement.requests.RequestStatus
+import com.nevexis.backend.schoolManagement.school_calendar.CalendarService
+import com.nevexis.backend.schoolManagement.school_schedule.SubjectAndClassesCount
 import com.nevexis.backend.schoolManagement.users.SchoolRole
 import com.nevexis.backend.schoolManagement.users.UserService
 import com.nevexis.backend.schoolManagement.users.UserView
@@ -30,6 +32,9 @@ class SchoolClassService : BaseService() {
     @Autowired
     @Lazy
     private lateinit var schoolRolesService: SchoolRolesService
+
+    @Autowired
+    private lateinit var calendarService: CalendarService
 
     @Autowired
     @Lazy
@@ -130,6 +135,32 @@ class SchoolClassService : BaseService() {
         ).map {
             mapRecordToInternalModelWithPlan(it)
         }
+
+    fun fetchPlanForSchoolClass(schoolClass: SchoolClass): List<SubjectAndClassesCount> {
+        val calendar =
+            calendarService.getSchoolCalendarForSchoolAndPeriod(
+                schoolClass.schoolId.toBigDecimal(),
+                schoolClass.schoolPeriodId.toBigDecimal()
+            )
+        return (db.select(SCHOOL_CLASS.PLAN_ID, SCHOOL_PLAN_FOR_CLASSES.asterisk())
+            .from(SCHOOL_PLAN_FOR_CLASSES)
+            .leftJoin(SCHOOL_CLASS).on(SCHOOL_CLASS.PLAN_ID.eq(SCHOOL_PLAN_FOR_CLASSES.ID))
+            .where(SCHOOL_CLASS.ID.eq(schoolClass.id?.toBigDecimal()))
+            .fetchAny()?.map { Json.decodeFromString<Map<String, Int>>(it.get(SCHOOL_PLAN_FOR_CLASSES.PLAN)!!) }
+            ?: emptyMap())
+            .map { (subject, classesCount) ->
+                SubjectAndClassesCount(
+                    subject,
+                    classesCount,
+                    classesCount * (calendar?.let {
+                        it.firstSemesterWeeksCount + (it.classToSecondSemesterWeeksCount[schoolClass.name.dropLast(
+                            1
+                        ).toInt()] ?: 0)
+                    } ?: 0)
+                )
+            }
+    }
+
 
     private fun schoolClassRecordSelectOnConditionStep(dsl: DSLContext = db) =
         dsl.select(

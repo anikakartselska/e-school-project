@@ -51,7 +51,7 @@
                       Начало на учебните занятия: <span class="text-primary"> {{
                       calendar.firstShiftSchedule.startOfClasses
                       }}</span> <br>
-                      Продълцителност на часовете: <span class="text-primary"> {{
+                      Продължителност на часовете: <span class="text-primary"> {{
                       `${calendar.firstShiftSchedule.durationOfClasses} мин.`
                       }}</span> <br>
                       Продължителност на междучасията: <span class="text-primary"> {{
@@ -61,7 +61,7 @@
                       Начало на учебните занятия: <span class="text-primary"> {{
                       calendar.secondShiftSchedule.startOfClasses
                       }}</span> <br>
-                      Продълцителност на часовете: <span class="text-primary"> {{
+                      Продължителност на часовете: <span class="text-primary"> {{
                       `${calendar.secondShiftSchedule.durationOfClasses} мин.`
                       }}</span> <br>
                       Продължителност на междучасията: <span class="text-primary"> {{

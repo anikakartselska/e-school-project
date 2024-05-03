@@ -36,6 +36,7 @@ import ProgramPage from "./pages/administration/program-page.vue";
 import SchoolClassLessonsTab from "./pages/school-class/school-class-lessons-tab.vue";
 import SchoolLessonPage from "./pages/school-lesson/school-lesson-page.vue";
 import SchoolLessonInformation from "./pages/school-lesson/school-lesson-information.vue";
+import SchoolClassPlanTab from "./pages/school-class/school-class-plan-tab.vue";
 
 const routes = [
     {
@@ -103,6 +104,10 @@ const routes = [
                     {
                         path: 'subjects',
                         component: SchoolClassSubjectsTab
+                    },
+                    {
+                        path: 'plan',
+                        component: SchoolClassPlanTab
                     },
                     {
                         path: 'program',
