@@ -368,6 +368,16 @@ export const getPlanForSchoolClass = async (schoolClass): Promise<SubjectAndClas
             headers: {'Content-Type': 'application/json'}
         }).then(p => p.data)
 
+export const saveCalendarChanges = async (calendar, schoolId, periodId): Promise<Calendar> =>
+        await api.post<Calendar>('/update-calendar', calendar, {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId
+            },
+            headers: {'Content-Type': 'application/json'}
+        }).then(p => p.data)
+
+
 export const fetchSchoolWeeksForSchoolClass = async (schoolClassName, schoolId,
                                                      periodId): Promise<number> =>
         await api.get<number>('/fetch-school-weeks-for-school-class', {

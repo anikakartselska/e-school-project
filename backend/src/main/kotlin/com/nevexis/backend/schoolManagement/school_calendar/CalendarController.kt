@@ -25,6 +25,12 @@ class CalendarController {
         @RequestParam periodId: BigDecimal
     ) = calendarService.getSchoolWeeksForSchoolClass(schoolClassName, schoolId, periodId)
 
+    @PostMapping("/update-calendar")
+    suspend fun updateCalendar(
+        @RequestBody calendar: Calendar, @RequestParam schoolId: BigDecimal,
+        @RequestParam periodId: BigDecimal
+    ) = calendarService.saveUpdateCalendar(calendar, schoolId, periodId)
+
     @GetMapping("/fetch-weeks-for-school-class-school-and-period")
     fun fetchWeeksForSchoolClassSchoolAndPeriod(
         @RequestParam schoolClassName: String,

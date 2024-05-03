@@ -5,6 +5,8 @@
           <q-page class="page-content" padding>
               <div class="text-h4">
                   Календар
+                  <q-btn class="q-mr-xs" color="primary" flat icon="edit" round
+                         @click="updateCalendar()"/>
               </div>
               <q-separator class="q-mt-md q-mb-md"/>
               <div class="row">
@@ -68,61 +70,75 @@
                       `${calendar.secondShiftSchedule.breakDuration} мин.`
                       }}</span> <br>
                   </div>
-          <div class="col">
-            <q-date v-model="selectedDate" :events="events" :locale="daysAndMonthsInBulgarian"
-                    event-color="primary" style="width: 400px">
-              <template v-slot:default>
-                <div class="bg-negative text-white" v-html="title"/>
-              </template>
-            </q-date>
-          </div>
-        </div>
-      </q-page>
+                  <div class="col">
+                      <q-date v-model="selectedDate" :events="events" :locale="daysAndMonthsInBulgarian"
+                              event-color="primary" style="width: 400px">
+                          <template v-slot:default>
+                              <div class="bg-negative text-white" v-html="title"/>
+                          </template>
+                      </q-date>
+                  </div>
+              </div>
+          </q-page>
     </div>
   </div>
 </template>
 <script lang="ts" setup>
 import {$ref} from "vue/macros";
-import {fetchSchoolCalendarForSchoolAndPeriod} from "../../services/RequestService";
+import {fetchSchoolCalendarForSchoolAndPeriod, saveCalendarChanges} from "../../services/RequestService";
 import {formatToBulgarian, formatWithDash, getDatesInRange, getRangeOf, isDateInRange} from "../../utils";
 import {watch} from "vue";
-import {date} from "quasar";
+import {date, useQuasar} from "quasar";
+import CalendarEditDialog from "./calendar-dialogs/calendar-edit-dialog.vue";
+import {Calendar} from "../../model/Calendar";
 
 const props = defineProps<{
-  periodId: number,
-  schoolId: number
+    periodId: number,
+    schoolId: number
 }>()
-const calendar = $ref(await fetchSchoolCalendarForSchoolAndPeriod(props.schoolId, props.periodId))
+let calendar = $ref(await fetchSchoolCalendarForSchoolAndPeriod(props.schoolId, props.periodId))
 let classes = getRangeOf(1, 12, 1).map(it => it.toString())
 const vacations = calendar.restDays.concat(calendar.examDays).map(it => getDatesInRange(it.from, it.to)).flat(1).map(it => formatWithDash(date.formatDate(it, 'YYYY/MM/DD')))
 const events = [calendar.beginningOfYear, calendar.beginningOfSecondSemester, calendar.endOfFirstSemester].concat(Object.entries(calendar.classToEndOfYearDate).map(it => it[1])).map(it => formatWithDash(it))
         .concat(vacations)
 const selectedDate = $ref(null)
 const daysAndMonthsInBulgarian = {
-  days: ['неделя', 'понеделник', 'вторник', 'сряда', 'четвъртък', 'петък', 'събота'],
-  daysShort: ['нед', 'пон', 'вт', 'ср', 'чет', 'пет', 'съб'],
-  months: ['януари', 'февруари', 'март', 'април', 'май', 'юни', 'юли', 'август', 'септември', 'октомври', 'ноември', 'декември'],
-  monthsShort: ['ян', 'фев', 'мар', 'апр', 'май', 'юни', 'юли', 'авг', 'сеп', 'окт', 'ное', 'дек']
+    days: ['неделя', 'понеделник', 'вторник', 'сряда', 'четвъртък', 'петък', 'събота'],
+    daysShort: ['нед', 'пон', 'вт', 'ср', 'чет', 'пет', 'съб'],
+    months: ['януари', 'февруари', 'март', 'април', 'май', 'юни', 'юли', 'август', 'септември', 'октомври', 'ноември', 'декември'],
+    monthsShort: ['ян', 'фев', 'мар', 'апр', 'май', 'юни', 'юли', 'авг', 'сеп', 'окт', 'ное', 'дек']
 }
+const quasar = useQuasar()
+const updateCalendar = async () => quasar.dialog({
+    component: CalendarEditDialog,
+    componentProps: {
+        calendar: calendar
+    },
+}).onOk(async (payload) => {
+    const updatedCalendar = payload.item as Calendar
+    await saveCalendarChanges(updatedCalendar, props.schoolId, props.periodId).then(e => {
+        calendar = e
+    })
+})
 let title = $ref<string | null>(null)
 watch(() => selectedDate, () => {
-          title = ''
-          if (selectedDate == null) {
-            title = null
-          } else {
-            if (selectedDate == formatWithDash(calendar.beginningOfYear)) {
-              title = title + `Първи учебен ден<br>`
-            } else if (selectedDate == formatWithDash(calendar.beginningOfSecondSemester)) {
-              title = title + `Начало на втори срок<br>`
+    title = ''
+    if (selectedDate == null) {
+        title = null
+    } else {
+        if (selectedDate == formatWithDash(calendar.beginningOfYear)) {
+            title = title + `Първи учебен ден<br>`
+        } else if (selectedDate == formatWithDash(calendar.beginningOfSecondSemester)) {
+            title = title + `Начало на втори срок<br>`
             } else if (selectedDate == formatWithDash(calendar.endOfFirstSemester)) {
               title = title + `Край на първи срок<br>`
             } else if (Object.values(calendar.classToEndOfYearDate).map(it => formatWithDash(it)).includes(selectedDate)) {
               const selectedDateClass = Object.entries(calendar.classToEndOfYearDate).filter(it => selectedDate == formatWithDash(it[1]))!!
               title = title + `Последен учебен ден за ${selectedDateClass.map(it => it[0])} клас<br>`
             } else if (vacations.includes(selectedDate)) {
-                title = title!! + calendar.restDays.concat(calendar.examDays).filter(it => isDateInRange(selectedDate!!, it.from, it.to))
-                        .map(it => `${it.holidayName}<br>`)
-            } else {
+            title = title!! + calendar.restDays.concat(calendar.examDays).filter(it => isDateInRange(selectedDate!!, it.from, it.to))
+                    .map(it => `${it.holidayName}<br>`)
+        } else {
               title = null
             }
           }
