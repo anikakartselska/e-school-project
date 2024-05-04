@@ -153,7 +153,8 @@ class SchoolClassService : BaseService() {
                     subject,
                     classesCount,
                     classesCount * (calendar?.let {
-                        it.firstSemesterWeeksCount + (it.classToSecondSemesterWeeksCount[schoolClass.name.dropLast(
+                        (it.firstSemesterWeeksCount
+                            ?: 0) + (it.classToSecondSemesterWeeksCount[schoolClass.name.dropLast(
                             1
                         ).toInt()] ?: 0)
                     } ?: 0)

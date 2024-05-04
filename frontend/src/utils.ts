@@ -155,6 +155,13 @@ export const isDateInRange = (targetDate: string, fromDate: string, toDate: stri
     return target >= from && target <= to;
 }
 
+export const formatTime = (dateString: string): string => {
+    let dateObject: Date = new Date(dateString);
+    let hours: string = dateObject.getHours().toString().padStart(2, '0');
+    let minutes: string = dateObject.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+}
+
 export const notifyForError = (title: string, caption: string, setTimeout: boolean = false) =>
         Notify.create({
             message: title,

@@ -15,21 +15,24 @@
           {{ workingDaysTranslation.get(day) }}
         </div>
         <q-card v-for="lesson in schoolLessonsGroupedByDay.get(WorkingDays[day])" class="q-mb-sm"
-                style="height: 12vh" @click="reRouteToLessonPage(lesson.id)">
-          <q-card-section>
-            Предмет:<span class="text-primary">
+                :class="lesson.taken ? 'bg-green-1' :''"
+                style="height: 15vh" @click="reRouteToLessonPage(lesson.id)">
+            <q-card-section>
+                Предмет:<span class="text-primary">
                       {{
-              lesson.subject.name
-            }}</span><br>
-            Учител:<span class="text-primary">
+                lesson.subject.name
+                }}</span><br>
+                Учител:<span class="text-primary">
                       {{ lesson.subject.teacher?.firstName }} {{ lesson.subject.teacher?.lastName }}</span>
-            <br>
-            Стая:<span class="text-primary">
-                      {{
-              lesson.room
-            }}
-                          </span>
-          </q-card-section>
+                <br>
+                Стая:<span class="text-primary">
+                      {{ lesson.room }}
+          </span>
+                <br>
+                Час на провеждане: <span class="text-primary">
+              {{ formatTime(lesson.startTimeOfLesson) }} - {{ formatTime(lesson.endTimeOfLesson) }}
+          </span>
+            </q-card-section>
         </q-card>
       </div>
     </div>
@@ -42,7 +45,7 @@ import {
     fetchWeeksForSchoolClassSchoolAndPeriod
 } from "../../services/RequestService";
 import {SchoolClass} from "../../model/SchoolClass";
-import {formatToBulgarian} from "../../utils";
+import {formatTime, formatToBulgarian} from "../../utils";
 import {WorkingDays, workingDaysTranslation} from "../../model/PlannedSchoolLesson";
 import {watch} from "vue";
 import {$ref} from "vue/macros";
