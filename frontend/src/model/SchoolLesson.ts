@@ -11,7 +11,7 @@ export interface SchoolLesson {
     subject: Subject,
     schoolClass: SchoolClass,
     lessonTopic: string | null
-    room: number,
+    room: string,
     taken: boolean
     week: number,
     semester: Semester,
@@ -20,6 +20,14 @@ export interface SchoolLesson {
     status: SchoolLessonStatus
 }
 
-enum SchoolLessonStatus {
-    FREE, NORMAL, SUBSTITUTION
+export enum SchoolLessonStatus {
+    FREE = "FREE",
+    NORMAL = "NORMAL",
+    SUBSTITUTION = "SUBSTITUTION"
+}
+
+export const translationOfSchoolLessonStatus = {
+    FREE: "Свободен час",
+    NORMAL: "Нормален",
+    SUBSTITUTION: "Заместник",
 }

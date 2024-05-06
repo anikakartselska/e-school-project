@@ -16,7 +16,7 @@ data class SchoolLesson(
     val teacher: UserView,
     val schoolClass: SchoolClass,
     val lessonTopic: String? = null,
-    val room: Int,
+    val room: String,
     val taken: Boolean = false,
     val week: Int,
     val semester: Semester,

@@ -2,6 +2,7 @@ package com.nevexis.backend.schoolManagement.school_lessons
 
 import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.BaseService
+import com.nevexis.backend.schoolManagement.school.SchoolService
 import com.nevexis.backend.schoolManagement.school_calendar.Calendar
 import com.nevexis.backend.schoolManagement.school_calendar.Shift
 import com.nevexis.backend.schoolManagement.school_class.SchoolClass
@@ -40,6 +41,9 @@ class SchoolLessonService : BaseService() {
     @Autowired
     private lateinit var userService: UserService
 
+    @Autowired
+    private lateinit var schoolService: SchoolService
+
     fun getSchoolLessonById(schoolLessonId: BigDecimal): SchoolLesson =
         db.selectFrom(SCHOOL_LESSON)
             .where(
@@ -63,6 +67,42 @@ class SchoolLessonService : BaseService() {
                 }
                 mapRecordToInternalModel(schoolLessonRecord, subject, schoolClass, teacher)
             } ?: throw SMSError("DATA_NOT_FOUND", "School lesson with id:${schoolLessonId} does not exist")
+
+    fun getAvailableRoomsForSchoolLesson(
+        schoolLesson: SchoolLesson,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ): List<String> {
+        val busyRooms = db.select(SCHOOL_LESSON.ROOM).from(SCHOOL_LESSON)
+            .where(SCHOOL_LESSON.SEMESTER.eq(schoolLesson.semester.name))
+            .and(SCHOOL_LESSON.WEEK.eq(schoolLesson.week.toBigDecimal())).and(SCHOOL_LESSON.SCHOOL_ID.eq(schoolId))
+            .and(SCHOOL_LESSON.SCHOOL_PERIOD_ID.eq(periodId))
+            .and(SCHOOL_LESSON.WORKING_HOUR.eq(Json.encodeToString(schoolLesson.workingDay)))
+            .fetchInto(String::class.java)
+        val allRooms = schoolService.getAllRoomsFromSchool(schoolId)
+        return (allRooms - busyRooms).distinct() + schoolLesson.room
+    }
+
+    fun getAvailableTeachersForSchoolLesson(
+        schoolLesson: SchoolLesson,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ): List<UserView> {
+        val busyTeachers = db.select(SCHOOL_LESSON.TEACHER_ID).from(SCHOOL_LESSON)
+            .where(SCHOOL_LESSON.SEMESTER.eq(schoolLesson.semester.name))
+            .and(SCHOOL_LESSON.WEEK.eq(schoolLesson.week.toBigDecimal())).and(SCHOOL_LESSON.SCHOOL_ID.eq(schoolId))
+            .and(SCHOOL_LESSON.SCHOOL_PERIOD_ID.eq(periodId))
+            .and(SCHOOL_LESSON.TEACHER_ID.notEqual(schoolLesson.teacher.id.toBigDecimal()))
+            .and(SCHOOL_LESSON.WORKING_HOUR.eq(Json.encodeToString(schoolLesson.workingDay)))
+            .fetchInto(BigDecimal::class.java)
+        val allTeachersQualified = userService.getAllApprovedTeachersFromSchool(schoolId, periodId).filter {
+            it.qualifiedSubjects.contains(schoolLesson.subject.name)
+        }
+        return allTeachersQualified.filter { !busyTeachers.contains(it.id.toBigDecimal()) }
+            .map {
+                userService.mapTeacherViewToUserView(it)
+            }
+    }
 
     fun updateSchoolLesson(schoolLesson: SchoolLesson) {
         db.selectFrom(SCHOOL_LESSON).where(SCHOOL_LESSON.ID.eq(schoolLesson.id)).fetchAny()
@@ -274,7 +314,7 @@ class SchoolLessonService : BaseService() {
         subject = subject,
         schoolClass = schoolClass,
         lessonTopic = it.lessonTopic,
-        room = it.room!!.toInt(),
+        room = it.room!!,
         taken = it.taken == "Y",
         week = it.week!!.toInt(),
         semester = Semester.valueOf(it.semester!!),

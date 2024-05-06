@@ -1,8 +1,10 @@
 package com.nevexis.backend.schoolManagement.school
 
 import com.nevexis.backend.schoolManagement.BaseService
+import com.nevexis.`demo-project`.jooq.tables.records.SchoolRecord
 import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jooq.DSLContext
 import org.springframework.stereotype.Service
@@ -14,11 +16,31 @@ class SchoolService : BaseService() {
     fun getAllSchools(): List<School> = db.selectFrom(SCHOOL).fetch().map { it.into(School::class.java) }
 
     fun getSchoolById(id: BigDecimal, dsl: DSLContext = db): School =
-        dsl.selectFrom(SCHOOL).where(SCHOOL.ID.eq(id)).fetchAny()?.into(School::class.java)
-            ?: error("School with id $id does not exist")
+        dsl.selectFrom(SCHOOL).where(SCHOOL.ID.eq(id)).fetchAny()?.into(SchoolRecord::class.java)?.map {
+            School(
+                id = (it as SchoolRecord).id!!.toInt(),
+                schoolName = it.schoolName!!,
+                city = it.city!!,
+                address = it.address!!,
+                rooms = Json.decodeFromString(it.rooms ?: "[]")
+            )
+        } ?: error("School with id $id does not exist")
 
     fun getAllRoomsFromSchool(schoolId: BigDecimal, dsl: DSLContext = db): List<String> = dsl.select(SCHOOL.ROOMS).from(
         SCHOOL
     ).where(SCHOOL.ID.eq(schoolId)).fetchAny().let { Json.decodeFromString(it!!.into(String::class.java)) }
+
+    fun updateSchool(school: School) {
+        db.selectFrom(SCHOOL)
+            .where(SCHOOL.ID.eq(school.id.toBigDecimal()))
+            .fetchAny()!!
+            .apply {
+                this.id = school.id.toBigDecimal()
+                this.schoolName = school.schoolName
+                this.city = school.city
+                this.address = school.address
+                this.rooms = Json.encodeToString(school.rooms)
+            }.update()
+    }
 
 }

@@ -24,5 +24,9 @@ export interface ShiftsForSemesters {
 }
 
 export enum Shift {
-    FIRST, SECOND
+    FIRST = "FIRST", SECOND = "SECOND"
+}
+
+export const shiftTranslation = {
+    FIRST: "Първа смяна", SECOND: "Втора смяна"
 }

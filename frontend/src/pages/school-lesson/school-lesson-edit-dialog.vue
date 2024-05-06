@@ -17,9 +17,16 @@
               updatedSchoolLesson?.subject?.name
             }}</span><br>
           </q-field>
-          <q-select v-model="updatedSchoolLesson.subject.teacher" :option-label="(option) => `${option.firstName} ${option.lastName}`" :options="teachers"
+          <q-select v-model="updatedSchoolLesson.subject.teacher"
+                    :option-label="(option) => `${option.firstName} ${option.lastName}`" :options="teachers"
                     class="text-black"
                     label="Преподавател"
+                    label-color="primary"/>
+          <q-select v-model="updatedSchoolLesson.status"
+                    :option-label="(option) => translationOfSchoolLessonStatus[option]"
+                    :options="Object.keys(SchoolLessonStatus)"
+                    class="text-black"
+                    label="Статус"
                     label-color="primary"/>
           <q-field label="Паралелка" stack-label><span class="text-black">{{
               updatedSchoolLesson?.schoolClass.name
@@ -46,7 +53,7 @@
               `${translationOfWorkingDays[updatedSchoolLesson?.workingDay.workingDays]} (${updatedSchoolLesson.workingDay.hour} час)`
             }}</span><br></q-field>
           <q-card-actions align="right">
-            <q-btn color="primary" label="Добави" @click="submit"/>
+            <q-btn color="primary" label="Редактирай" @click="submit"/>
             <q-btn class="q-ml-sm" color="primary" flat label="Отказ" @click="onDialogCancel"/>
           </q-card-actions>
         </q-form>
@@ -57,9 +64,10 @@
 
 <script lang="ts" setup>
 import {useDialogPluginComponent, useQuasar} from "quasar";
-import {SchoolLesson} from "../../model/SchoolLesson";
+import {SchoolLesson, SchoolLessonStatus, translationOfSchoolLessonStatus} from "../../model/SchoolLesson";
 import {$ref} from "vue/macros";
 import {dateTimeToBulgarianLocaleString, translationOfSemester, translationOfWorkingDays} from "../../utils";
+import {UserView} from "../../model/User";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
 const quasar = useQuasar()
@@ -67,9 +75,10 @@ defineEmits([...useDialogPluginComponent.emits])
 
 const props = defineProps<{
   schoolLesson: SchoolLesson,
+  rooms: string[],
+  teachers: UserView[]
 }>()
-const rooms = $ref(['111', '123', '144'])
-const teachers = $ref([])
+
 const updatedSchoolLesson = $ref({...props.schoolLesson})
 
 const submit = () => {

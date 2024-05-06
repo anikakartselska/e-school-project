@@ -28,6 +28,16 @@
                               :options="teacherOptions"
                               :rules="[val=>val !== null && val !== '' || 'Задължително поле']"
                               label="Класен ръководител"/>
+                    <q-select v-model="schoolClass.shifts.firstSemester"
+                              :option-label="(option:Shift) => shiftTranslation[option]"
+                              :options="Object.keys(Shift)"
+                              :rules="[val=>val !== null && val !== '' || 'Задължително поле']"
+                              label="Смяна първи срок"/>
+                    <q-select v-model="schoolClass.shifts.secondSemester"
+                              :option-label="(option:Shift) => shiftTranslation[option]"
+                              :options="Object.keys(Shift)"
+                              :rules="[val=>val !== null && val !== '' || 'Задължително поле']"
+                              label="Смяна втори срок"/>
                     <single-file-picker
                             v-model="studentsFromSchoolFile"
                             accept-file-format=".xlsx"
@@ -47,7 +57,7 @@
 
 <script lang="ts" setup>
 import {$ref} from "vue/macros";
-import {SchoolClass} from "../../model/SchoolClass";
+import {SchoolClass, Shift, shiftTranslation} from "../../model/SchoolClass";
 import {UserView} from "../../model/User";
 import {useDialogPluginComponent, useQuasar} from "quasar";
 import {getRangeOf} from "../../utils";
@@ -63,7 +73,7 @@ const props = defineProps<{
     teacherOptions: UserView[]
 }>()
 
-const schoolClass = $ref(props.schoolClass)
+const schoolClass = $ref({...props.schoolClass, shifts: {firstSemester: Shift.FIRST, secondSemester: Shift.FIRST}})
 const classNumber = $ref<number | null>(null)
 const schoolClassesNumberOptions = getRangeOf(12, 1, -1).map(it => it.toString())
 const classAlpha = $ref<string | null>(null)

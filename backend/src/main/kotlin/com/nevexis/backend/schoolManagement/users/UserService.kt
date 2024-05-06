@@ -3,9 +3,11 @@ package com.nevexis.backend.schoolManagement.users
 import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.requests.RequestService
 import com.nevexis.backend.schoolManagement.requests.RequestStatus
+import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
 import com.nevexis.`demo-project`.jooq.tables.records.UserRecord
 import com.nevexis.`demo-project`.jooq.tables.references.*
 import org.jooq.DSLContext
+import org.jooq.Record
 import org.jooq.impl.DSL
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
@@ -107,18 +109,24 @@ class UserService : UserBaseService() {
             )
         ).fetch().map {
             val schoolUserRole = schoolUserRolesService.mapToModel(it)
-            it.into(UserRecord::class.java).let { userRecord ->
-                TeacherView(
-                    id = userRecord.id!!.toInt(),
-                    email = userRecord.email!!,
-                    firstName = userRecord.firstName!!,
-                    middleName = userRecord.middleName!!,
-                    lastName = userRecord.lastName!!,
-                    username = userRecord.username!!,
-                    qualifiedSubjects = (schoolUserRole.detailsForUser as DetailsForUser.DetailsForTeacher).qualifiedSubjects.toSet()
-                )
-            }
+            mapUserRecordToTeacherView(it, schoolUserRole)
         }.distinctBy { it.id }
+    }
+
+    private fun mapUserRecordToTeacherView(
+        it: Record,
+        schoolUserRole: SchoolUserRole
+    ) = it.into(UserRecord::class.java).let { userRecord ->
+        TeacherView(
+            id = userRecord.id!!.toInt(),
+            email = userRecord.email!!,
+            firstName = userRecord.firstName!!,
+            middleName = userRecord.middleName!!,
+            lastName = userRecord.lastName!!,
+            username = userRecord.username!!,
+            qualifiedSubjects = (schoolUserRole.detailsForUser as DetailsForUser.DetailsForTeacher).qualifiedSubjects.toSet()
+        )
+
     }
 
     fun getAllTeachersWhichDoNotHaveSchoolClassForSchoolAndPeriod(schoolId: BigDecimal, periodId: BigDecimal) =

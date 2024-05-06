@@ -89,7 +89,7 @@ import {fetchSchoolCalendarForSchoolAndPeriod, saveCalendarChanges} from "../../
 import {formatToBulgarian, formatWithDash, getDatesInRange, getRangeOf, isDateInRange} from "../../utils";
 import {watch} from "vue";
 import {date, useQuasar} from "quasar";
-import CalendarEditDialog from "./calendar-dialogs/calendar-edit-dialog.vue";
+import CalendarEditDialog from "./dialogs/calendar-edit-dialog.vue";
 import {Calendar} from "../../model/Calendar";
 
 const props = defineProps<{

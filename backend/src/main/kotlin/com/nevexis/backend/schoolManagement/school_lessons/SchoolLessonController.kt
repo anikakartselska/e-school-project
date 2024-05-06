@@ -24,6 +24,20 @@ class SchoolLessonController {
         periodId
     )
 
+    @PostMapping("/fetch-available-rooms-for-school-lesson")
+    fun fetchAvailableRoomsForSchoolLesson(
+        @RequestBody schoolLesson: SchoolLesson,
+        @RequestParam schoolId: BigDecimal,
+        @RequestParam periodId: BigDecimal
+    ) = schoolLessonService.getAvailableRoomsForSchoolLesson(schoolLesson, schoolId, periodId)
+
+    @PostMapping("/fetch-available-teachers-for-school-lesson")
+    fun fetchAvailableTeachersForSchoolLesson(
+        @RequestBody schoolLesson: SchoolLesson,
+        @RequestParam schoolId: BigDecimal,
+        @RequestParam periodId: BigDecimal
+    ) = schoolLessonService.getAvailableTeachersForSchoolLesson(schoolLesson, schoolId, periodId)
+
     @GetMapping("/fetch-school-lessons-for-teacher-week-school-and-period")
     suspend fun fetchSchoolLessonsForTeacherWeekSchoolAndPeriod(
         @RequestParam teacherId: BigDecimal,

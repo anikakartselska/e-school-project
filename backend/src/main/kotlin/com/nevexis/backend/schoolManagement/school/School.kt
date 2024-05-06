@@ -8,5 +8,6 @@ data class School(
     val id: Int,
     val schoolName: String,
     val city: String,
-    val address: String
+    val address: String,
+    val rooms: List<String>? = null
 )

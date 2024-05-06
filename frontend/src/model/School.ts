@@ -3,4 +3,5 @@ export interface School {
     schoolName: string,
     city: string,
     address: string
+    rooms: string[] | null
 }

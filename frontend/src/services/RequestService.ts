@@ -14,6 +14,7 @@ import {Calendar, Week} from "../model/Calendar";
 import {PlannedSchoolLesson} from "../model/PlannedSchoolLesson";
 import {SchoolLesson} from "../model/SchoolLesson";
 import {SubjectAndClassesCount} from "../model/SubjectAndClassesCount";
+import {SchoolPlanForClasses} from "../model/SchoolPlanForClasses";
 
 export const login = async (email: string, password: string): Promise<AxiosResponse> =>
         await axios.post<string>(`/authenticate`, {username: email, password}, {
@@ -368,6 +369,13 @@ export const getPlanForSchoolClass = async (schoolClass): Promise<SubjectAndClas
             headers: {'Content-Type': 'application/json'}
         }).then(p => p.data)
 
+
+export const fetchAllSchoolPlansForSchool = async (schoolId): Promise<SchoolPlanForClasses[]> =>
+        await api.get<SchoolPlanForClasses[]>('/fetch-all-school-plans-for-school', {
+            params: {schoolId: schoolId},
+            headers: {'Content-Type': 'application/json'}
+        }).then(p => p.data)
+
 export const saveCalendarChanges = async (calendar, schoolId, periodId): Promise<Calendar> =>
         await api.post<Calendar>('/update-calendar', calendar, {
             params: {
@@ -377,6 +385,41 @@ export const saveCalendarChanges = async (calendar, schoolId, periodId): Promise
             headers: {'Content-Type': 'application/json'}
         }).then(p => p.data)
 
+export const fetchAllSchoolClassesFromSchoolAndPeriodWithoutPlans = async (schoolId, periodId): Promise<SchoolClass[]> =>
+        await api.get<SchoolClass[]>('/fetch-all-school-classes-from-school-and-period-without-plans', {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId
+            },
+            headers: {'Content-Type': 'application/json'}
+        }).then(p => p.data)
+
+export const fetchAvailableRoomsForSchoolLesson = async (schoolLesson,
+                                                         schoolId,
+                                                         periodId): Promise<string[]> =>
+        await api.post<string[]>('/fetch-available-rooms-for-school-lesson', schoolLesson, {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId
+            },
+            headers: {'Content-Type': 'application/json'}
+        }).then(p => p.data)
+
+export const updateSchool = async (school: School): Promise<any> =>
+        await api.post<any>('/update-school', school, {
+            headers: {'Content-Type': 'application/json'}
+        }).then(p => p.data)
+
+export const fetchAvailableTeachersForSchoolLesson = async (schoolLesson,
+                                                            schoolId,
+                                                            periodId): Promise<UserView[]> =>
+        await api.post<UserView[]>('/fetch-available-teachers-for-school-lesson', schoolLesson, {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId
+            },
+            headers: {'Content-Type': 'application/json'}
+        }).then(p => p.data)
 
 export const fetchSchoolWeeksForSchoolClass = async (schoolClassName, schoolId,
                                                      periodId): Promise<number> =>
@@ -449,3 +492,12 @@ export const fetchSchoolLessonById = async (schoolLessonId): Promise<SchoolLesso
                 schoolLessonId: schoolLessonId
             }
         }).then(p => p.data)
+
+export const fetchSchoolById = async (schoolId): Promise<School> =>
+        await api.get<School>('get-school-by-id', {
+            params: {
+                schoolId: schoolId
+            }
+        }).then(p => p.data)
+
+

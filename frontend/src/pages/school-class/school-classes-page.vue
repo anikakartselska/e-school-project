@@ -31,8 +31,8 @@
             </q-td>
         </template>
           <template v-slot:top-right="props">
-              <q-btn class="q-ml-md" color="primary" icon="person_add" outline round @click="addNewSchoolClass">
-                  <q-tooltip>Добави нов</q-tooltip>
+              <q-btn class="q-ml-md" color="primary" icon="add" outline round @click="addNewSchoolClass">
+                <q-tooltip>Добави нов</q-tooltip>
               </q-btn>
               <q-input v-model="filter" debounce="300" dense outlined placeholder="Търсене">
                   <template v-slot:append>

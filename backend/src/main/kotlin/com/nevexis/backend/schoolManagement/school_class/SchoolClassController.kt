@@ -34,6 +34,15 @@ class SchoolClassController {
         return userService.getAllStudentsInSchoolClass(schoolClassId, periodId)
     }
 
+    @GetMapping("/fetch-all-school-classes-from-school-and-period-without-plans")
+    fun fetchAllSchoolClassesFromSchoolAndPeriodWithoutPlans(
+        @RequestParam schoolId: BigDecimal,
+        @RequestParam periodId: BigDecimal
+    ): List<SchoolClass> {
+        return schoolClassService.getAllSchoolClassesFromSchoolAndPeriodWithoutPlans(schoolId, periodId)
+    }
+
+
     @GetMapping("/get-school-class-by-id")
     fun getSchoolClassById(
         @RequestParam schoolClassId: BigDecimal,

@@ -13,6 +13,7 @@ import com.nevexis.backend.schoolManagement.users.roles.SchoolRolesService
 import com.nevexis.`demo-project`.jooq.tables.records.SchoolClassRecord
 import com.nevexis.`demo-project`.jooq.tables.references.*
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jooq.DSLContext
 import org.jooq.Record
@@ -62,6 +63,7 @@ class SchoolClassService : BaseService() {
                             schoolClass.schoolPeriodId.toBigDecimal(),
                             schoolClass.schoolId.toBigDecimal()
                         )
+                    shifts = Json.encodeToString(schoolClass.shifts)
                 }.store()
             if (studentsFromClassFile != null) {
                 importService.createRequestsFromUsersExcel(
@@ -120,21 +122,40 @@ class SchoolClassService : BaseService() {
                 mapRecordToInternalModel(it)
             }
 
+    fun getSchoolClassesWithSchoolPlanId(schoolPlanId: BigDecimal, dsl: DSLContext = db): List<SchoolClass> =
+        schoolClassRecordSelectOnConditionStep(dsl)
+            .where(SCHOOL_CLASS.PLAN_ID.eq(schoolPlanId))
+            .orderBy(SCHOOL_CLASS.NAME)
+            .fetch().map {
+                mapRecordToInternalModel(it)
+            }
+
 
     fun getAllSchoolClassesFromSchoolAndPeriod(schoolId: BigDecimal, periodId: BigDecimal) =
         schoolClassRecordSelectOnConditionStep().where(
             SCHOOL_CLASS.SCHOOL_PERIOD_ID.eq(periodId).and(SCHOOL_CLASS.SCHOOL_ID.eq(schoolId))
         )
-            .orderBy(SCHOOL_CLASS.NAME).map {
+            .orderBy(SCHOOL_CLASS.NAME).fetch().map {
+                mapRecordToInternalModel(it)
+            }
+
+    fun getAllSchoolClassesFromSchoolAndPeriodWithoutPlans(schoolId: BigDecimal, periodId: BigDecimal) =
+        schoolClassRecordSelectOnConditionStep().where(
+            SCHOOL_CLASS.SCHOOL_PERIOD_ID.eq(periodId).and(SCHOOL_CLASS.SCHOOL_ID.eq(schoolId))
+        ).and(SCHOOL_CLASS.PLAN_ID.isNull)
+            .orderBy(SCHOOL_CLASS.NAME)
+            .fetch()
+            .map {
                 mapRecordToInternalModel(it)
             }
 
     fun getAllSchoolClassesFromSchoolAndPeriodWithPlans(schoolId: BigDecimal, periodId: BigDecimal) =
         schoolClassRecordSelectOnConditionStepJoinedWithPlan().where(
             SCHOOL_CLASS.SCHOOL_PERIOD_ID.eq(periodId).and(SCHOOL_CLASS.SCHOOL_ID.eq(schoolId))
-        ).map {
-            mapRecordToInternalModelWithPlan(it)
-        }
+        ).fetch()
+            .map {
+                mapRecordToInternalModelWithPlan(it)
+            }
 
     fun fetchPlanForSchoolClass(schoolClass: SchoolClass): List<SubjectAndClassesCount> {
         val calendar =

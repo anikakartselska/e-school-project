@@ -182,4 +182,15 @@ class UserBaseService : BaseService() {
         .leftJoin(SCHOOL_USER_PERIOD).on(SCHOOL_USER_PERIOD.ID.eq(SCHOOL_USER.ID))
         .leftJoin(SCHOOL_ROLE_PERIOD).on(SCHOOL_ROLE_PERIOD.SCHOOL_USER_ROLE_ID.eq(SCHOOL_USER_ROLE.ID))
         .leftJoin(SCHOOL_PERIOD).on(SCHOOL_PERIOD.ID.eq(SCHOOL_ROLE_PERIOD.PERIOD_ID))
+
+    fun mapTeacherViewToUserView(teacherView: TeacherView) = UserView(
+        id = teacherView.id,
+        email = teacherView.email,
+        firstName = teacherView.firstName,
+        middleName = teacherView.middleName,
+        lastName = teacherView.lastName,
+        username = teacherView.username,
+        roles = listOf(SchoolRole.TEACHER),
+        status = RequestStatus.APPROVED,
+    )
 }
