@@ -4,13 +4,20 @@
       <q-table
               :columns="columns"
               :pagination="{rowsPerPage:20}"
-              :rows="schoolClassPlan"
+              :rows="subjectToClassesCount"
               no-data-label="Няма данни в таблицата"
               no-results-label="Няма резултати от вашето търсене"
               row-key="id"
               rows-per-page-label="Редове на страница"
               title="Учебни предмети, седмичен и годишен брой на учебните часове"
       >
+          <template v-slot:top-left>
+              <div class="text-h6">Учебни предмети, седмичен и годишен брой на учебните часове</div>
+              <div class="text-h6">
+                  <span class="text-primary">Име на учебния план: </span>
+                  {{ schoolClassPlan?.name }}
+              </div>
+          </template>
       </q-table>
     </q-card>
   </q-page>
@@ -33,8 +40,8 @@ const props = defineProps<{
 const router = useRouter()
 const quasar = useQuasar()
 let schoolClassPlan = $ref(await getPlanForSchoolClass(props.schoolClass))
+let subjectToClassesCount = schoolClassPlan?.subjectAndClassesCount ? schoolClassPlan?.subjectAndClassesCount : []
 const weeksCount = await fetchSchoolWeeksForSchoolClass(props.schoolClass.name, props.schoolId, props.periodId)
-
 
 const columns = $computed(() => [
   {

@@ -13,16 +13,16 @@
       </q-card-section>
       <q-card-section>
         <q-form class="q-gutter-md" @submit="submit()">
-          <q-input v-model="newOrUpdatedSchoolClassPlan.name"
+          <q-select v-model="newOrUpdatedSubjectAndClassesCount.subjectName"
+                    :disable="subjectAndClassesCount!=null"
+                    :options="subjectOptions"
+                    :rules="[val=>val !== null && val !== '' || 'Задължително поле']"
+                    label="Предмет"/>
+          <q-input v-model="newOrUpdatedSubjectAndClassesCount.classesPerWeek"
                    :rules="[val=>val !== null && val !== '' || 'Задължително поле']"
-                   label="Име"
-                   reactive-rules/>
-          <q-select v-model="newOrUpdatedSchoolClassPlan.schoolClassesWithTheSchoolPlan"
-                    :option-label="(option:SchoolClass) => `${option.name}`"
-                    :options="schoolClassesOptions"
-                    label="Класове, учещи по програмата"
-                    multiple
-                    use-chips/>
+                   label="Часове на седмица"
+                   reactive-rules
+                   type="number"/>
           <q-card-actions align="right">
             <q-btn color="primary" label="Готово" @click="submit"/>
             <q-btn class="q-ml-sm" color="primary" flat label="Отказ" @click="onDialogCancel"/>
@@ -36,27 +36,25 @@
 <script lang="ts" setup>
 import {$ref} from "vue/macros";
 import {useDialogPluginComponent, useQuasar} from "quasar";
-import {SchoolClass} from "../../../model/SchoolClass";
-import {SchoolPlanForClasses} from "../../../model/SchoolPlanForClasses";
+import {SubjectAndClassesCount} from "../../../model/SubjectAndClassesCount";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
 const quasar = useQuasar()
 defineEmits([...useDialogPluginComponent.emits])
 
 const props = defineProps<{
-  schoolClassesWithoutPrograms: SchoolClass[],
-  schoolClassPlan: SchoolPlanForClasses | null
+  subjectAndClassesCount: SubjectAndClassesCount | null,
+  subjects: string[]
   title: string
 }>()
 
-const newOrUpdatedSchoolClassPlan: SchoolPlanForClasses = $ref(props.schoolClassPlan ? props.schoolClassPlan : <SchoolPlanForClasses><unknown>{
-    schoolClassesWithTheSchoolPlan: [],
-    subjectAndClassesCount: []
+const newOrUpdatedSubjectAndClassesCount: SubjectAndClassesCount = $ref(props.subjectAndClassesCount ? {...props.subjectAndClassesCount} : <SubjectAndClassesCount><unknown>{
+  classesPerSchoolYear: 0
 })
-const schoolClassesOptions = [...props.schoolClassesWithoutPrograms].concat(props.schoolClassPlan?.schoolClassesWithTheSchoolPlan ? props.schoolClassPlan?.schoolClassesWithTheSchoolPlan : [])
+const subjectOptions = [...props.subjects].concat(props.subjectAndClassesCount?.subjectName ? props.subjectAndClassesCount?.subjectName : [])
 const submit = () => {
   onDialogOK({
-    item: newOrUpdatedSchoolClassPlan
+    item: newOrUpdatedSubjectAndClassesCount
   })
 }
 </script>

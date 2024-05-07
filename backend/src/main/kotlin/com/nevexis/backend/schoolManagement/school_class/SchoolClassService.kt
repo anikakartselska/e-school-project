@@ -4,8 +4,7 @@ import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.data_import.ImportService
 import com.nevexis.backend.schoolManagement.requests.RequestStatus
-import com.nevexis.backend.schoolManagement.school_calendar.CalendarService
-import com.nevexis.backend.schoolManagement.school_schedule.SubjectAndClassesCount
+import com.nevexis.backend.schoolManagement.school_plan.SchoolPlanForClasses
 import com.nevexis.backend.schoolManagement.users.SchoolRole
 import com.nevexis.backend.schoolManagement.users.UserService
 import com.nevexis.backend.schoolManagement.users.UserView
@@ -34,8 +33,6 @@ class SchoolClassService : BaseService() {
     @Lazy
     private lateinit var schoolRolesService: SchoolRolesService
 
-    @Autowired
-    private lateinit var calendarService: CalendarService
 
     @Autowired
     @Lazy
@@ -157,29 +154,37 @@ class SchoolClassService : BaseService() {
                 mapRecordToInternalModelWithPlan(it)
             }
 
-    fun fetchPlanForSchoolClass(schoolClass: SchoolClass): List<SubjectAndClassesCount> {
-        val calendar =
-            calendarService.getSchoolCalendarForSchoolAndPeriod(
-                schoolClass.schoolId.toBigDecimal(),
-                schoolClass.schoolPeriodId.toBigDecimal()
-            )
-        return (db.select(SCHOOL_CLASS.PLAN_ID, SCHOOL_PLAN_FOR_CLASSES.asterisk())
-            .from(SCHOOL_PLAN_FOR_CLASSES)
-            .leftJoin(SCHOOL_CLASS).on(SCHOOL_CLASS.PLAN_ID.eq(SCHOOL_PLAN_FOR_CLASSES.ID))
-            .where(SCHOOL_CLASS.ID.eq(schoolClass.id?.toBigDecimal()))
-            .fetchAny()?.map { Json.decodeFromString<Map<String, Int>>(it.get(SCHOOL_PLAN_FOR_CLASSES.PLAN)!!) }
-            ?: emptyMap())
-            .map { (subject, classesCount) ->
-                SubjectAndClassesCount(
-                    subject,
-                    classesCount,
-                    classesCount * (calendar?.let {
-                        (it.firstSemesterWeeksCount
-                            ?: 0) + (it.classToSecondSemesterWeeksCount[schoolClass.name.dropLast(
-                            1
-                        ).toInt()] ?: 0)
-                    } ?: 0)
-                )
+
+    fun updateSchoolClassesProgram(
+        schoolClassPlanForClasses: SchoolPlanForClasses,
+        schoolId: BigDecimal,
+        periodId: BigDecimal,
+        dsl: DSLContext
+    ) {
+        val schoolClassesIds = schoolClassPlanForClasses.schoolClassesWithTheSchoolPlan.map { it.id }
+        dsl.selectFrom(SCHOOL_CLASS)
+            .where(SCHOOL_CLASS.PLAN_ID.eq(schoolClassPlanForClasses.id?.toBigDecimal()).let {
+                if (schoolClassesIds.isNotEmpty()) {
+                    it.or(SCHOOL_CLASS.ID.`in`(schoolClassesIds.map { it?.toBigDecimal() }))
+                } else {
+                    it
+                }
+            })
+            .and(SCHOOL_CLASS.SCHOOL_ID.eq(schoolId).and(SCHOOL_CLASS.SCHOOL_PERIOD_ID.eq(periodId)))
+
+            .fetch()
+            .map {
+                if (schoolClassesIds.contains(it.id?.toInt())) {
+                    it.apply {
+                        planId = schoolClassPlanForClasses.id?.toBigDecimal()
+                    }
+                } else {
+                    it.apply {
+                        planId = null
+                    }
+                }
+            }.also {
+                dsl.batchUpdate(it).execute()
             }
     }
 

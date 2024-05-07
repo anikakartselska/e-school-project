@@ -13,7 +13,6 @@ import {StudentWithEvaluationDTO} from "../model/StudentWithEvaluationDTO";
 import {Calendar, Week} from "../model/Calendar";
 import {PlannedSchoolLesson} from "../model/PlannedSchoolLesson";
 import {SchoolLesson} from "../model/SchoolLesson";
-import {SubjectAndClassesCount} from "../model/SubjectAndClassesCount";
 import {SchoolPlanForClasses} from "../model/SchoolPlanForClasses";
 
 export const login = async (email: string, password: string): Promise<AxiosResponse> =>
@@ -103,8 +102,8 @@ export const getAllSchoolPeriods = async (): Promise<SchoolPeriod[]> =>
 export const getAllSchoolPeriodsWithTheSchoolsTheyAreStarted = async (): Promise<SchoolPeriodWithSchoolIds[]> =>
         await auth.get<SchoolPeriodWithSchoolIds[]>('/get-all-school-periods-with-school-ids').then(p => p.data)
 
-export const getAllSubjects = async (): Promise<String[]> =>
-        await auth.get<String[]>('/get-all-subjects').then(p => p.data)
+export const getAllSubjects = async (): Promise<string[]> =>
+        await auth.get<string[]>('/get-all-subjects').then(p => p.data)
 
 export const findStudentByPhoneNumberPeriodAndSchoolClass = async (phoneNumber,
                                                                    periodId,
@@ -364,8 +363,8 @@ export const fetchStudentById = async (studentId,
             }
         }).then(p => p.data)
 
-export const getPlanForSchoolClass = async (schoolClass): Promise<SubjectAndClassesCount[]> =>
-        await api.post<SubjectAndClassesCount[]>('/get-plan-for-school-class', schoolClass, {
+export const getPlanForSchoolClass = async (schoolClass): Promise<SchoolPlanForClasses | null> =>
+        await api.post<SchoolPlanForClasses | null>('/get-plan-for-school-class', schoolClass, {
             headers: {'Content-Type': 'application/json'}
         }).then(p => p.data)
 
@@ -405,6 +404,29 @@ export const fetchAvailableRoomsForSchoolLesson = async (schoolLesson,
             headers: {'Content-Type': 'application/json'}
         }).then(p => p.data)
 
+export const mergeSchoolPlansForClasses = async (schoolPlanForClasses,
+                                                 schoolId,
+                                                 periodId): Promise<SchoolPlanForClasses> =>
+        await api.post<SchoolPlanForClasses>('/merge-school-plans-for-classes', schoolPlanForClasses, {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId
+            },
+            headers: {'Content-Type': 'application/json'}
+        }).then(p => p.data)
+
+
+export const deleteSchoolPlansForClasses = async (schoolPlanForClasses,
+                                                  schoolId,
+                                                  periodId): Promise<any> =>
+        await api.post<any>('/delete-school-plans-for-classes', schoolPlanForClasses, {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId
+            },
+            headers: {'Content-Type': 'application/json'}
+        }).then(p => p.data)
+
 export const updateSchool = async (school: School): Promise<any> =>
         await api.post<any>('/update-school', school, {
             headers: {'Content-Type': 'application/json'}
@@ -435,6 +457,15 @@ export const fetchSchoolCalendarForSchoolAndPeriod = async (schoolId,
                                                             periodId): Promise<Calendar> =>
         await api.get<Calendar>('/fetch-school-calendar-for-school-and-period', {
             params: {
+                schoolId: schoolId,
+                periodId: periodId
+            }
+        }).then(p => p.data)
+
+export const fetchPlanById = async (planForClassesId, schoolId, periodId): Promise<SchoolPlanForClasses> =>
+        await api.get<SchoolPlanForClasses>('/fetch-plan-by-id', {
+            params: {
+                planForClassesId: planForClassesId,
                 schoolId: schoolId,
                 periodId: periodId
             }

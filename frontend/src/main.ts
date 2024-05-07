@@ -4,6 +4,7 @@ import "quasar/dist/quasar.prod.css";
 import App from './App.vue'
 import {Dialog, Notify, Quasar} from "quasar";
 import {router} from "./router";
+import VueQrcode from 'qrcode';
 
 createApp(App)
         .use(Quasar, {
@@ -19,5 +20,6 @@ createApp(App)
                 }
             }
         })
+        .component(VueQrcode.name, VueQrcode)
         .use(router)
         .mount("#app");

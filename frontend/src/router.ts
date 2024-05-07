@@ -39,6 +39,7 @@ import SchoolLessonInformation from "./pages/school-lesson/school-lesson-informa
 import SchoolClassPlanTab from "./pages/school-class/school-class-plan-tab.vue";
 import SchoolPage from "./pages/administration/school-page.vue";
 import SchoolClassesPlansPage from "./pages/administration/school-classes-plans-page.vue";
+import SchoolClassesPlanPage from "./pages/administration/school-classes-plan-page.vue";
 
 const routes = [
     {
@@ -100,7 +101,13 @@ const routes = [
                 props: true
             },
             {
-                path: '/school-classes-plans/:schoolId(\\d+)',
+                path: '/school-class-plan/:schoolId(\\d+)/:periodId(\\d+)/:schoolPlanId(\\d+)',
+                name: 'school-class-plan',
+                component: SchoolClassesPlanPage,
+                props: true
+            },
+            {
+                path: '/school-classes-plans/:schoolId(\\d+)/:periodId(\\d+)',
                 name: 'school-class-plans',
                 component: SchoolClassesPlansPage,
                 props: true

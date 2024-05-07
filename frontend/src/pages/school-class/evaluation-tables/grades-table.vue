@@ -1,15 +1,14 @@
 <template>
-    <q-table
-            :columns="columns"
-            :rows="rows"
-            hide-pagination
-            no-data-label="Няма данни в таблицата"
-            no-results-label="Няма резултати от вашето търсене"
-            :pagination="{rowsPerPage:20}"
-            row-key="id"
-            separator="cell"
-            title="Оценки"
-            virtual-scroll
+    <q-table :columns="columns"
+             :pagination="{rowsPerPage:20}"
+             :rows="rows"
+             hide-pagination
+             no-data-label="Няма данни в таблицата"
+             no-results-label="Няма резултати от вашето търсене"
+             row-key="id"
+             separator="cell"
+             title="Оценки"
+             virtual-scroll
     >
         <template v-slot:header-cell-average="props">
             <q-th>
@@ -78,16 +77,16 @@
         <template v-for="column in columns.slice(3,columns.length)" :key="column.name"
                   v-slot:[`body-cell-${column.name}`]="props">
             <q-td :props="props">
-              <div v-if="props.row.student?.firstName=== undefined" class="row">
-                <div v-if="semester !== Semester.YEARLY" class="col-8"/>
-                <q-separator v-if="semester !== Semester.YEARLY" vertical/>
-                <div v-if="semester !== Semester.YEARLY" class="col-2">
-                  <q-btn v-if="!isNaN(props.row[column.name]?.first)"
-                         :class="`q-ma-xs ${getAverageGradeColorClass(props.row[column.name]?.first)}`"
-                         :label="props.row[column.name]?.first ? props.row[column.name]?.first : ''"
-                         flat
-                         rounded>
-                    <q-tooltip>
+                <div v-if="props.row.student?.firstName=== undefined" class="row">
+                    <div v-if="semester !== Semester.YEARLY" class="col-8"/>
+                    <q-separator v-if="semester !== Semester.YEARLY" vertical/>
+                    <div v-if="semester !== Semester.YEARLY" class="col-2">
+                        <q-btn v-if="!isNaN(props.row[column.name]?.first)"
+                               :class="`q-ma-xs ${getAverageGradeColorClass(props.row[column.name]?.first)}`"
+                               :label="props.row[column.name]?.first ? props.row[column.name]?.first : ''"
+                               flat
+                               rounded>
+                            <q-tooltip>
                                 Средноаритметична оценка
                             </q-tooltip>
                         </q-btn>
@@ -172,6 +171,7 @@ import {Evaluation} from "../../../model/Evaluation";
 import {StudentView} from "../../../model/User";
 import {Subject} from "../../../model/Subject";
 import {Semester} from "../../../model/SchoolPeriod";
+import html2pdf from "html2pdf.js";
 
 const props = defineProps<{
     students: StudentView[],
@@ -180,6 +180,13 @@ const props = defineProps<{
     semester: Semester
 }>()
 
+const exportToPDF = () => {
+    html2pdf(document.getElementById("test"), {
+        margin: 1,
+        filename: "i-was-html.pdf",
+        jsPDF: {unit: 'in', format: 'letter', orientation: 'portrait'}
+    });
+}
 const rows = props.students.map(student => {
             const object = {student: student, numberInClass: student.numberInClass}
             const evaluations = props.subjects.map(subject =>

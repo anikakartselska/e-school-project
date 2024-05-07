@@ -62,10 +62,6 @@ class SchoolClassController {
         principal.name.toBigDecimal()
     )
 
-    @PostMapping("/get-plan-for-school-class")
-    fun getPlanForSchoolClass(@RequestBody schoolClass: SchoolClass) =
-        schoolClassService.fetchPlanForSchoolClass(schoolClass)
-
     @PostMapping("/sync-numbers-in-class")
     suspend fun syncNumbersInClass(@RequestParam schoolClassId: BigDecimal, @RequestParam periodId: BigDecimal) =
         schoolClassService.synchronizeNumbersInClass(schoolClassId, periodId)
