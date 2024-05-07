@@ -235,7 +235,8 @@ class SchoolClassService : BaseService() {
 
     fun mapRecordToInternalModelWithPlan(it: Record): SchoolClassWithPlan {
         val role = SchoolRole.valueOf(it.get(SCHOOL_USER_ROLE.ROLE)!!)
-        val plan = Json.decodeFromString<Map<String, Int>>(it.get(SCHOOL_PLAN_FOR_CLASSES.PLAN)!!)
+        val plan =
+            it.get(SCHOOL_PLAN_FOR_CLASSES.PLAN)?.let { Json.decodeFromString<Map<String, Int>>(it) } ?: emptyMap()
         return it.into(SchoolClassRecord::class.java).mapToInternalModelWithPlan(
             mainTeacher = userService.mapToUserView(it, listOf(role)),
             plan = plan

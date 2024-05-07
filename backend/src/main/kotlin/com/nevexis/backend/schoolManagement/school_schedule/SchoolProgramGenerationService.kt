@@ -5,6 +5,8 @@ import com.nevexis.backend.schoolManagement.school_class.SchoolClassWithPlan
 import com.nevexis.backend.schoolManagement.users.TeacherView
 import org.springframework.stereotype.Service
 import java.util.stream.Collectors
+import kotlin.math.ceil
+import kotlin.math.floor
 import kotlin.random.Random
 
 @Service
@@ -39,18 +41,13 @@ class SchoolProgramGenerationService : BaseService() {
         val subjectToTeachersTeachingIt = subjects.associateWith { subject ->
             teachersList.filter { teacher -> teacher.qualifiedSubjects.contains(subject) }
         }
-        val subjectsToMaxCountLessons = subjects.associateWith { subject ->
-            schoolClasses.mapNotNull { it.plan[subject] }.sum()
-        }
-        val tt = subjectsToMaxCountLessons.values.sum() / 3
-        require(
-            subjects.find { (subjectsToMaxCountLessons[it]!! / subjectToTeachersTeachingIt[it]!!.size) > tt } == null
-        ) {
-            println("test")
-        }
+
+        val days = WorkingDays.values().toMutableList()
+
         return schoolClasses.asSequence().map { schoolClass ->
             val allSubjectHoursCount = schoolClass.plan.values.sum()
-            val maxClassesADay = kotlin.math.ceil(allSubjectHoursCount / 5.0).toInt()
+            val maxClassesADay = kotlin.math.floor(allSubjectHoursCount / 5.0).toInt() + 1
+            val left = allSubjectHoursCount % 5
             val busySubjects = schoolClass.plan.toMutableMap()
             val workingHoursList = WorkingDays.values().map { workingDay ->
                 (1..maxClassesADay).toList().map { hour ->
@@ -59,7 +56,19 @@ class SchoolProgramGenerationService : BaseService() {
                         hour
                     )
                 }
-            }.flatten().toMutableList()
+            }.flatten().let {
+                val randomDay = customNextInt(1, days.size)
+                it.plus(
+                    (1..left).toList().map {
+                        WorkingHour(
+                            days[randomDay],
+                            maxClassesADay + 1
+                        )
+                    }
+                ).also {
+                    days.removeAt(randomDay)
+                }
+            }.toMutableList()
             val subjectToTeacherView =
                 subjectToTeachersTeachingIt.mapValues { (_, values) -> values[customNextInt(0, values.size - 1)] }
 
@@ -113,6 +122,15 @@ class SchoolProgramGenerationService : BaseService() {
                         }
                     }
                 }.flatten().sum()
+
+        val countOfClassesPerDay = schoolLessonsGroupedBySchoolClassAndDay.map { (key, values) ->
+            val averageClassesPerDay = key.first.plan.values.sum() / 5.0
+            if (listOf(ceil(averageClassesPerDay), floor(averageClassesPerDay)).contains(values.size.toDouble())) {
+                0
+            } else {
+                1
+            }
+        }.sum()
 //        schoolLessonsGroupedBySchoolClassAndSubject.mapValues { (_, lessons) -> lessons.size }
 //            .map { (key, value) ->
 //                if (key.first.plan[key.second] == value) {
@@ -157,11 +175,11 @@ class SchoolProgramGenerationService : BaseService() {
         }.sum()
 
         val numberOfConflicts =
-            countOfClasses + repeatableRooms + repeatableSchoolClassLessons + repeatableTeacherClasses + teacherTeachingSubjectOfTheSameClass
+            countOfClasses + repeatableRooms + repeatableSchoolClassLessons + repeatableTeacherClasses + teacherTeachingSubjectOfTheSameClass + countOfClassesPerDay
 //             + // + notConsecutiveClasses +
         val fitness = 1 / (numberOfConflicts + 1.0)
-        if (fitness > 0.1) {
-//            println()
+        if (fitness > 0.3) {
+            //    println()
         }
         return fitness
     }
@@ -191,16 +209,16 @@ class SchoolProgramGenerationService : BaseService() {
                 if (it < 10) {
                     pop.schedules.first()
                 } else {
-                val indiv1 = tournamentSelection(pop)
-                val indiv2 = tournamentSelection(pop)
-                val newIndiv = crossover(indiv1, indiv2)
-                mutate(
-                    newIndiv, teachers, schoolClasses, subjects,
-                    rooms
-                )
-            }
-        }.collect(Collectors.toList())
-            .sortedByDescending { it.fitness })
+                    val indiv1 = tournamentSelection(pop)
+                    val indiv2 = tournamentSelection(pop)
+                    val newIndiv = crossover(indiv1, indiv2)
+                    mutate(
+                        newIndiv, teachers, schoolClasses, subjects,
+                        rooms
+                    )
+                }
+            }.collect(Collectors.toList())
+                .sortedByDescending { it.fitness })
 
     }
 
