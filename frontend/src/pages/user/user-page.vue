@@ -187,26 +187,67 @@
                         <q-input v-model="role.detailsForUser.numberInClass" label="Номер в клас" readonly stack-label/>
                         <q-input v-model="role.detailsForUser.schoolClass.name" label="Клас" readonly stack-label/>
                         <q-field label="Класен ръководител" readonly stack-label>
-                          <template v-slot:default>
-                            <router-link
-                                    :to="`/user/${role.detailsForUser.schoolClass.mainTeacher.id}/${props.periodId}/${props.schoolId}`"
-                                    active-class="text-negative" class="text-primary"
-                                    exact-active-class="text-negative">
-                              {{ role.detailsForUser.schoolClass.mainTeacher.firstName }}
-                              {{ role.detailsForUser.schoolClass.mainTeacher.lastName }}
-                            </router-link>
-                          </template>
+                            <template v-slot:default>
+                                <router-link
+                                        :to="`/user/${role.detailsForUser.schoolClass.mainTeacher.id}/${props.periodId}/${props.schoolId}`"
+                                        active-class="text-negative" class="text-primary"
+                                        exact-active-class="text-negative">
+                                    {{ role.detailsForUser.schoolClass.mainTeacher.firstName }}
+                                    {{ role.detailsForUser.schoolClass.mainTeacher.lastName }}
+                                </router-link>
+                            </template>
                         </q-field>
+                          <div class="text-h6 q-pt-sm q-pb-none">Родители</div>
+                          <div v-for="parent in role.detailsForUser.parents">
+                              <q-field label="Родител" readonly stack-label>
+                                  <template v-slot:default>
+                                      <router-link
+                                              :to="`/user/${parent.id}/${props.periodId}/${props.schoolId}`"
+                                              active-class="text-negative" class="text-primary"
+                                              exact-active-class="text-negative">
+                                          {{ parent.firstName }}
+                                          {{ parent.middleName }}
+                                          {{ parent.lastName }}
+                                      </router-link>
+                                  </template>
+                              </q-field>
+                          </div>
                       </q-card-section>
-                      <q-card-section v-if="role.role===SchoolRole.PARENT">
-                        <div class="text-h4">Ученик</div>
-                        <q-input v-model="role.detailsForUser.child.firstName" label="Име" readonly stack-label/>
-                        <q-input v-model="role.detailsForUser.child.middleName" label="Презиме" readonly stack-label/>
-                        <q-input v-model="role.detailsForUser.child.lastName" label="Фамилия" readonly stack-label/>
-                        <q-input v-model="role.detailsForUser.child.username" label="Потребителско име" readonly
-                                 stack-label/>
-                        <q-input v-model="role.detailsForUser.child.email" label="Имейл" readonly stack-label/>
-                      </q-card-section>
+                        <q-card-section v-if="role.role === SchoolRole.TEACHER">
+                            <div class="text-h6 q-pt-sm q-pb-none">Предмети</div>
+                            <div v-for="subject in role.detailsForUser.teachingSubjects">
+                                <q-field label="Предмет" readonly stack-label>
+                                    <template v-slot:default>
+                                        <router-link
+                                                :to="`/subject-diary/${subject.schoolClass?.id}/${subject.id}/${props.periodId}/${props.schoolId}/grades`"
+                                                active-class="text-negative" class="text-primary"
+                                                exact-active-class="text-negative">
+                                            {{ subject.name }} - {{ subject.schoolClass.name }}
+                                        </router-link>
+                                    </template>
+                                </q-field>
+                            </div>
+                        </q-card-section>
+                        <q-card-section v-if="role.role===SchoolRole.PARENT">
+                            <div class="text-h4">Ученик</div>
+                            <q-btn :to="`/student-diary/${role.detailsForUser.child.role.detailsForUser.schoolClass.id}/${role.detailsForUser.child.id}/${props.periodId}/${props.schoolId}/grades`"
+                                   label="Дневник"/>
+                            <q-field label="Име" readonly stack-label>
+                                <template v-slot:default>
+                                    <router-link
+                                            :to="`/user/${role.detailsForUser.child.id}/${props.periodId}/${props.schoolId}`"
+                                            active-class="text-negative" class="text-primary"
+                                            exact-active-class="text-negative">
+                                        {{ role.detailsForUser.child.firstName }}
+                                        {{ role.detailsForUser.child.middleName }}
+                                        {{ role.detailsForUser.child.lastName }}
+                                    </router-link>
+                                </template>
+                            </q-field>
+                            <q-input v-model="role.detailsForUser.child.username" label="Потребителско име" readonly
+                                     stack-label/>
+                            <q-input v-model="role.detailsForUser.child.email" label="Имейл" readonly stack-label/>
+                        </q-card-section>
                     </q-expansion-item>
                   </q-card-section>
                 </div>

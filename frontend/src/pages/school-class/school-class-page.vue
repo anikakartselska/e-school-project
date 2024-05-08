@@ -75,9 +75,9 @@ import {$ref} from "vue/macros";
 import {useQuasar} from "quasar";
 
 const props = defineProps<{
-  periodId: number,
-  schoolId: number,
-  schoolClassId: number
+    schoolClassId: number
+    periodId: number,
+    schoolId: number
 }>()
 
 const schoolClass = $ref(await getSchoolClassById(props.schoolClassId, props.periodId))

@@ -56,7 +56,7 @@ class SubjectService : BaseService() {
                     .into(SubjectWithSchoolClassInformation::class.java).copy(
                         schoolClass = schoolClassService.mapRecordToInternalModel(record)
                     )
-            }
+            }.distinctBy { it.id }
 
     fun getAllSubjects(): List<String> = db.select(SUBJECT_NAME.NAME).from(SUBJECT_NAME).fetchInto(String::class.java)
 

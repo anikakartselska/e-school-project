@@ -304,5 +304,28 @@ class UserService : UserBaseService() {
             }
     }
 
+    fun getStudentsParents(
+        studentId: BigDecimal,
+        periodId: BigDecimal,
+        schoolId: BigDecimal
+    ): List<UserView> {
+        return db.select(PARENT_USER.asterisk()).from(PARENT_USER)
+            .leftJoin(PARENT_USER_ROLE)
+            .on(PARENT_USER_ROLE.USER_ID.eq(PARENT_USER.ID))
+            .leftJoin(PARENT_ROLE_PERIOD)
+            .on(PARENT_ROLE_PERIOD.SCHOOL_USER_ROLE_ID.eq(PARENT_USER_ROLE.ID))
+            .leftJoin(PARENT_STUDENT)
+            .on(PARENT_STUDENT.PARENT_SCHOOL_USER_ROLE_ID.eq(PARENT_USER_ROLE.ID))
+            .leftJoin(SCHOOL_USER_ROLE)
+            .on(SCHOOL_USER_ROLE.ID.eq(PARENT_STUDENT.STUDENT_SCHOOL_USER_ROLE_ID))
+            .leftJoin(USER)
+            .on(USER.ID.eq(SCHOOL_USER_ROLE.USER_ID))
+            .where(PARENT_ROLE_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
+            .and(PARENT_ROLE_PERIOD.PERIOD_ID.eq(periodId))
+            .and(PARENT_USER_ROLE.SCHOOL_ID.eq(schoolId))
+            .and(USER.ID.eq(studentId)).fetch().map {
+                mapToUserView(it, listOf(SchoolRole.PARENT))
+            }.distinctBy { it.id }
+    }
 
 }

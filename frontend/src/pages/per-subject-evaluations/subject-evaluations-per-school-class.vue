@@ -17,7 +17,7 @@
                     </div>
                     <div class="text-h5">
                         Клас:
-                        <router-link :to="`/school-class/${schoolClass.id}/${periodId}/${schoolId}/students`"
+                        <router-link :to="`/school-class/${periodId}/${schoolId}/${schoolClass.id}/students`"
                                      active-class="text-negative" class="text-primary"
                                      exact-active-class="text-negative">
                             {{ schoolClass.name }}

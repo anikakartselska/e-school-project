@@ -1,6 +1,7 @@
 package com.nevexis.backend.schoolManagement.users
 
 import com.nevexis.backend.schoolManagement.school_class.SchoolClass
+import com.nevexis.backend.schoolManagement.subject.SubjectWithSchoolClassInformation
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
@@ -13,7 +14,8 @@ sealed class DetailsForUser {
     @SerialName("DetailsForStudent")
     data class DetailsForStudent(
         val schoolClass: SchoolClass,
-        val numberInClass: Int? = null
+        val numberInClass: Int? = null,
+        val parents: List<UserView>? = null
     ) : DetailsForUser()
 
     @Serializable
@@ -26,7 +28,8 @@ sealed class DetailsForUser {
     @Serializable
     @SerialName("DetailsForTeacher")
     data class DetailsForTeacher(
-        val qualifiedSubjects: List<String>
+        val qualifiedSubjects: List<String>,
+        val teachingSubjects: List<SubjectWithSchoolClassInformation>? = null
     ) : DetailsForUser()
 
 }

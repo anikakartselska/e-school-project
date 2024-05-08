@@ -2,6 +2,7 @@ package com.nevexis.backend.schoolManagement.users
 
 import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.school_class.SchoolClassService
+import com.nevexis.backend.schoolManagement.subject.SubjectService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
 import com.nevexis.`demo-project`.jooq.tables.records.ParentStudentRecord
 import com.nevexis.`demo-project`.jooq.tables.records.StudentSchoolClassRecord
@@ -23,6 +24,16 @@ class UserDetailsService : BaseService() {
     @Autowired
     @Lazy
     private lateinit var userService: UserService
+
+    @Autowired
+    @Lazy
+    private lateinit var subjectService: SubjectService
+
+    companion object {
+        private val STUDENT_USER = USER.`as`("Student")
+        private val STUDENT_USER_ROLE = SCHOOL_USER_ROLE.`as`("StudentUserRole")
+        private val STUDENT_ROLE_PERIOD = SCHOOL_ROLE_PERIOD.`as`("StudentRolePeriod")
+    }
 
     fun insertUserDetailsForSchoolUserRoles(
         schoolUserRoles: List<SchoolUserRole>,
@@ -120,6 +131,8 @@ class UserDetailsService : BaseService() {
             SCHOOL_USER.asterisk(),
             SCHOOL_USER_PERIOD.asterisk(),
             SCHOOL_USER_ROLE.asterisk(),
+            STUDENT_SCHOOL_CLASS.asterisk(),
+            STUDENT_USER_ROLE.USER_ID,
             STUDENT_SCHOOL_CLASS.ID,
             STUDENT_SCHOOL_CLASS.NUMBER_IN_CLASS
         ).from(
@@ -133,31 +146,43 @@ class UserDetailsService : BaseService() {
             .on(SCHOOL_USER.USER_ID.eq(USER.ID))
             .leftJoin(SCHOOL_USER_PERIOD)
             .on(SCHOOL_USER_PERIOD.SCHOOL_USER_ID.eq(SCHOOL_USER.ID))
+            .leftJoin(STUDENT_USER_ROLE).on(STUDENT_USER_ROLE.ID.eq(STUDENT_SCHOOL_CLASS.STUDENT_SCHOOL_USER_ROLE_ID))
             .where(STUDENT_SCHOOL_CLASS.STUDENT_SCHOOL_USER_ROLE_ID.`in`(schoolUserRoles.map { it.id }))
             .and(SCHOOL_CLASS.SCHOOL_PERIOD_ID.eq(periodId))
             .fetch().map {
                 DetailsForUser.DetailsForStudent(
                     schoolClassService.mapRecordToInternalModel(it),
-                    it.get(DSL.field("NUMBER_IN_CLASS", BigDecimal::class.java))?.toInt()
+                    it.get(DSL.field("NUMBER_IN_CLASS", BigDecimal::class.java))?.toInt(),
+                    userService.getStudentsParents(
+                        it.get(STUDENT_USER_ROLE.USER_ID, BigDecimal::class.java),
+                        periodId,
+                        it.get(SCHOOL_USER.SCHOOL_ID, BigDecimal::class.java)
+                    )
                 )
             }
 
     fun getTeacherDetails(
         teacherIds: List<BigDecimal>,
+        periodId: BigDecimal,
+        schoolId: BigDecimal
     ): List<DetailsForUser.DetailsForTeacher> {
         if (teacherIds.isEmpty()) {
             return emptyList()
         }
         return db.selectFrom(TEACHER_QUALIFIED_SUBJECT).where(TEACHER_QUALIFIED_SUBJECT.TEACHER_ID.`in`(teacherIds))
-            .fetch().groupBy { it.teacherId }.map { (_, recordsForCurrentTeacher) ->
-                DetailsForUser.DetailsForTeacher(recordsForCurrentTeacher.map { it.subjectName!! })
+            .fetch().groupBy { it.teacherId }.map { (teacherId, recordsForCurrentTeacher) ->
+                DetailsForUser.DetailsForTeacher(
+                    recordsForCurrentTeacher.map { it.subjectName!! },
+                    subjectService.getAllSubjectsTaughtByTeacher(teacherId!!, periodId, schoolId)
+                )
             }
     }
 
 
     fun getUserDetailsPerSchoolUserRole(
         schoolUserRole: SchoolUserRole,
-        periodId: BigDecimal
+        periodId: BigDecimal,
+        schoolId: BigDecimal
     ): DetailsForUser? =
         when (schoolUserRole.role) {
             SchoolRole.STUDENT -> getStudentDetailsPerSchoolUserRolesAndPeriodId(
@@ -170,19 +195,29 @@ class UserDetailsService : BaseService() {
                 periodId
             ).firstOrNull()
 
-            SchoolRole.TEACHER -> getTeacherDetails(listOf(schoolUserRole.userId!!.toBigDecimal())).firstOrNull()
+            SchoolRole.TEACHER -> getTeacherDetails(
+                listOf(schoolUserRole.userId!!.toBigDecimal()),
+                periodId,
+                schoolId
+            ).firstOrNull()
 
             else -> null
         }
 
     fun getUserDetailsPerListOfSchoolUserRoles(
         schoolUserRoles: List<SchoolUserRole>,
-        periodId: BigDecimal
+        periodId: BigDecimal,
+        schoolId: BigDecimal
     ): List<DetailsForUser> = schoolUserRoles.groupBy { it.role }.mapNotNull { (role, schoolUserRoles) ->
         when (role) {
             SchoolRole.STUDENT -> getStudentDetailsPerSchoolUserRolesAndPeriodId(schoolUserRoles, periodId)
             SchoolRole.PARENT -> getParentDetailsPerSchoolUserRolesAndPeriodId(schoolUserRoles, periodId)
-            SchoolRole.TEACHER -> getTeacherDetails(schoolUserRoles.map { it.userId!!.toBigDecimal() })
+            SchoolRole.TEACHER -> getTeacherDetails(
+                schoolUserRoles.map { it.userId!!.toBigDecimal() },
+                periodId,
+                schoolId
+            )
+
             else -> null
         }
     }.flatten()

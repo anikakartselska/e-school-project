@@ -1,6 +1,7 @@
 import {SchoolClass} from "./SchoolClass";
 import {SchoolUserRole} from "./SchoolUserRole";
 import {RequestStatus} from "./RequestStatus";
+import {SubjectWithSchoolClassInformation} from "./Subject";
 
 export interface OneRoleUser {
     id: number,
@@ -93,10 +94,12 @@ export type DetailsForUser =
 export class DetailsForStudent {
     schoolClass: SchoolClass | null
     numberInClass: number | null
+    parents: UserView[] | null
 
-    constructor(schoolClass: SchoolClass | null, numberInClass: number | null) {
+    constructor(schoolClass: SchoolClass | null, numberInClass: number | null, parents: UserView[] | null) {
         this.schoolClass = schoolClass
         this.numberInClass = numberInClass
+        this.parents = parents
     }
 
 }
@@ -111,9 +114,11 @@ export class DetailsForParent {
 
 export class DetailsForTeacher {
     qualifiedSubjects: string[]
+    teachingSubjects: SubjectWithSchoolClassInformation[]
 
-    constructor(subjects: string[]) {
+    constructor(subjects: string[], teachingSubjects: SubjectWithSchoolClassInformation[]) {
         this.qualifiedSubjects = subjects
+        this.teachingSubjects = teachingSubjects
     }
 }
 

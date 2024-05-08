@@ -217,18 +217,21 @@ class SchoolRolesService : BaseService() {
                     endYear = schoolPeriodRecord.endYear!!
                 )
             }
+            val school = schoolService.getSchoolById(it.schoolId!!)
+
             val schoolUserRole = SchoolUserRole(
                 id = it.id!!.toInt(),
                 userId = it.userId!!.toInt(),
-                school = schoolService.getSchoolById(it.schoolId!!),
                 period = period,
+                school = school,
                 role = SchoolRole.valueOf(it.role!!),
                 status = RequestStatus.valueOf(schoolRolePeriodRecord.status!!)
             )
             return schoolUserRole.copy(
                 detailsForUser = userDetailsService.getUserDetailsPerSchoolUserRole(
                     schoolUserRole,
-                    period.id.toBigDecimal()
+                    period.id.toBigDecimal(),
+                    school.id.toBigDecimal()
                 )
             )
         }

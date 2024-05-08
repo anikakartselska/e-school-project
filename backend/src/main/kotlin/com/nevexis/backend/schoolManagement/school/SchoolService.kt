@@ -13,7 +13,15 @@ import java.math.BigDecimal
 @Service
 class SchoolService : BaseService() {
 
-    fun getAllSchools(): List<School> = db.selectFrom(SCHOOL).fetch().map { it.into(School::class.java) }
+    fun getAllSchools(): List<School> = db.selectFrom(SCHOOL).fetch().map {
+        School(
+            id = it.id!!.toInt(),
+            schoolName = it.schoolName!!,
+            city = it.city!!,
+            address = it.address!!,
+            rooms = it.rooms?.let { it1 -> Json.decodeFromString(it1) }
+        )
+    }
 
     fun getSchoolById(id: BigDecimal, dsl: DSLContext = db): School =
         dsl.selectFrom(SCHOOL).where(SCHOOL.ID.eq(id)).fetchAny()?.into(SchoolRecord::class.java)?.map {
