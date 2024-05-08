@@ -78,7 +78,8 @@ class EvaluationService : BaseService() {
         subjectId: BigDecimal,
         periodId: BigDecimal,
         schoolId: BigDecimal,
-        schoolClassId: BigDecimal
+        schoolClassId: BigDecimal,
+        schoolLessonId: BigDecimal? = null
     ): List<StudentWithEvaluationDTO> {
         val subject = subjectService.getSubjectsById(
             subjectId,
@@ -108,6 +109,11 @@ class EvaluationService : BaseService() {
                     .and(EVALUATION.SCHOOL_ID.eq(schoolId))
                     .and(SCHOOL_CLASS_SUBJECT.SCHOOL_CLASS_ID.eq(schoolClassId))
                     .and(EVALUATION.SUBJECT_ID.eq(subject.id.toBigDecimal()))
+                    .apply {
+                        if (schoolLessonId != null) {
+                            and(EVALUATION.SCHOOL_LESSON_ID.eq(schoolLessonId))
+                        }
+                    }
             ).fetch()
 
         val evaluationsMap = records.groupBy { it.get(EVALUATION.USER_ID)!! }

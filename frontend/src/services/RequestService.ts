@@ -57,13 +57,14 @@ export const getStudentsSubjectsAndEvaluations = async (studentId, periodId, sch
                 schoolClassId
             }
         }).then(p => p.data)
-export const getEvaluationForSubjectAndSchoolClass = async (subjectId, periodId, schoolId, schoolClassId): Promise<StudentWithEvaluationDTO[]> =>
+export const getEvaluationForSubjectAndSchoolClass = async (subjectId, periodId, schoolId, schoolClassId, schoolLessonId: number | null = null): Promise<StudentWithEvaluationDTO[]> =>
         await api.post<StudentWithEvaluationDTO[]>('/get-evaluation-for-subject-and-school-class', null, {
             params: {
                 subjectId,
                 periodId,
                 schoolId,
-                schoolClassId
+                schoolClassId,
+                schoolLessonId
             }
         }).then(p => p.data)
 

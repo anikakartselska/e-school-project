@@ -34,12 +34,14 @@ class EvaluationController {
         @RequestParam subjectId: BigDecimal,
         @RequestParam periodId: BigDecimal,
         @RequestParam schoolId: BigDecimal,
-        @RequestParam schoolClassId: BigDecimal
+        @RequestParam schoolClassId: BigDecimal,
+        @RequestParam schoolLessonId: BigDecimal? = null
     ) = evaluationService.getAllEvaluationsForSubjectAnSchoolClass(
         subjectId,
         periodId,
         schoolId,
-        schoolClassId
+        schoolClassId,
+        schoolLessonId
     )
 
     @PostMapping("/save-evaluations")

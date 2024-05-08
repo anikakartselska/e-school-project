@@ -30,6 +30,13 @@ export const workingDaysOrder = new Map<WorkingDays, number>([
     [WorkingDays.FRIDAY, 5],
 ]);
 
+export const workingDaysOrderString = new Map<string, number>([
+    ["MONDAY", 1],
+    ["TUESDAY", 2],
+    ["WEDNESDAY", 3],
+    ["THURSDAY", 4],
+    ["FRIDAY", 5],
+]);
 export const workingDaysTranslation = new Map<WorkingDays, string>([
     [WorkingDays.MONDAY, "Понеделник"],
     [WorkingDays.TUESDAY, "Вторник"],

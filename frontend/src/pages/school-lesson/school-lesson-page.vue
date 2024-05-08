@@ -57,7 +57,7 @@ const props = defineProps<{
 
 const lesson = $ref(await fetchSchoolLessonById(props.schoolLessonId))
 const quasar = useQuasar()
-let studentWithEvaluationDTO = $ref(await getEvaluationForSubjectAndSchoolClass(lesson.subject.id, props.periodId, props.schoolId, lesson.schoolClass.id))
+let studentWithEvaluationDTO = $ref(await getEvaluationForSubjectAndSchoolClass(lesson.subject.id, props.periodId, props.schoolId, lesson.schoolClass.id, props.schoolLessonId))
 
 
 </script>
