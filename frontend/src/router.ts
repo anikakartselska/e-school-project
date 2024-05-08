@@ -183,7 +183,11 @@ const routes = [
                     {
                         path: 'feedbacks',
                         component: FeedbackTabPerStudent
-                    }
+                    },
+                    {
+                        path: 'program',
+                        component: SchoolClassLessonsTab
+                    },
                 ],
             },
             {

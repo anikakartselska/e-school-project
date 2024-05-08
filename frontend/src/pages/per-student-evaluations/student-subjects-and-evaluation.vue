@@ -40,11 +40,15 @@
                                 <q-route-tab label="Оценки" to="grades"/>
                                 <q-route-tab label="Отсъствия" to="absences"/>
                                 <q-route-tab label="Отзиви" to="feedbacks"/>
+                                <q-route-tab label="Програма" to="program"/>
                             </q-tabs>
                         </div>
                         <div class="col-12">
                             <router-view v-slot="{ Component }"
                                          :evaluations="subjectWithEvaluationDTO"
+                                         :periodId="periodId"
+                                         :schoolClass="schoolClass"
+                                         :schoolId="schoolId"
                             >
                                 <template v-if="Component">
                                     <suspense>
