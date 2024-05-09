@@ -492,6 +492,15 @@ export const fetchWeeksForSchoolClassSchoolAndPeriod = async (schoolClassName, s
             }
         }).then(p => p.data)
 
+export const fetchMaxWeeksForSchoolAndPeriod = async (schoolId,
+                                                      periodId): Promise<Week[]> =>
+        await api.get<Week[]>('/fetch-max-weeks-for-school-and-period', {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId
+            }
+        }).then(p => p.data)
+
 export const fetchSchoolLessonsForSchoolClassWeekSchoolAndPeriod = async (schoolClassId,
                                                                           weekNumber,
                                                                           schoolId,

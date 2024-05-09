@@ -40,6 +40,7 @@ import SchoolClassPlanTab from "./pages/school-class/school-class-plan-tab.vue";
 import SchoolPage from "./pages/administration/school-page.vue";
 import SchoolClassesPlansPage from "./pages/administration/school-classes-plans-page.vue";
 import SchoolClassesPlanPage from "./pages/administration/school-classes-plan-page.vue";
+import TeacherLessonsPage from "./pages/teacher-pages/teacher-lessons-page.vue";
 
 const routes = [
     {
@@ -153,6 +154,12 @@ const routes = [
                 path: '/calendar/:periodId(\\d+)/:schoolId(\\d+)',
                 component: CalendarPage,
                 name: 'calendar',
+                props: true
+            },
+            {
+                path: '/teacher-lessons/:periodId(\\d+)/:schoolId(\\d+)/:teacherId(\\d+)',
+                component: TeacherLessonsPage,
+                name: 'teacher-lessons',
                 props: true
             },
             {

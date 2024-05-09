@@ -57,6 +57,23 @@ class CalendarService : BaseService() {
             }.distinctBy { it.weekNumber }
     }
 
+    fun getMaxWeeksForSchoolAndPeriod(
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ): List<Week> {
+        val calendar = getSchoolCalendarForSchoolAndPeriod(schoolId, periodId) ?: throw SMSError(
+            "DATA_NOT_FOUND",
+            "There is no calendar for school with id:${schoolId} and period with id:${periodId}"
+        )
+
+        return generateSequence(calendar.beginningOfYear) { it.plusDays(1) }
+            .takeWhile { !it.isAfter(calendar.classToEndOfYearDate.values.max()) }
+            .toList()
+            .map { date ->
+                getStartAndEndOfWeek(date)
+            }.distinctBy { it.weekNumber }
+    }
+
     fun getStartAndEndOfWeek(date: LocalDate): Week {
         val week = date.get(WeekFields.ISO.weekOfYear()).toBigDecimal()
         // Adjust to the first day of the week (e.g., Monday for ISO)

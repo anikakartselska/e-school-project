@@ -38,4 +38,10 @@ class CalendarController {
         @RequestParam periodId: BigDecimal
     ): List<Week> = calendarService.getWeeksForSchoolClassSchoolAndPeriod(schoolClassName, schoolId, periodId)
 
+    @GetMapping("/fetch-max-weeks-for-school-and-period")
+    fun fetchMaxWeeksForSchoolAndPeriod(
+        @RequestParam schoolId: BigDecimal,
+        @RequestParam periodId: BigDecimal
+    ): List<Week> = calendarService.getMaxWeeksForSchoolAndPeriod(schoolId, periodId)
+
 }

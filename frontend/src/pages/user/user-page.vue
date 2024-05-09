@@ -214,6 +214,8 @@
                           </div>
                       </q-card-section>
                         <q-card-section v-if="role.role === SchoolRole.TEACHER">
+                            <q-btn :to="`/teacher-lessons/${periodId}/${schoolId}/${user.id}`"
+                                   label="Програма"/>
                             <div class="text-h6 q-pt-sm q-pb-none">Предмети</div>
                             <div v-for="subject in role.detailsForUser.teachingSubjects">
                                 <q-field label="Предмет" readonly stack-label>
