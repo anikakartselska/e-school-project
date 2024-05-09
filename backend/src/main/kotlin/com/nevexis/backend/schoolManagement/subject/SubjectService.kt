@@ -54,7 +54,8 @@ class SubjectService : BaseService() {
             .fetch().map { record ->
                 record.into(SubjectRecord::class.java)
                     .into(SubjectWithSchoolClassInformation::class.java).copy(
-                        schoolClass = schoolClassService.mapRecordToInternalModel(record)
+                        schoolClass = schoolClassService.mapRecordToInternalModel(record),
+                        semester = Semester.valueOf(record.get(SCHOOL_CLASS_SUBJECT.SEMESTER, String::class.java)!!)
                     )
             }.distinctBy { it.id }
 

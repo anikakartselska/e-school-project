@@ -110,6 +110,7 @@ import {Subject} from "../../model/Subject";
 import {saveEvaluations} from "../../services/RequestService";
 import {periodId, schoolId} from "../../model/constants";
 import {SchoolLesson} from "../../model/SchoolLesson";
+import {commentPromiseDialog} from "../../utils";
 
 const props = defineProps<{
   evaluations: StudentWithEvaluationDTO[],
@@ -138,17 +139,18 @@ const addNewGrades = async (finalGrade: boolean) => quasar.dialog({
     lesson: props.lesson
   },
 }).onOk(async (payload) => {
-  await saveEvaluations(payload.item, periodId.value, schoolId.value).then(e => {
-            const newlyAddedGrades = e.data
-            grades.forEach(studentGrades => {
-                      const newlyAddedGradesForCurrentStudent = newlyAddedGrades.find(v => v.student.id == studentGrades.student.id)?.grades
-                      if (studentGrades.student.id == 10000) {
+    const comment = await commentPromiseDialog()
+    await saveEvaluations(payload.item, periodId.value, schoolId.value, comment).then(e => {
+        const newlyAddedGrades = e.data
+        grades.forEach(studentGrades => {
+                    const newlyAddedGradesForCurrentStudent = newlyAddedGrades.find(v => v.student.id == studentGrades.student.id)?.grades
+                    if (studentGrades.student.id == 10000) {
                         studentGrades.grades = studentGrades.grades.concat(newlyAddedGrades.map(it => it.grades).flat(1))
-                      }
-                      studentGrades.grades = studentGrades.grades.concat(newlyAddedGradesForCurrentStudent ? newlyAddedGradesForCurrentStudent : [])
                     }
-            )
-          }
+                    studentGrades.grades = studentGrades.grades.concat(newlyAddedGradesForCurrentStudent ? newlyAddedGradesForCurrentStudent : [])
+                }
+        )
+    }
   )
 })
 const getRowKey = (row) => {

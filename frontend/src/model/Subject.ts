@@ -1,5 +1,6 @@
 import {UserView} from "./User";
 import {SchoolClass} from "./SchoolClass";
+import {Semester} from "./SchoolPeriod";
 
 export interface Subject {
     id: number,
@@ -12,4 +13,5 @@ export interface SubjectWithSchoolClassInformation {
     id: number,
     subjectName: string,
     schoolClass: SchoolClass,
+    semester: Semester
 }

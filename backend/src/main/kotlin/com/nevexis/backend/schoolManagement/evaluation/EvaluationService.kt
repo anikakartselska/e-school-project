@@ -242,23 +242,36 @@ class EvaluationService : BaseService() {
     fun saveEvaluations(
         evaluations: List<StudentWithEvaluationDTO>,
         schoolId: BigDecimal,
-        periodId: BigDecimal
+        periodId: BigDecimal,
+        comment: String
     ): List<StudentWithEvaluationDTO> {
         val evaluationsWithId = evaluations.map { evaluationDto ->
             evaluationDto.copy(
                 absences = evaluationDto.absences.mapNotNull {
                     if (it.id == null) {
-                        it.copy(id = getEvaluationSeqNextVal().toInt(), evaluationDate = LocalDateTime.now())
+                        it.copy(
+                            id = getEvaluationSeqNextVal().toInt(),
+                            evaluationDate = LocalDateTime.now(),
+                            comment = comment
+                        )
                     } else null
                 },
                 grades = evaluationDto.grades.mapNotNull {
                     if (it.id == null) {
-                        it.copy(id = getEvaluationSeqNextVal().toInt(), evaluationDate = LocalDateTime.now())
+                        it.copy(
+                            id = getEvaluationSeqNextVal().toInt(),
+                            evaluationDate = LocalDateTime.now(),
+                            comment = comment
+                        )
                     } else null
                 },
                 feedbacks = evaluationDto.feedbacks.mapNotNull {
                     if (it.id == null) {
-                        it.copy(id = getEvaluationSeqNextVal().toInt(), evaluationDate = LocalDateTime.now())
+                        it.copy(
+                            id = getEvaluationSeqNextVal().toInt(),
+                            evaluationDate = LocalDateTime.now(),
+                            comment = comment
+                        )
                     } else null
                 },
             )

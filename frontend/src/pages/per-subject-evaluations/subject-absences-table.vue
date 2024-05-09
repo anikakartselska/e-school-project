@@ -9,51 +9,51 @@
           separator="cell"
           title="Отсъствия"
   >
-      <template v-if="semester !== Semester.YEARLY" v-slot:top-right>
-          <q-btn color="primary"
-                 icon="add_circle_outline"
-                 label="Добави отсъствия за повече ученици"
-                 outline
-                 @click="addNewAbsences()"
-          />
-          <q-btn class="q-ml-sm"
-                 color="secondary"
-                 icon="check"
-                 label="Извини отсъствия"
-                 outline
-                 @click="updateAbsences()"
-          />
-      </template>
-      <template v-slot:header-cell-total="props">
-          <q-th>
-              <div class="row">
-                  <div class="col text-center">
-                      Извинени
-                  </div>
-                  <q-separator vertical/>
-                  <div class="col-4 text-center">
-                      Неизвинени
-                  </div>
-                  <q-separator vertical/>
-                  <div class="col-4 text-center">
-                      Общо
-                  </div>
-              </div>
-          </q-th>
-      </template>
-      <template v-slot:body-cell-absences="props">
-          <q-td class="text-center">
-              <q-btn v-for="absence in props.row.absences.filter(it=>it.semester === semester)"
-                     v-if="props.row.student.firstName !== undefined"
-                     :class="`q-ma-xs ${getAbsenceBackgroundColor(absence)}`"
-                     :label="absenceMap.get(absence.evaluationValue.absence)"
-                     flat
-                     rounded>
-                  <q-popup-proxy>
-                      <q-banner>
-                          Въведен от:<span class="text-primary">{{
-                          absence.createdBy.firstName
-                          }} {{ absence.createdBy.lastName }}</span><br/>
+    <template v-if="semester !== Semester.YEARLY" v-slot:top-right>
+      <q-btn color="primary"
+             icon="add_circle_outline"
+             label="Добави отсъствия за повече ученици"
+             outline
+             @click="addNewAbsences()"
+      />
+      <q-btn class="q-ml-sm"
+             color="secondary"
+             icon="check"
+             label="Извини отсъствия"
+             outline
+             @click="updateAbsences()"
+      />
+    </template>
+    <template v-slot:header-cell-total="props">
+      <q-th>
+        <div class="row">
+          <div class="col text-center">
+            Извинени
+          </div>
+          <q-separator vertical/>
+          <div class="col-4 text-center">
+            Неизвинени
+          </div>
+          <q-separator vertical/>
+          <div class="col-4 text-center">
+            Общо
+          </div>
+        </div>
+      </q-th>
+    </template>
+    <template v-slot:body-cell-absences="props">
+      <q-td class="text-center">
+        <q-btn v-for="absence in props.row.absences.filter(it=>it.semester === semester)"
+               v-if="props.row.student.firstName !== undefined"
+               :class="`q-ma-xs ${getAbsenceBackgroundColor(absence)}`"
+               :label="absenceMap.get(absence.evaluationValue.absence)"
+               flat
+               rounded>
+          <q-popup-proxy>
+            <q-banner>
+              Въведен от:<span class="text-primary">{{
+                absence.createdBy.firstName
+              }} {{ absence.createdBy.lastName }}</span><br/>
               Дата:<span class="text-primary">{{
                 absence.evaluationDate
               }}</span><br/>
@@ -112,100 +112,102 @@ import {saveEvaluations, updateEvaluations} from "../../services/RequestService"
 import {periodId, schoolId} from "../../model/constants";
 import UpdateAbsencesDialog from "./update-absences-dialog.vue";
 import {SchoolLesson} from "../../model/SchoolLesson";
+import {commentPromiseDialog} from "../../utils";
 
 const props = defineProps<{
-    evaluations: StudentWithEvaluationDTO[],
-    semester: Semester,
-    subject: Subject,
-    lesson?: SchoolLesson | null,
+  evaluations: StudentWithEvaluationDTO[],
+  semester: Semester,
+  subject: Subject,
+  lesson?: SchoolLesson | null,
 }>()
 
 const absences: StudentWithEvaluationDTO[] = $ref(props.evaluations ? [...props.evaluations] : [])
 absences.push(
         {
-            absences: props.evaluations?.map(it => it.absences).flat(1)?.filter((it: Evaluation) => it.semester == props.semester || props.semester == Semester.YEARLY),
-            student: <StudentView><unknown>{id: 10000},
-            grades: [],
-            feedbacks: []
+          absences: props.evaluations?.map(it => it.absences).flat(1)?.filter((it: Evaluation) => it.semester == props.semester || props.semester == Semester.YEARLY),
+          student: <StudentView><unknown>{id: 10000},
+          grades: [],
+          feedbacks: []
         })
 
 const getRowKey = (row) => {
-    return row?.student ? row?.student : '1000'
+  return row?.student ? row?.student : '1000'
 }
 const quasar = useQuasar()
 const addNewAbsences = async () => quasar.dialog({
-    component: AddAbsencesDialog,
-    componentProps: {
-        evaluations: props.evaluations,
-        subject: props.subject,
-        semester: props.semester,
-        lesson: props.lesson
-    },
+  component: AddAbsencesDialog,
+  componentProps: {
+    evaluations: props.evaluations,
+    subject: props.subject,
+    semester: props.semester,
+    lesson: props.lesson
+  },
 }).onOk(async (payload) => {
-    await saveEvaluations(payload.item, periodId.value, schoolId.value).then(e => {
-                const newlyAddedAbsences = e.data
-                absences.forEach(studentEvaluations => {
-                            const newlyAddedAbsencesForCurrentStudent = newlyAddedAbsences.find(v => v.student.id == studentEvaluations.student.id)?.absences
-                            if (studentEvaluations.student.id == 10000) {
-                                studentEvaluations.absences = studentEvaluations.absences.concat(newlyAddedAbsences.map(it => it.absences).flat(1))
-                            }
-                            studentEvaluations.absences = studentEvaluations.absences.concat(newlyAddedAbsencesForCurrentStudent ? newlyAddedAbsencesForCurrentStudent : [])
-                        }
-                )
-            }
-    )
+  const comment = await commentPromiseDialog()
+  await saveEvaluations(payload.item, periodId.value, schoolId.value, comment).then(e => {
+            const newlyAddedAbsences = e.data
+            absences.forEach(studentEvaluations => {
+                      const newlyAddedAbsencesForCurrentStudent = newlyAddedAbsences.find(v => v.student.id == studentEvaluations.student.id)?.absences
+                      if (studentEvaluations.student.id == 10000) {
+                        studentEvaluations.absences = studentEvaluations.absences.concat(newlyAddedAbsences.map(it => it.absences).flat(1))
+                      }
+                      studentEvaluations.absences = studentEvaluations.absences.concat(newlyAddedAbsencesForCurrentStudent ? newlyAddedAbsencesForCurrentStudent : [])
+                    }
+            )
+          }
+  )
 })
 
 const updateAbsences = async () => quasar.dialog({
-    component: UpdateAbsencesDialog,
-    componentProps: {
-        evaluations: props.evaluations,
-        subject: props.subject
-    },
+  component: UpdateAbsencesDialog,
+  componentProps: {
+    evaluations: props.evaluations,
+    subject: props.subject
+  },
 }).onOk(async (payload) => {
-    await updateEvaluations(payload.item, periodId.value, schoolId.value).then(e => {
-                const updatedAbsences = payload.item
-                const allAbsences = (<Evaluation[]>updatedAbsences.map(it => it.absences)).flat(1)
-                absences.forEach(studentEvaluations => {
-                            const updatedAbsencesForCurrentStudent = updatedAbsences.find(v => v.student.id == studentEvaluations.student.id)?.absences
-                            if (studentEvaluations.student.id == 10000) {
-                                studentEvaluations.absences = studentEvaluations.absences.map(absence =>
-                                        allAbsences.find(oldAbsence => oldAbsence.id == absence.id) ? allAbsences.find(oldAbsence => oldAbsence.id == absence.id)!! : absence)
-                            }
-                            studentEvaluations.absences = studentEvaluations.absences.map(absence =>
-                                    updatedAbsencesForCurrentStudent.find(it => it.id == absence.id) ? updatedAbsencesForCurrentStudent.find(it => it.id == absence.id) : absence)
+  await updateEvaluations(payload.item, periodId.value, schoolId.value).then(e => {
+            const updatedAbsences = payload.item
+            const allAbsences = (<Evaluation[]>updatedAbsences.map(it => it.absences)).flat(1)
+            absences.forEach(studentEvaluations => {
+                      const updatedAbsencesForCurrentStudent = updatedAbsences.find(v => v.student.id == studentEvaluations.student.id)?.absences
+                      if (studentEvaluations.student.id == 10000) {
+                        studentEvaluations.absences = studentEvaluations.absences.map(absence =>
+                                allAbsences.find(oldAbsence => oldAbsence.id == absence.id) ? allAbsences.find(oldAbsence => oldAbsence.id == absence.id)!! : absence)
+                      }
+                      studentEvaluations.absences = studentEvaluations.absences.map(absence =>
+                              updatedAbsencesForCurrentStudent.find(it => it.id == absence.id) ? updatedAbsencesForCurrentStudent.find(it => it.id == absence.id) : absence)
 
-                        }
-                )
-            }
-    )
+                    }
+            )
+          }
+  )
 })
 
 const columns = [
-    {
-        name: "numberInClass",
-        label: "Номер в клас",
-        align: "center",
-        field: (row: StudentWithEvaluationDTO) => row?.student?.numberInClass != undefined ? `${row?.student?.numberInClass}` : '',
-        sortable: true
-    },
-    {
-        name: "student",
-        label: "Име на ученика",
-        align: "center",
-        field: (row: StudentWithEvaluationDTO) => row?.student?.firstName != undefined ? `${row?.student?.firstName} ${row?.student?.middleName} ${row?.student?.lastName}` : 'Общо',
-        sortable: true
-    },
-    {
-        name: "absences",
-        align: "center",
-        label: "Отсъствия",
-    },
-    {
-        name: "total",
-        align: "center",
-        label: "Общо"
-    }
+  {
+    name: "numberInClass",
+    label: "Номер в клас",
+    align: "center",
+    field: (row: StudentWithEvaluationDTO) => row?.student?.numberInClass != undefined ? `${row?.student?.numberInClass}` : '',
+    sortable: true
+  },
+  {
+    name: "student",
+    label: "Име на ученика",
+    align: "center",
+    field: (row: StudentWithEvaluationDTO) => row?.student?.firstName != undefined ? `${row?.student?.firstName} ${row?.student?.middleName} ${row?.student?.lastName}` : 'Общо',
+    sortable: true
+  },
+  {
+    name: "absences",
+    align: "center",
+    label: "Отсъствия",
+  },
+  {
+    name: "total",
+    align: "center",
+    label: "Общо"
+  }
 ]
 const visibleColumns = [...columns].filter(it => props.semester !== Semester.YEARLY || it.name != 'absences').map(it => it.name)
 

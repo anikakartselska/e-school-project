@@ -192,3 +192,25 @@ export const confirmActionPromiseDialogWithCancelButton = (title: string, messag
             .onCancel(() => {
             })
 });
+
+export const commentPromiseDialog = (): Promise<string> => new Promise<string>((resolve) => {
+    Dialog.create({
+        title: 'Добави коментар',
+        prompt: {
+            model: '',
+            isValid: val => val.length > 2,
+            type: 'text'
+        },
+        cancel: {
+            label: 'Отказ',
+            color: 'negative'
+        },
+        ok: {
+            color: 'primary'
+        },
+        persistent: true,
+    })
+            .onOk((comment) => resolve(comment))
+            .onCancel(() => {
+            })
+});

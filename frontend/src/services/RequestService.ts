@@ -336,9 +336,9 @@ export const fetchAllStudentSubjectEvaluationsFromSchoolClass = async (schoolCla
             headers: {'Content-Type': 'application/json'}
         })
 
-export const saveEvaluations = async (evaluations, periodId, schoolId): Promise<AxiosResponse<StudentWithEvaluationDTO[]>> =>
+export const saveEvaluations = async (evaluations, periodId, schoolId, comment): Promise<AxiosResponse<StudentWithEvaluationDTO[]>> =>
         await api.post<StudentWithEvaluationDTO[]>(`/save-evaluations`, evaluations, {
-            params: {periodId: periodId, schoolId: schoolId},
+            params: {periodId: periodId, schoolId: schoolId, comment: comment},
             headers: {'Content-Type': 'application/json'}
         })
 

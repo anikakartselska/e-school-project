@@ -108,6 +108,7 @@ import {periodId, schoolId} from "../../model/constants";
 import {useQuasar} from "quasar";
 import AddFeedbacksDialog from "./add-feedbacks-dialog.vue";
 import {SchoolLesson} from "../../model/SchoolLesson";
+import {commentPromiseDialog} from "../../utils";
 
 const props = defineProps<{
   evaluations: StudentWithEvaluationDTO[],
@@ -136,7 +137,8 @@ const addNewFeedbacks = async () => quasar.dialog({
     lesson: props.lesson
   },
 }).onOk(async (payload) => {
-  await saveEvaluations(payload.item, periodId.value, schoolId.value).then(e => {
+  const comment = await commentPromiseDialog()
+  await saveEvaluations(payload.item, periodId.value, schoolId.value, comment).then(e => {
             const newlyAddedFeedbacks = e.data
             feedbacks.forEach(studentEvaluations => {
                       const newlyAddedFeedbacksForCurrentStudent = newlyAddedFeedbacks.find(v => v.student.id == studentEvaluations.student.id)?.feedbacks

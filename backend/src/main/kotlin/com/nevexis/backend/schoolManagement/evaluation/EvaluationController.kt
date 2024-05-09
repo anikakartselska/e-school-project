@@ -49,7 +49,8 @@ class EvaluationController {
         @RequestBody evaluations: List<StudentWithEvaluationDTO>,
         @RequestParam periodId: BigDecimal,
         @RequestParam schoolId: BigDecimal,
-    ) = evaluationService.saveEvaluations(evaluations, periodId, schoolId)
+        @RequestParam comment: String
+    ) = evaluationService.saveEvaluations(evaluations, periodId, schoolId, comment)
 
     @PostMapping("/update-evaluations")
     fun updateEvaluations(

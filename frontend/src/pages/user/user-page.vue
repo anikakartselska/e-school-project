@@ -222,7 +222,9 @@
                                                 :to="`/subject-diary/${subject.schoolClass?.id}/${subject.id}/${props.periodId}/${props.schoolId}/grades`"
                                                 active-class="text-negative" class="text-primary"
                                                 exact-active-class="text-negative">
-                                            {{ subject.name }} - {{ subject.schoolClass.name }}
+                                            {{ subject.name }} - {{ subject.schoolClass.name }} - {{
+                                            translationOfSemester[subject.semester]
+                                            }}
                                         </router-link>
                                     </template>
                                 </q-field>
@@ -286,7 +288,8 @@ import {
     getRequestStatusColorClass,
     translationOfGender,
     translationOfRequestStatusForRole,
-    translationOfRequestStatusForUser
+    translationOfRequestStatusForUser,
+    translationOfSemester
 } from "../../utils";
 import AddRoleDialog from "../add-role-dialog.vue";
 import {constructSchoolUserRoleMessage, SchoolUserRole} from "../../model/SchoolUserRole";
