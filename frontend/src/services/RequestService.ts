@@ -14,6 +14,7 @@ import {Calendar, Week} from "../model/Calendar";
 import {PlannedSchoolLesson} from "../model/PlannedSchoolLesson";
 import {SchoolLesson} from "../model/SchoolLesson";
 import {SchoolPlanForClasses} from "../model/SchoolPlanForClasses";
+import {Assignments} from "../model/Assignments";
 
 export const login = async (email: string, password: string): Promise<AxiosResponse> =>
         await axios.post<string>(`/authenticate`, {username: email, password}, {
@@ -528,17 +529,47 @@ export const fetchSchoolLessonsForTeacherWeekSchoolAndPeriod = async (teacherId,
         }).then(p => p.data)
 
 export const fetchSchoolLessonById = async (schoolLessonId): Promise<SchoolLesson> =>
-        await api.get<SchoolLesson>('fetch-school-lesson-by-id', {
+        await api.get<SchoolLesson>('/fetch-school-lesson-by-id', {
             params: {
                 schoolLessonId: schoolLessonId
             }
         }).then(p => p.data)
 
 export const fetchSchoolById = async (schoolId): Promise<School> =>
-        await api.get<School>('get-school-by-id', {
+        await api.get<School>('/get-school-by-id', {
             params: {
                 schoolId: schoolId
             }
         }).then(p => p.data)
 
+export const fetchAllAssignmentsForSchoolClassPeriodAndSchool = async (schoolId,
+                                                                       periodId,
+                                                                       schoolClassId): Promise<Assignments> =>
+        await api.get<Assignments>('/fetch-all-assignments-for-school-class-period-and-school', {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId,
+                schoolClassId: schoolClassId
+            }
+        }).then(p => p.data)
 
+export const mergeAssignments = async (assignments,
+                                       schoolClassId,
+                                       schoolId,
+                                       periodId): Promise<Assignments> =>
+        await api.post<Assignments>('/merge-assignments', assignments, {
+            params: {
+                schoolClassId: schoolClassId,
+                schoolId: schoolId,
+                periodId: periodId
+            },
+            headers: {'Content-Type': 'application/json'}
+        }).then(p => p.data)
+
+export const deleteAssignments = async (assignmentsId): Promise<Assignments> =>
+        await api.post<Assignments>('/delete-assignments', null, {
+            params: {
+                assignmentsId: assignmentsId
+            },
+            headers: {'Content-Type': 'application/json'}
+        }).then(p => p.data)

@@ -1,3 +1,8 @@
+@file:UseSerializers(
+    BigDecimalSerializer::class,
+    LocalDateTimeSerializer::class
+)
+
 package com.nevexis.backend.schoolManagement.school_lessons
 
 import com.nevexis.backend.schoolManagement.school_class.SchoolClass
@@ -5,9 +10,14 @@ import com.nevexis.backend.schoolManagement.school_period.Semester
 import com.nevexis.backend.schoolManagement.school_schedule.WorkingHour
 import com.nevexis.backend.schoolManagement.subject.Subject
 import com.nevexis.backend.schoolManagement.users.UserView
+import com.nevexis.backend.serializers.BigDecimalSerializer
+import com.nevexis.backend.serializers.LocalDateTimeSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
+@Serializable
 data class SchoolLesson(
     val id: BigDecimal,
     val startTimeOfLesson: LocalDateTime,

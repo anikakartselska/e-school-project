@@ -190,25 +190,6 @@ class EvaluationService : BaseService() {
         }
     }
 
-    private fun mapToEvaluationModel(
-        record: Record,
-        student: StudentView,
-        subject: Subject,
-    ) = record.into(EvaluationRecord::class.java).let {
-        Evaluation(
-            id = it.id!!.toInt(),
-            student = student,
-            subject = subject,
-            schoolLessonId = it.schoolLessonId?.toInt(),
-            evaluationDate = it.evaluationDate!!,
-            evaluationType = EvaluationType.valueOf(it.evaluationType!!),
-            evaluationValue = Json.decodeFromString(it.evaluationValue!!),
-            semester = Semester.valueOf(it.semester!!),
-            createdBy = userService.mapToUserView(record.into(UserRecord::class.java), emptyList()),
-            comment = it.comment
-        )
-    }
-
     fun updateEvaluations(
         evaluations: List<StudentWithEvaluationDTO>,
         schoolId: BigDecimal,
@@ -322,6 +303,24 @@ class EvaluationService : BaseService() {
         comment = evaluation.comment
     }
 
+    private fun mapToEvaluationModel(
+        record: Record,
+        student: StudentView,
+        subject: Subject,
+    ) = record.into(EvaluationRecord::class.java).let {
+        Evaluation(
+            id = it.id!!.toInt(),
+            student = student,
+            subject = subject,
+            schoolLessonId = it.schoolLessonId?.toInt(),
+            evaluationDate = it.evaluationDate!!,
+            evaluationType = EvaluationType.valueOf(it.evaluationType!!),
+            evaluationValue = Json.decodeFromString(it.evaluationValue!!),
+            semester = Semester.valueOf(it.semester!!),
+            createdBy = userService.mapToUserView(record.into(UserRecord::class.java), emptyList()),
+            comment = it.comment
+        )
+    }
 
     fun getEvaluationSeqNextVal(): BigDecimal =
         db.select(DSL.field("EVALUATION_SEQ.nextval")).from("DUAL")
