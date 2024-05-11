@@ -12,21 +12,21 @@
             rows-per-page-label="Редове на страница"
             virtual-scroll
     >
-      <template v-if="tab === AssignmentType.EVENT" v-slot:top-right>
-        <div class="q-pr-xs">
-          <q-btn color="secondary" icon="add"
-                 outline rounded @click="addNewAssignment()">
-          </q-btn>
-        </div>
+      <template v-if="tab === AssignmentType.EVENT || lesson!=null" v-slot:top-right>
+          <div class="q-pr-xs">
+              <q-btn color="secondary" icon="add"
+                     outline rounded @click="addNewAssignment()">
+              </q-btn>
+          </div>
       </template>
-      <template v-if="tab === AssignmentType.EVENT" v-slot:body-cell-edit="props">
-        <q-td>
-          <q-btn color="primary" dense flat icon="edit" @click="updateAssignment(props.row)">
-          </q-btn>
-          <q-btn color="negative" dense flat icon="delete" @click="deleteAssignment(props.row)">
-          </q-btn>
-        </q-td>
-      </template>
+        <template v-slot:body-cell-edit="props">
+            <q-td>
+                <q-btn color="primary" dense flat icon="edit" @click="updateAssignment(props.row)">
+                </q-btn>
+                <q-btn color="negative" dense flat icon="delete" @click="deleteAssignment(props.row)">
+                </q-btn>
+            </q-td>
+        </template>
     </q-table>
   </q-card>
   <q-separator/>
@@ -63,9 +63,9 @@ const props = defineProps<{
   assignments: Assignments[]
   tab: AssignmentType,
   semester: Semester,
-  schoolLesson: SchoolLesson | null
+    lesson: SchoolLesson | null
 }>()
-console.log(props)
+
 let assignmentsFilteredByAssignmentTypeAndSemester = $ref([...props.assignments].filter(it => it.assignmentType === props.tab && it.semester === props.semester))
 watch(() => props.tab, () => assignmentsFilteredByAssignmentTypeAndSemester = [...props.assignments].filter(it => it.assignmentType === props.tab && it.semester === props.semester))
 const quasar = useQuasar()
@@ -73,14 +73,14 @@ const school = $ref(await fetchSchoolById(props.schoolId))
 const addNewAssignment = () => {
   let assignmentValue;
   if (props.tab == AssignmentType.HOMEWORK) {
-    assignmentValue = <HomeworkValue>{homeworkLesson: props.schoolLesson}
+      assignmentValue = <HomeworkValue>{homeworkLesson: props.lesson}
   } else if (props.tab == AssignmentType.EVENT) {
     assignmentValue = <EventValue>{
       from: '',
       to: ''
     }
   } else {
-    assignmentValue = <ExaminationValue>{lesson: props.schoolLesson}
+      assignmentValue = <ExaminationValue>{lesson: props.lesson}
   }
   const assignment = <Assignments>{
     createdBy: getCurrentUserAsUserView(),

@@ -7,7 +7,7 @@
                               label="Първи срок">
                 <assignments-table :assignments="props.assignments" :period-id="periodId" :school-class="schoolClass"
                                    :school-id="schoolId"
-                                   :school-lesson="null" :semester="Semester.FIRST" :tab="tab"/>
+                                   :lesson="lesson" :semester="Semester.FIRST" :tab="tab"/>
             </q-expansion-item>
             <q-expansion-item v-model="expansionItem[Semester.SECOND]"
                               header-class="text-primary"
@@ -15,7 +15,7 @@
                               label="Втори срок">
                 <assignments-table :assignments="props.assignments" :period-id="periodId" :school-class="schoolClass"
                                    :school-id="schoolId"
-                                   :school-lesson="null" :semester="Semester.SECOND" :tab="tab"/>
+                                   :lesson="lesson" :semester="Semester.SECOND" :tab="tab"/>
             </q-expansion-item>
         </q-card>
     </q-page>
@@ -27,6 +27,7 @@ import {$ref} from "vue/macros";
 import {Semester} from "../../model/SchoolPeriod";
 import {Assignments, AssignmentType} from "../../model/Assignments";
 import AssignmentsTable from "./evaluation-tables/assignments-table.vue";
+import {SchoolLesson} from "../../model/SchoolLesson";
 
 const props = defineProps<{
     periodId: number,
@@ -34,8 +35,9 @@ const props = defineProps<{
     schoolClass: SchoolClass,
     assignments: Assignments[]
     tab: AssignmentType,
+    lesson: SchoolLesson | null
 }>()
-
+console.log(props)
 const expansionItem = $ref({"FIRST": false, "SECOND": false, "YEARLY": false})
 
 </script>

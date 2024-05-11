@@ -39,7 +39,7 @@ export const constructAssignmentValueMessage = (assignment: Assignments) => {
     let assignmentValueMessage = ''
     switch (assignment.assignmentType) {
         case AssignmentType.EXAMINATION: {
-            assignmentValueMessage = ` - от ${(dateTimeToBulgarianLocaleString((assignment.assignmentValue as ExaminationValue).lesson.startTimeOfLesson))} до ${(dateTimeToBulgarianLocaleString((assignment.assignmentValue as ExaminationValue).lesson.endTimeOfLesson))}, място: ${(assignment.assignmentValue as ExaminationValue).lesson.subject} стая`
+            assignmentValueMessage = ` - от ${(dateTimeToBulgarianLocaleString((assignment.assignmentValue as ExaminationValue).lesson.startTimeOfLesson))} до ${(dateTimeToBulgarianLocaleString((assignment.assignmentValue as ExaminationValue).lesson.endTimeOfLesson))}, място: ${(assignment.assignmentValue as ExaminationValue).lesson.room} стая, по: ${(assignment.assignmentValue as ExaminationValue).lesson.subject.name}`
             break;
         }
         case AssignmentType.HOMEWORK: {

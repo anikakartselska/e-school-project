@@ -135,7 +135,7 @@ const schoolLessonClass = (lesson: SchoolLesson): string => {
   return ''
 }
 
-const reRouteToLessonPage = async (lessonId) => router.push(`/school-lesson/${props.periodId}/${props.schoolId}/${lessonId}/lesson`)
+const reRouteToLessonPage = async (lessonId) => await router.push(`/school-lesson/${props.periodId}/${props.schoolId}/${lessonId}/lesson`)
 
 
 </script>

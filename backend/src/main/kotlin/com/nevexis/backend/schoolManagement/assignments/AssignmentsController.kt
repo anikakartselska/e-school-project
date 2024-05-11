@@ -31,6 +31,12 @@ class AssignmentsController {
     fun fetchAllAssignmentsForSchoolClassPeriodAndSchool(
         @RequestParam schoolId: BigDecimal,
         @RequestParam periodId: BigDecimal,
-        @RequestParam schoolClassId: BigDecimal
-    ) = assignmentsService.getAllAssignmentsForSchoolClassPeriodAndSchool(schoolId, periodId, schoolClassId)
+        @RequestParam schoolClassId: BigDecimal,
+        @RequestParam schoolLessonId: BigDecimal? = null
+    ) = assignmentsService.getAllAssignmentsForSchoolClassPeriodAndSchool(
+        schoolId,
+        periodId,
+        schoolClassId,
+        schoolLessonId
+    )
 }

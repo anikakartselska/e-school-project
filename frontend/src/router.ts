@@ -248,7 +248,19 @@ const routes = [
                     {
                         path: 'feedbacks',
                         component: SubjectFeedbackTab
-                    }
+                    },
+                    {
+                        path: 'examinations',
+                        component: SchoolClassAssignmentsTab
+                    },
+                    {
+                        path: 'homeworks',
+                        component: SchoolClassAssignmentsTab
+                    },
+                    {
+                        path: 'events',
+                        component: SchoolClassAssignmentsTab
+                    },
                 ],
             },
             {

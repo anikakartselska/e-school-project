@@ -544,12 +544,13 @@ export const fetchSchoolById = async (schoolId): Promise<School> =>
 
 export const fetchAllAssignmentsForSchoolClassPeriodAndSchool = async (schoolId,
                                                                        periodId,
-                                                                       schoolClassId): Promise<Assignments> =>
+                                                                       schoolClassId, schoolLessonId: number | null = null): Promise<Assignments> =>
         await api.get<Assignments>('/fetch-all-assignments-for-school-class-period-and-school', {
             params: {
                 schoolId: schoolId,
                 periodId: periodId,
-                schoolClassId: schoolClassId
+                schoolClassId: schoolClassId,
+                schoolLessonId: schoolLessonId
             }
         }).then(p => p.data)
 

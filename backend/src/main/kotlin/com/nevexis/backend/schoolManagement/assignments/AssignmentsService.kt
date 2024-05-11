@@ -46,7 +46,8 @@ class AssignmentsService : BaseService() {
     fun getAllAssignmentsForSchoolClassPeriodAndSchool(
         schoolId: BigDecimal,
         periodId: BigDecimal,
-        schoolClassId: BigDecimal
+        schoolClassId: BigDecimal,
+        schoolLessonId: BigDecimal? = null
     ): List<Assignments> = db.select(
         ASSIGNMENTS.asterisk(),
         USER.asterisk()
@@ -58,6 +59,16 @@ class AssignmentsService : BaseService() {
             ASSIGNMENTS.SCHOOL_PERIOD_ID.eq(periodId)
                 .and(ASSIGNMENTS.SCHOOL_ID.eq(schoolId))
                 .and(ASSIGNMENTS.SCHOOL_CLASS_ID.eq(schoolClassId))
+                .let {
+                    if (schoolLessonId != null) {
+                        it.and(
+                            ASSIGNMENTS.ASSIGNMENT_VALUE.like("%esson\":{\"id\":\"${schoolLessonId}%")
+                                .or(ASSIGNMENTS.ASSIGNMENT_TYPE.eq(AssignmentType.EVENT.name))
+                        )
+                    } else {
+                        it
+                    }
+                }
         ).fetch().map {
             mapToAssignmentModel(it)
         }
