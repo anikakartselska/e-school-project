@@ -20,7 +20,7 @@
                 round
                 @click="left = !left"
         />
-        <q-toolbar-title>Електронен дневник</q-toolbar-title>
+        <q-toolbar-title>{{ school?.schoolName }}</q-toolbar-title>
         <q-btn :label="`${getCurrentUser().role.period.startYear.substring(0,4)}/${getCurrentUser().role.period.endYear.substring(0,4)}`"
                dense flat
                icon="switch_account">
@@ -155,6 +155,7 @@ import {AuthenticationResponse, Success} from "../model/AuthenticationResponse";
 import {periodId, schoolId} from "../model/constants";
 import {useQuasar} from "quasar";
 import PasswordChangeDialog from "./reset-password/password-change-dialog.vue";
+import {School} from "../model/School";
 
 const router = useRouter();
 const quasar = useQuasar()
@@ -168,13 +169,13 @@ const onLogoutClick = async () => {
 let currentUser = getCurrentUser();
 let currentUserFile = $ref<File | null>(null)
 let imageUrl = $ref<string | null>(null)
+let school = $ref<School | null>(null)
 let userRoles = $ref(<SchoolUserRole[]>[]);
 let schoolPeriods = $ref(<SchoolPeriod[]>[]);
 onBeforeMount(async () => {
   currentUser = getCurrentUser()
   await load()
   imageUrl = currentUserFile ? window.URL.createObjectURL(currentUserFile) : ''
-  console.log(currentUserFile)
 
 })
 
@@ -182,7 +183,8 @@ const load = async () => {
   userRoles = await getAllUserRoles(currentUser.id)
   schoolPeriods = await getAllSchoolPeriods()
   userRolesFilteredBySelectedPeriod = userRoles.filter(role => role.period.id == selectedPeriod?.id)
-  currentUserFile = await getUserProfilePicture(currentUser.id)
+    currentUserFile = await getUserProfilePicture(currentUser.id)
+    school = currentUser.role.school
 }
 
 let userRolesFilteredBySelectedPeriod = $ref<SchoolUserRole[]>([])
@@ -196,9 +198,13 @@ watch(() => selectedPeriod, () => {
 const changeUserRole = async () => {
   await confirmActionPromiseDialogWithCancelButton("Смяна на роля", `Сигурни ли сте, че искате да влезнете в приложението като ${constructSchoolUserRoleMessage(selectedRole)}`)
   await loginAfterSelectedRole(selectedRole?.id!!, selectedPeriod?.id!!).then(async r => {
-            const authResponse: AuthenticationResponse = <Success>r.data
-            updateUserInLocalStorage(authResponse.user)
-            await router.push({path: '/'})
+              const authResponse: AuthenticationResponse = <Success>r.data
+              updateUserInLocalStorage(authResponse.user)
+              currentUser = getCurrentUser()
+              school = currentUser.role.school
+              schoolId.value = school.id.toString()
+              periodId.value = currentUser.role.period.id.toString()
+              await router.push({path: '/'})
           }
   )
 }

@@ -62,7 +62,7 @@ import {
 import {SchoolClass} from "../../model/SchoolClass";
 import {periodId} from "../../model/constants";
 import {useQuasar} from "quasar";
-import SchoolClassAddDialog from "./school-class-add-dialog.vue";
+import SchoolClassAddDialog from "./dialogs/school-class-add-dialog.vue";
 
 const props = defineProps<{
     periodId: number,

@@ -30,7 +30,7 @@
 
 <script lang="ts" setup>
 import {useDialogPluginComponent, useQuasar} from "quasar";
-import {UserView} from "../../model/User";
+import {UserView} from "../../../model/User";
 import {$ref} from "vue/macros";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()

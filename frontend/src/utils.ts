@@ -119,7 +119,7 @@ export const dateTimeToBulgarianLocaleString = (date) => {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
-    })
+    }).slice(0, 20)
 }
 export const formatWithDash = (dateToFormat: string | null) => {
     if (dateToFormat == null || dateToFormat == '') {

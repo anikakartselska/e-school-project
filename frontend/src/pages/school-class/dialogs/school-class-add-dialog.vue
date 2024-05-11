@@ -57,11 +57,11 @@
 
 <script lang="ts" setup>
 import {$ref} from "vue/macros";
-import {SchoolClass, Shift, shiftTranslation} from "../../model/SchoolClass";
-import {UserView} from "../../model/User";
+import {SchoolClass, Shift, shiftTranslation} from "../../../model/SchoolClass";
+import {UserView} from "../../../model/User";
 import {useDialogPluginComponent, useQuasar} from "quasar";
-import {getRangeOf} from "../../utils";
-import SingleFilePicker from "../common/single-file-picker.vue";
+import {getRangeOf} from "../../../utils";
+import SingleFilePicker from "../../common/single-file-picker.vue";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
 const quasar = useQuasar()

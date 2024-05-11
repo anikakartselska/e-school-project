@@ -41,6 +41,7 @@ import SchoolPage from "./pages/administration/school-page.vue";
 import SchoolClassesPlansPage from "./pages/administration/school-classes-plans-page.vue";
 import SchoolClassesPlanPage from "./pages/administration/school-classes-plan-page.vue";
 import TeacherLessonsPage from "./pages/teacher-pages/teacher-lessons-page.vue";
+import SchoolClassAssignmentsTab from "./pages/school-class/school-class-assignments-tab.vue";
 
 const routes = [
     {
@@ -147,7 +148,18 @@ const routes = [
                         path: 'absences',
                         component: SchoolClassAbsencesTab
                     },
-
+                    {
+                        path: 'examinations',
+                        component: SchoolClassAssignmentsTab
+                    },
+                    {
+                        path: 'homeworks',
+                        component: SchoolClassAssignmentsTab
+                    },
+                    {
+                        path: 'events',
+                        component: SchoolClassAssignmentsTab
+                    },
                 ],
             },
             {

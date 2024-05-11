@@ -78,18 +78,22 @@ class AssignmentsService : BaseService() {
         schoolId: BigDecimal,
         periodId: BigDecimal,
         schoolClassId: BigDecimal
-    ) = db.newRecord(ASSIGNMENTS, assignments).apply {
-        id = assignments.id?.toBigDecimal() ?: getAssignmentSeqNextVal()
-        createdBy = assignments.createdBy.id.toBigDecimal()
-        createdOn = assignments.createdOn
-        this.schoolId = schoolId
-        schoolPeriodId = periodId
-        this.schoolClassId = schoolClassId
-        text = assignments.text
-        semester = assignments.semester.name
-        assignmentType = assignments.assignmentType.name
-        assignmentValue = Json.encodeToString(assignments.assignmentValue)
-    }
+    ) = (db.selectFrom(ASSIGNMENTS).where(ASSIGNMENTS.ID.eq(assignments.id?.toBigDecimal())).fetchAny() ?: db.newRecord(
+        ASSIGNMENTS,
+        assignments
+    ))
+        .apply {
+            id = assignments.id?.toBigDecimal() ?: getAssignmentSeqNextVal()
+            createdBy = assignments.createdBy.id.toBigDecimal()
+            createdOn = assignments.createdOn
+            this.schoolId = schoolId
+            schoolPeriodId = periodId
+            this.schoolClassId = schoolClassId
+            text = assignments.text
+            semester = assignments.semester.name
+            assignmentType = assignments.assignmentType.name
+            assignmentValue = Json.encodeToString(assignments.assignmentValue)
+        }
 
     private fun mapToAssignmentModel(
         record: Record,
