@@ -4,7 +4,8 @@
             <q-expansion-item v-model="expansionItem[Semester.FIRST]"
                               header-class="text-primary"
                               icon="book"
-                              label="Първи срок">
+                              label="Първи срок"
+            >
                 <assignments-table :assignments="props.assignments" :period-id="periodId" :school-class="schoolClass"
                                    :school-id="schoolId"
                                    :lesson="lesson" :semester="Semester.FIRST" :tab="tab"/>
@@ -37,8 +38,8 @@ const props = defineProps<{
     tab: AssignmentType,
     lesson: SchoolLesson | null
 }>()
-console.log(props)
-const expansionItem = $ref({"FIRST": false, "SECOND": false, "YEARLY": false})
+
+const expansionItem = $ref({"FIRST": true, "SECOND": false, "YEARLY": false})
 
 </script>
 

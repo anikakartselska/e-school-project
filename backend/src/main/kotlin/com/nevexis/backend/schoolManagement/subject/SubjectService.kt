@@ -116,7 +116,7 @@ class SubjectService : BaseService() {
             .fetch()
             .map {
                 mapToInternalModel(it)
-            }
+            }.distinctBy { subject -> subject.id }
 
     fun getSubjectsById(
         subjectId: BigDecimal,

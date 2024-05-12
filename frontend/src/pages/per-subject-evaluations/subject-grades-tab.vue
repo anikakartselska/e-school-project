@@ -39,7 +39,7 @@ const props = defineProps<{
   subject: Subject,
   lesson?: SchoolLesson | null
 }>()
-const expansionItem = $ref({"FIRST": false, "SECOND": false, "YEARLY": false})
+const expansionItem = $ref({"FIRST": true, "SECOND": false, "YEARLY": false})
 </script>
 
 <style scoped>

@@ -32,7 +32,7 @@ import {$ref} from "vue/macros";
 const props = defineProps<{
   evaluations: SubjectWithEvaluationDTO[],
 }>()
-const expansionItem = $ref({"FIRST": false, "SECOND": false, "YEARLY": false})
+const expansionItem = $ref({"FIRST": true, "SECOND": false, "YEARLY": false})
 </script>
 
 <style scoped>

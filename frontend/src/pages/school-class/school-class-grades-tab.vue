@@ -45,7 +45,7 @@ const props = defineProps<{
 }>()
 
 const grades = $ref(await fetchAllStudentSubjectEvaluationsFromSchoolClass(props.schoolClass, EvaluationType.GRADE).then(e => e.data))
-const expansionItem = $ref({"FIRST": false, "SECOND": false, "YEARLY": false})
+const expansionItem = $ref({"FIRST": true, "SECOND": false, "YEARLY": false})
 
 </script>
 

@@ -45,7 +45,7 @@ const props = defineProps<{
 }>()
 
 const remarks = $ref(await fetchAllStudentSubjectEvaluationsFromSchoolClass(props.schoolClass, EvaluationType.FEEDBACK).then(e => e.data))
-const expansionItem = $ref({"FIRST": false, "SECOND": false, "YEARLY": false})
+const expansionItem = $ref({"FIRST": true, "SECOND": false, "YEARLY": false})
 
 </script>
 

@@ -9,6 +9,7 @@
              separator="cell"
              title="Оценки"
              virtual-scroll
+             id="test"
     >
         <template v-slot:header-cell-average="props">
             <q-th>
@@ -183,8 +184,10 @@ const props = defineProps<{
 const exportToPDF = () => {
     html2pdf(document.getElementById("test"), {
         margin: 1,
-        filename: "i-was-html.pdf",
-        jsPDF: {unit: 'in', format: 'letter', orientation: 'portrait'}
+        filename: "test",
+        image: {type: 'jpeg', quality: 0.98},
+        html2canvas: {scale: 2, useCORS: true},
+        jsPDF: {unit: 'in', format: 'a4', orientation: 'landscape'}
     });
 }
 const rows = props.students.map(student => {

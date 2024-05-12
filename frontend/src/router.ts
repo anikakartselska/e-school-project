@@ -207,6 +207,18 @@ const routes = [
                         path: 'program',
                         component: SchoolClassLessonsTab
                     },
+                    {
+                        path: 'examinations',
+                        component: SchoolClassAssignmentsTab
+                    },
+                    {
+                        path: 'homeworks',
+                        component: SchoolClassAssignmentsTab
+                    },
+                    {
+                        path: 'events',
+                        component: SchoolClassAssignmentsTab
+                    },
                 ],
             },
             {
