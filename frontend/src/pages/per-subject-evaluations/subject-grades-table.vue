@@ -31,18 +31,10 @@
                v-if="props.row?.student?.firstName !== undefined"
                :class="`q-ma-xs ${gradeBackgroundColorMap.get(grade.evaluationValue.grade)}`"
                :label="gradeMap.get(grade.evaluationValue.grade)?.toString()"
+               @click="updateEvaluationDialog(grade)"
                flat
                rounded>
-          <q-popup-proxy>
-            <q-banner>
-              Въведен от:<span class="text-primary">{{
-                grade.createdBy.firstName
-              }} {{ grade.createdBy.lastName }}</span><br/>
-              Дата:<span class="text-primary">{{
-                grade.evaluationDate
-              }}</span><br/>
-            </q-banner>
-          </q-popup-proxy>
+            <q-tooltip>Кликни за повече информация</q-tooltip>
         </q-btn>
       </q-td>
     </template>
@@ -66,17 +58,9 @@
                :class="`q-ma-xs ${gradeBackgroundColorMap.get(grade.evaluationValue.grade)}`"
                :label="gradeMap.get(grade.evaluationValue.grade)?.toString()"
                flat
+               @click="updateEvaluationDialog(grade)"
                rounded>
-          <q-popup-proxy>
-            <q-banner>
-              Въведен от:<span class="text-primary">{{
-                grade.createdBy.firstName
-              }} {{ grade.createdBy.lastName }}</span><br/>
-              Дата:<span class="text-primary">{{
-                grade.evaluationDate
-              }}</span><br/>
-            </q-banner>
-          </q-popup-proxy>
+            <q-tooltip>Кликни за повече информация</q-tooltip>
         </q-btn>
         <q-btn v-else-if="!isNaN(calculateAverageGrade(props.row?.grades?.filter(it => it.evaluationValue.finalGrade === true && it.semester === semester),true))"
                :class="`q-ma-xs ${getAverageGradeColorClass(calculateAverageGrade(props.row?.grades?.filter(it => it.evaluationValue.finalGrade === true && it.semester === semester),true))}`"
@@ -107,10 +91,11 @@ import {useQuasar} from "quasar";
 import AddGradesDialog from "./add-grades-dialog.vue";
 import {StudentView} from "../../model/User";
 import {Subject} from "../../model/Subject";
-import {saveEvaluations} from "../../services/RequestService";
+import {deleteEvaluation, saveEvaluations, updateEvaluation} from "../../services/RequestService";
 import {periodId, schoolId} from "../../model/constants";
 import {SchoolLesson} from "../../model/SchoolLesson";
 import {commentPromiseDialog} from "../../utils";
+import EvaluationDialog from "../school-class/evaluation-tables/evaluation-dialog.vue";
 
 const props = defineProps<{
   evaluations: StudentWithEvaluationDTO[],
@@ -141,20 +126,58 @@ const addNewGrades = async (finalGrade: boolean) => quasar.dialog({
 }).onOk(async (payload) => {
     const comment = await commentPromiseDialog()
     await saveEvaluations(payload.item, periodId.value, schoolId.value, comment).then(e => {
-        const newlyAddedGrades = e.data
-        grades.forEach(studentGrades => {
-                    const newlyAddedGradesForCurrentStudent = newlyAddedGrades.find(v => v.student.id == studentGrades.student.id)?.grades
-                    if (studentGrades.student.id == 10000) {
-                        studentGrades.grades = studentGrades.grades.concat(newlyAddedGrades.map(it => it.grades).flat(1))
-                    }
-                    studentGrades.grades = studentGrades.grades.concat(newlyAddedGradesForCurrentStudent ? newlyAddedGradesForCurrentStudent : [])
-                }
-        )
-    }
-  )
+                const newlyAddedGrades = e.data
+                grades.forEach(studentGrades => {
+                            const newlyAddedGradesForCurrentStudent = newlyAddedGrades.find(v => v.student.id == studentGrades.student.id)?.grades
+                            if (studentGrades.student.id == 10000) {
+                                studentGrades.grades = studentGrades.grades.concat(newlyAddedGrades.map(it => it.grades).flat(1))
+                            }
+                            studentGrades.grades = studentGrades.grades.concat(newlyAddedGradesForCurrentStudent ? newlyAddedGradesForCurrentStudent : [])
+                        }
+                )
+            }
+    )
 })
+const updateEvaluationDialog = (evaluation: Evaluation) => {
+    quasar.dialog({
+        component: EvaluationDialog,
+        componentProps: {
+            evaluation: evaluation,
+            periodId: periodId.value,
+            schoolId: schoolId.value,
+            readonly: false
+        },
+    }).onOk(async (payload) => {
+        const updatedGrades = payload.item.evaluation as Evaluation
+        if (payload.item.delete == false) {
+            await updateEvaluation(updatedGrades, periodId.value, schoolId.value).then(e => {
+                        grades.forEach(evaluation => {
+                            if (evaluation.student.id == updatedGrades.student.id || evaluation.student.id == 10000) {
+                                evaluation.grades = evaluation.grades.map(it => {
+                                    if (it.id == updatedGrades.id) {
+                                        return updatedGrades
+                                    } else {
+                                        return it
+                                    }
+                                })
+                            }
+                        })
+                    }
+            )
+        } else {
+            await deleteEvaluation(updatedGrades, periodId.value, schoolId.value).then(e => {
+                        grades.forEach(evaluation => {
+                            if (evaluation.student.id == updatedGrades.student.id || evaluation.student.id == 10000) {
+                                evaluation.grades = evaluation.grades.filter(it => it.id !== updatedGrades.id)
+                            }
+                        })
+                    }
+            )
+        }
+    })
+}
 const getRowKey = (row) => {
-  return row?.student ? row?.student : '1000'
+    return row?.student ? row?.student : '1000'
 }
 const columns = [
   {

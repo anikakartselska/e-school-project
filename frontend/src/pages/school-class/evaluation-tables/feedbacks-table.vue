@@ -108,23 +108,13 @@
                 <div v-else class="row" style="width: 20vw">
                     <div v-if="semester !== Semester.YEARLY" class="col-8 text-center">
                         <q-btn v-for="feedback in props.row[column.name]"
-                               :class="feedbacksMap.get(feedback.evaluationValue.feedback)===true? `text-green-3` : `text-red-3`" :icon="feedbacksMap.get(feedback.evaluationValue.feedback)===true? 'thumb_up_alt' : 'thumb_down_alt'"
+                               :class="feedbacksMap.get(feedback.evaluationValue.feedback)===true? `text-green-3` : `text-red-3`"
+                               :icon="feedbacksMap.get(feedback.evaluationValue.feedback)===true? 'thumb_up_alt' : 'thumb_down_alt'"
+                               @click="updateEvaluationDialog(feedback)"
                                flat
                                rounded
                         >
-                            <q-tooltip>
-                                {{ feedbacksMapTranslation.get(feedback.evaluationValue.feedback) }}
-                            </q-tooltip>
-                            <q-popup-proxy>
-                                <q-banner>
-                                    Въведен от:<span class="text-primary">{{
-                                    feedback.createdBy.firstName
-                                    }} {{ feedback.createdBy.lastName }}</span><br/>
-                                    Дата:<span class="text-primary">{{
-                                    feedback.evaluationDate
-                                    }}</span><br/>
-                                </q-banner>
-                            </q-popup-proxy>
+                            <q-tooltip>Кликни за повече информация</q-tooltip>
                         </q-btn>
                     </div>
                     <q-separator v-if="semester !== Semester.YEARLY" vertical/>
@@ -152,15 +142,17 @@
 </template>
 <script lang="ts" setup>
 
-import {
-    countFeedbacksSum,
-    feedbacksMap,
-    feedbacksMapTranslation
-} from "../../../services/helper-services/EvaluationService";
+import {countFeedbacksSum, feedbacksMap} from "../../../services/helper-services/EvaluationService";
 import {Evaluation} from "../../../model/Evaluation";
 import {StudentView} from "../../../model/User";
 import {Subject} from "../../../model/Subject";
 import {Semester} from "../../../model/SchoolPeriod";
+import {useQuasar} from "quasar";
+import EvaluationDialog from "./evaluation-dialog.vue";
+import {periodId, schoolId} from "../../../model/constants";
+import {$ref} from "vue/macros";
+import {watch} from "vue";
+import {deleteEvaluation, updateEvaluation} from "../../../services/RequestService";
 
 const props = defineProps<{
     students: StudentView[],
@@ -168,51 +160,57 @@ const props = defineProps<{
     feedbacks: any
     semester: Semester
 }>()
-
-const rows = props.students.map(student => {
-            const object = {student: student, numberInClass: student.numberInClass}
-            const evaluations = props.subjects.map(subject =>
-                    props.feedbacks[subject.id][student.id]?.filter(it => props.semester == Semester.YEARLY || it.semester == props.semester)
-            ).flat(1)
-            object["total"] = <Pair<number, Pair<number, number>>>{
-                first: countFeedbacksSum(evaluations),
-                second: <Pair<number, number>>{
-                    first: countFeedbacksSum(evaluations, true),
-                    second: countFeedbacksSum(evaluations, false)
-                }
-            }
-            props.subjects.forEach(subject =>
-                    object[subject.id] = props.feedbacks[subject.id][student.id]?.filter(it => props.semester == Semester.YEARLY || it.semester == props.semester)
-            )
-            return object
-        }
-)
-
-const object = <any>{}
-props.subjects.forEach(subject => {
-    const evaluations: Evaluation[] = <Evaluation[]>Object.values(props.feedbacks[subject.id]).flat(1).filter(it => props.semester == Semester.YEARLY || it.semester == props.semester)
-    object[subject.id] = <Pair<number, Pair<number, number>>>{
-        first: countFeedbacksSum(evaluations),
-        second: <Pair<number, number>>{
-            first: countFeedbacksSum(evaluations, true),
-            second: countFeedbacksSum(evaluations, false)
-        }
-    }
+let currentFeedbacks = $ref<any>({...props.feedbacks});
+let rows = $ref([])
+watch(currentFeedbacks, () => {
+    defineRows()
 })
-const allEvaluations = props.subjects.map(subject =>
-        <Evaluation[]>Object.values(props.feedbacks[subject.id]).flat(1).filter(it => props.semester == Semester.YEARLY || it.semester == props.semester)
-).flat(1)
-object['total'] = <Pair<number, Pair<number, number>>>{
-    first: countFeedbacksSum(allEvaluations),
-    second: <Pair<number, number>>{
-        first: countFeedbacksSum(allEvaluations, true),
-        second: countFeedbacksSum(allEvaluations, false)
-    }
-}
-rows.push(object)
-console.log(object)
+const defineRows = () => {
+    rows = props.students.map(student => {
+                const object = {student: student, numberInClass: student.numberInClass}
+                const evaluations = props.subjects.map(subject =>
+                        currentFeedbacks[subject.id][student.id]?.filter(it => props.semester == Semester.YEARLY || it.semester == props.semester)
+                ).flat(1)
+                object["total"] = <Pair<number, Pair<number, number>>>{
+                    first: countFeedbacksSum(evaluations),
+                    second: <Pair<number, number>>{
+                        first: countFeedbacksSum(evaluations, true),
+                        second: countFeedbacksSum(evaluations, false)
+                    }
+                }
+                props.subjects.forEach(subject =>
+                        object[subject.id] = currentFeedbacks[subject.id][student.id]?.filter(it => props.semester == Semester.YEARLY || it.semester == props.semester)
+                )
+                return object
+            }
+    )
 
-const columns = (props.feedbacks ? Object.keys(props.feedbacks).map(subjectId => {
+    const object = <any>{}
+    props.subjects.forEach(subject => {
+        const evaluations: Evaluation[] = <Evaluation[]>Object.values(currentFeedbacks[subject.id]).flat(1).filter(it => props.semester == Semester.YEARLY || it.semester == props.semester)
+        object[subject.id] = <Pair<number, Pair<number, number>>>{
+            first: countFeedbacksSum(evaluations),
+            second: <Pair<number, number>>{
+                first: countFeedbacksSum(evaluations, true),
+                second: countFeedbacksSum(evaluations, false)
+            }
+        }
+    })
+    const allEvaluations = props.subjects.map(subject =>
+            <Evaluation[]>Object.values(currentFeedbacks[subject.id]).flat(1).filter(it => props.semester == Semester.YEARLY || it.semester == props.semester)
+    ).flat(1)
+    object['total'] = <Pair<number, Pair<number, number>>>{
+        first: countFeedbacksSum(allEvaluations),
+        second: <Pair<number, number>>{
+            first: countFeedbacksSum(allEvaluations, true),
+            second: countFeedbacksSum(allEvaluations, false)
+        }
+    }
+    rows.push(object)
+}
+defineRows()
+
+const columns = (currentFeedbacks ? Object.keys(currentFeedbacks).map(subjectId => {
     return {
         name: subjectId,
         align: "center",
@@ -243,5 +241,34 @@ columns.unshift({
     field: (row) => row["student"]?.numberInClass,
     sortable: true
 })
-
+const quasar = useQuasar()
+const updateEvaluationDialog = (evaluation: Evaluation) => {
+    quasar.dialog({
+        component: EvaluationDialog,
+        componentProps: {
+            evaluation: evaluation,
+            periodId: periodId.value,
+            schoolId: schoolId.value,
+            readonly: false
+        },
+    }).onOk(async (payload) => {
+        const updatedFeedback = payload.item.evaluation as Evaluation
+        if (payload.item.delete == false) {
+            await updateEvaluation(updatedFeedback, periodId.value, schoolId.value).then(r => {
+                currentFeedbacks[updatedFeedback.subject.id][updatedFeedback.student.id] = currentFeedbacks[updatedFeedback.subject.id][updatedFeedback.student.id]?.map(
+                        it => {
+                            if (it.id == updatedFeedback.id) {
+                                return updatedFeedback
+                            } else {
+                                return it
+                            }
+                        })
+            })
+        } else {
+            await deleteEvaluation(updatedFeedback, periodId.value, schoolId.value).then(e => {
+                currentFeedbacks[updatedFeedback.subject.id][updatedFeedback.student.id] = currentFeedbacks[updatedFeedback.subject.id][updatedFeedback.student.id]?.filter(it => it.id !== updatedFeedback.id)
+            })
+        }
+    })
+}
 </script>

@@ -44,6 +44,30 @@ class EvaluationNotificationService {
         }
     }
 
+    fun sendEmailForEvaluationsDelete(
+        evaluations: List<Evaluation>,
+        periodId: BigDecimal,
+        schoolId: BigDecimal
+    ) {
+        val deletedEvaluationsGroupedByStudentId = evaluations.groupBy { it.student.id.toBigDecimal() }
+
+        val studentIds = deletedEvaluationsGroupedByStudentId.keys.toList()
+
+        val studentIdToParentEmails = userService.getParentEmailsFromListOfStudentIds(studentIds, periodId, schoolId)
+        deletedEvaluationsGroupedByStudentId.forEach { (_, evaluations) ->
+            evaluations.forEach { evaluation ->
+                studentIdToParentEmails[evaluation.student.id.toBigDecimal()]?.let { email ->
+                    notificationService.sendNotification(
+                        listOf(email, evaluation.student.email),
+                        "ИЗТРИТО оценяване",
+                        TemplateType.EVALUATION_DELETE,
+                        getContextForEvaluationDelete(evaluation)
+                    )
+                }
+            }
+        }
+    }
+
     fun sendEmailForEvaluationsUpdate(
         evaluationsToPreviousState: List<Pair<Evaluation, EvaluationRecord>>,
         periodId: BigDecimal,
@@ -86,6 +110,7 @@ class EvaluationNotificationService {
                 EvaluationType.GRADE -> "оценка"
                 EvaluationType.ABSENCE -> "отсъствие"
             },
+            "subjectName" to evaluation.subject.name,
             "studentName" to "${evaluation.student.firstName} ${evaluation.student.lastName}",
             "evaluationValue" to getEvaluationValueText(oldEvaluationValue, evaluation.semester),
             "newEvaluationValue" to getEvaluationValueText(evaluation.evaluationValue, evaluation.semester),
@@ -105,6 +130,26 @@ class EvaluationNotificationService {
             "subjectName" to evaluation.subject.name,
             "createdBy" to "${evaluation.createdBy.firstName} ${evaluation.createdBy.lastName} (Имейл: ${evaluation.createdBy.email})",
             "comment" to (evaluation.comment ?: "Без коментар")
+        )
+    }
+
+    private fun getContextForEvaluationDelete(
+        evaluation: Evaluation
+    ): Map<String, String> {
+        return mapOf(
+            "evaluation2" to when (evaluation.evaluationType) {
+                EvaluationType.FEEDBACK -> "Отзивът"
+                EvaluationType.GRADE -> "Оценката"
+                EvaluationType.ABSENCE -> "Отсъствието"
+            },
+            "evaluation" to when (evaluation.evaluationType) {
+                EvaluationType.FEEDBACK -> "отзив"
+                EvaluationType.GRADE -> "оценка"
+                EvaluationType.ABSENCE -> "отсъствие"
+            },
+            "subjectName" to evaluation.subject.name,
+            "studentName" to "${evaluation.student.firstName} ${evaluation.student.lastName}",
+            "evaluationValue" to getEvaluationValueText(evaluation.evaluationValue, evaluation.semester),
         )
     }
 

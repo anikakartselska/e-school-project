@@ -48,17 +48,9 @@
                :class="`q-ma-xs ${getAbsenceBackgroundColor(absence)}`"
                :label="absenceMap.get(absence.evaluationValue.absence)"
                flat
+               @click="updateEvaluationDialog(absence)"
                rounded>
-          <q-popup-proxy>
-            <q-banner>
-              Въведен от:<span class="text-primary">{{
-                absence.createdBy.firstName
-              }} {{ absence.createdBy.lastName }}</span><br/>
-              Дата:<span class="text-primary">{{
-                absence.evaluationDate
-              }}</span><br/>
-            </q-banner>
-          </q-popup-proxy>
+            <q-tooltip>Кликни за повече информация</q-tooltip>
         </q-btn>
       </q-td>
     </template>
@@ -108,11 +100,12 @@ import {Subject} from "../../model/Subject";
 import {StudentView} from "../../model/User";
 import {useQuasar} from "quasar";
 import AddAbsencesDialog from "./add-absences-dialog.vue";
-import {saveEvaluations, updateEvaluations} from "../../services/RequestService";
+import {deleteEvaluation, saveEvaluations, updateEvaluation, updateEvaluations} from "../../services/RequestService";
 import {periodId, schoolId} from "../../model/constants";
 import UpdateAbsencesDialog from "./update-absences-dialog.vue";
 import {SchoolLesson} from "../../model/SchoolLesson";
 import {commentPromiseDialog} from "../../utils";
+import EvaluationDialog from "../school-class/evaluation-tables/evaluation-dialog.vue";
 
 const props = defineProps<{
   evaluations: StudentWithEvaluationDTO[],
@@ -174,14 +167,52 @@ const updateAbsences = async () => quasar.dialog({
                         studentEvaluations.absences = studentEvaluations.absences.map(absence =>
                                 allAbsences.find(oldAbsence => oldAbsence.id == absence.id) ? allAbsences.find(oldAbsence => oldAbsence.id == absence.id)!! : absence)
                       }
-                      studentEvaluations.absences = studentEvaluations.absences.map(absence =>
-                              updatedAbsencesForCurrentStudent.find(it => it.id == absence.id) ? updatedAbsencesForCurrentStudent.find(it => it.id == absence.id) : absence)
+                        studentEvaluations.absences = studentEvaluations.absences.map(absence =>
+                                updatedAbsencesForCurrentStudent.find(it => it.id == absence.id) ? updatedAbsencesForCurrentStudent.find(it => it.id == absence.id) : absence)
 
                     }
             )
           }
   )
 })
+const updateEvaluationDialog = (evaluation: Evaluation) => {
+    quasar.dialog({
+        component: EvaluationDialog,
+        componentProps: {
+            evaluation: evaluation,
+            periodId: periodId.value,
+            schoolId: schoolId.value,
+            readonly: false
+        },
+    }).onOk(async (payload) => {
+        const updatedAbsence = payload.item.evaluation as Evaluation
+        if (payload.item.delete == false) {
+            await updateEvaluation(updatedAbsence, periodId.value, schoolId.value).then(e => {
+                        absences.forEach(evaluation => {
+                            if (evaluation.student.id == updatedAbsence.student.id || evaluation.student.id == 10000) {
+                                evaluation.absences = evaluation.absences.map(it => {
+                                    if (it.id == updatedAbsence.id) {
+                                        return updatedAbsence
+                                    } else {
+                                        return it
+                                    }
+                                })
+                            }
+                        })
+                    }
+            )
+        } else {
+            await deleteEvaluation(updatedAbsence, periodId.value, schoolId.value).then(e => {
+                        absences.forEach(evaluation => {
+                            if (evaluation.student.id == updatedAbsence.student.id || evaluation.student.id == 10000) {
+                                evaluation.absences = evaluation.absences.filter(it => it.id !== updatedAbsence.id)
+                            }
+                        })
+                    }
+            )
+        }
+    })
+}
 
 const columns = [
   {

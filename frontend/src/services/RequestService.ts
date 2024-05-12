@@ -348,6 +348,17 @@ export const updateEvaluations = async (evaluations, periodId, schoolId): Promis
             params: {periodId: periodId, schoolId: schoolId},
             headers: {'Content-Type': 'application/json'}
         })
+export const updateEvaluation = async (evaluation, periodId, schoolId): Promise<any> =>
+        await api.post<any>(`/update-evaluation`, evaluation, {
+            params: {periodId: periodId, schoolId: schoolId},
+            headers: {'Content-Type': 'application/json'}
+        })
+
+export const deleteEvaluation = async (evaluation, periodId, schoolId): Promise<any> =>
+        await api.post<any>(`/delete-evaluation`, evaluation, {
+            params: {periodId: periodId, schoolId: schoolId},
+            headers: {'Content-Type': 'application/json'}
+        })
 
 export const updateSchoolLesson = async (schoolLesson: SchoolLesson): Promise<any> =>
         await api.post<any>(`/update-school-lesson`, schoolLesson, {

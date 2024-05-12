@@ -17,6 +17,7 @@ export const gradeBackgroundColorMap = new Map<Grade, string>([
     [Grade.EXCELLENT, 'bg-green-2'],
 ]);
 
+
 export const getAbsenceBackgroundColor = (evaluation: Evaluation) => {
     if (evaluation.evaluationType == EvaluationType.ABSENCE) {
         switch ((<AbsenceValue>evaluation.evaluationValue).absence) {
@@ -67,6 +68,28 @@ export const getAbsenceValueBackgroundColor = (evaluationValue: AbsenceValue) =>
     }
 }
 
+export const getAbsenceValueText = (evaluationValue: AbsenceValue) => {
+    switch (evaluationValue.absence) {
+        case Absence.WHOLE: {
+            switch (evaluationValue.excused) {
+                case true:
+                    return 'Цяло извинено отсъствие'
+                case false:
+                    return 'Цяло неизвинено отсъствие'
+            }
+            break;
+        }
+        case Absence.HALF: {
+            switch (evaluationValue.excused) {
+                case true:
+                    return 'Половин извинено отсъствие'
+                case false:
+                    return 'Половин неизвинено отсъствие'
+            }
+            break;
+        }
+    }
+}
 export const absencesOptions = [<AbsenceValue>{absence: Absence.HALF, excused: true}, <AbsenceValue>{
     absence: Absence.WHOLE,
     excused: true
@@ -86,6 +109,13 @@ export const gradeMap = new Map<Grade, number>([
     [Grade.EXCELLENT, 6],
 ]);
 
+export const gradeText = new Map<Grade, string>([
+    [Grade.BAD, 'Слаб'],
+    [Grade.MEDIUM, 'Среден'],
+    [Grade.GOOD, 'Добър'],
+    [Grade.VERY_GOOD, 'Мн. добър'],
+    [Grade.EXCELLENT, 'Отличен'],
+]);
 export const getAverageGradeColorClass = (grade: number) => {
     if (grade >= 2 && grade < 3) {
         return 'bg-red-2'

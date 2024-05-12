@@ -30,23 +30,13 @@
       <q-td class="text-center">
         <q-btn v-for="feedback in props.row.feedbacks.filter(it=>it.semester === semester)"
                v-if="props.row.subject !== undefined"
-               :class="feedbacksMap.get(feedback.evaluationValue.feedback)===true? `text-green-14` : `text-red-14`" :icon="feedbacksMap.get(feedback.evaluationValue.feedback)===true? 'thumb_up_alt' : 'thumb_down_alt'"
+               :class="feedbacksMap.get(feedback.evaluationValue.feedback)===true? `text-green-14` : `text-red-14`"
+               :icon="feedbacksMap.get(feedback.evaluationValue.feedback)===true? 'thumb_up_alt' : 'thumb_down_alt'"
+               @click="updateEvaluationDialog(feedback)"
                flat
                rounded
         >
-          <q-tooltip>
-            {{ feedbacksMapTranslation.get(feedback.evaluationValue.feedback) }}
-          </q-tooltip>
-          <q-popup-proxy>
-            <q-banner>
-              Въведен от:<span class="text-primary">{{
-                feedback.createdBy.firstName
-              }} {{ feedback.createdBy.lastName }}</span><br/>
-              Дата:<span class="text-primary">{{
-                feedback.evaluationDate
-              }}</span><br/>
-            </q-banner>
-          </q-popup-proxy>
+          <q-tooltip>Кликни за повече информация</q-tooltip>
         </q-btn>
       </q-td>
     </template>
@@ -85,13 +75,12 @@
 <script lang="ts" setup>
 import {$ref} from "vue/macros";
 import {SubjectWithEvaluationDTO} from "../../model/SubjectWithEvaluationDTO";
-import {
-    countFeedbacksSum,
-    feedbacksMap,
-    feedbacksMapTranslation
-} from "../../services/helper-services/EvaluationService";
+import {countFeedbacksSum, feedbacksMap} from "../../services/helper-services/EvaluationService";
 import {Semester} from "../../model/SchoolPeriod";
 import {Evaluation} from "../../model/Evaluation";
+import EvaluationDialog from "../school-class/evaluation-tables/evaluation-dialog.vue";
+import {periodId, schoolId} from "../../model/constants";
+import {useQuasar} from "quasar";
 
 const props = defineProps<{
   evaluations: SubjectWithEvaluationDTO[],
@@ -104,6 +93,19 @@ const feedbacks = $ref([...props.evaluations,
     absences: [],
     grades: []
   }])
+
+const quasar = useQuasar()
+const updateEvaluationDialog = (evaluation: Evaluation) => {
+  quasar.dialog({
+    component: EvaluationDialog,
+    componentProps: {
+      evaluation: evaluation,
+      periodId: periodId.value,
+      schoolId: schoolId.value,
+      readonly: true
+    },
+  })
+}
 
 const columns = [
   {

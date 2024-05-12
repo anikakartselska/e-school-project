@@ -9,41 +9,33 @@
           separator="cell"
           title="Отсъствия"
   >
-      <template v-slot:header-cell-total="props">
-          <q-th>
-              <div class="row">
-                  <div class="col text-center">
-                      Извинени
-                  </div>
-                  <q-separator vertical/>
-                  <div class="col-4 text-center">
-                      Неизвинени
-                  </div>
-                  <q-separator vertical/>
-                  <div class="col-4 text-center">
-                      Общо
-                  </div>
-              </div>
-          </q-th>
-      </template>
-      <template v-slot:body-cell-absences="props">
-          <q-td class="text-center">
-              <q-btn v-for="absence in props.row.absences.filter(it=>it.semester === semester)"
-                     v-if="props.row.subject !== undefined"
-                     :class="`q-ma-xs ${getAbsenceBackgroundColor(absence)}`"
-                     :label="absenceMap.get(absence.evaluationValue.absence)"
-                     flat
-                     rounded>
-                  <q-popup-proxy>
-                      <q-banner>
-              Въведен от:<span class="text-primary">{{
-                absence.createdBy.firstName
-              }} {{ absence.createdBy.lastName }}</span><br/>
-              Дата:<span class="text-primary">{{
-                absence.evaluationDate
-              }}</span><br/>
-            </q-banner>
-          </q-popup-proxy>
+    <template v-slot:header-cell-total="props">
+      <q-th>
+        <div class="row">
+          <div class="col text-center">
+            Извинени
+          </div>
+          <q-separator vertical/>
+          <div class="col-4 text-center">
+            Неизвинени
+          </div>
+          <q-separator vertical/>
+          <div class="col-4 text-center">
+            Общо
+          </div>
+        </div>
+      </q-th>
+    </template>
+    <template v-slot:body-cell-absences="props">
+      <q-td class="text-center">
+        <q-btn v-for="absence in props.row.absences.filter(it=>it.semester === semester)"
+               v-if="props.row.subject !== undefined"
+               :class="`q-ma-xs ${getAbsenceBackgroundColor(absence)}`"
+               :label="absenceMap.get(absence.evaluationValue.absence)"
+               flat
+               rounded
+               @click="updateEvaluationDialog(absence)">
+          <q-tooltip>Кликни за повече информация</q-tooltip>
         </q-btn>
       </q-td>
     </template>
@@ -89,6 +81,9 @@ import {
 } from "../../services/helper-services/EvaluationService";
 import {Semester} from "../../model/SchoolPeriod";
 import {Evaluation} from "../../model/Evaluation";
+import EvaluationDialog from "../school-class/evaluation-tables/evaluation-dialog.vue";
+import {periodId, schoolId} from "../../model/constants";
+import {useQuasar} from "quasar";
 
 const props = defineProps<{
   evaluations: SubjectWithEvaluationDTO[],
@@ -103,13 +98,13 @@ const absences = $ref([...props.evaluations,
   }])
 
 const columns = [
-    {
-        name: "subject",
-        label: "Предмет",
-        align: "center",
-        field: (row: SubjectWithEvaluationDTO) => row.subject?.name ? row.subject?.name : 'Общо',
-        sortable: true
-    },
+  {
+    name: "subject",
+    label: "Предмет",
+    align: "center",
+    field: (row: SubjectWithEvaluationDTO) => row.subject?.name ? row.subject?.name : 'Общо',
+    sortable: true
+  },
   {
     name: "absences",
     align: "center",
@@ -123,6 +118,18 @@ const columns = [
 ]
 const visibleColumns = [...columns].filter(it => props.semester !== Semester.YEARLY || it.name != 'absences').map(it => it.name)
 
+const quasar = useQuasar()
+const updateEvaluationDialog = (evaluation: Evaluation) => {
+  quasar.dialog({
+    component: EvaluationDialog,
+    componentProps: {
+      evaluation: evaluation,
+      periodId: periodId.value,
+      schoolId: schoolId.value,
+      readonly: true
+    },
+  })
+}
 </script>
 
 <style scoped>

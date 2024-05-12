@@ -110,18 +110,10 @@
                         <q-btn v-for="grade in props.row[column.name]?.filter(it=> !it.evaluationValue.finalGrade)"
                                :class="`q-ma-xs ${gradeBackgroundColorMap.get(grade.evaluationValue.grade)}`"
                                :label="gradeMap.get(grade.evaluationValue.grade)?.toString()"
+                               @click="updateEvaluationDialog(grade)"
                                flat
                                rounded>
-                            <q-popup-proxy>
-                                <q-banner>
-                                    Въведен от:<span class="text-primary">{{
-                                    grade.createdBy.firstName
-                                    }} {{ grade.createdBy.lastName }}</span><br/>
-                                    Дата:<span class="text-primary">{{
-                                    grade.evaluationDate
-                                    }}</span><br/>
-                                </q-banner>
-                            </q-popup-proxy>
+                            <q-tooltip>Кликни за повече информация</q-tooltip>
                         </q-btn>
                     </div>
                     <q-separator v-if="semester !== Semester.YEARLY" vertical/>
@@ -141,18 +133,10 @@
                         <q-btn v-for="grade in props.row[column.name]?.filter(it=> it.evaluationValue.finalGrade===true)"
                                :class="`q-ma-xs ${gradeBackgroundColorMap.get(grade.evaluationValue.grade)}`"
                                :label="`${gradeMap.get(grade.evaluationValue.grade)?.toString()}`"
+                               @click="updateEvaluationDialog(grade)"
                                flat
                                rounded>
-                            <q-popup-proxy>
-                                <q-banner>
-                                    Въведен от:<span class="text-primary">{{
-                                    grade.createdBy.firstName
-                                    }} {{ grade.createdBy.lastName }}</span><br/>
-                                    Дата:<span class="text-primary">{{
-                                    grade.evaluationDate
-                                    }}</span><br/>
-                                </q-banner>
-                            </q-popup-proxy>
+                            <q-tooltip>Кликни за повече информация</q-tooltip>
                         </q-btn>
                     </div>
                 </div>
@@ -173,6 +157,12 @@ import {StudentView} from "../../../model/User";
 import {Subject} from "../../../model/Subject";
 import {Semester} from "../../../model/SchoolPeriod";
 import html2pdf from "html2pdf.js";
+import {useQuasar} from "quasar";
+import EvaluationDialog from "./evaluation-dialog.vue";
+import {periodId, schoolId} from "../../../model/constants";
+import {$ref} from "vue/macros";
+import {deleteEvaluation, updateEvaluation} from "../../../services/RequestService";
+import {watch} from "vue";
 
 const props = defineProps<{
     students: StudentView[],
@@ -181,6 +171,8 @@ const props = defineProps<{
     semester: Semester
 }>()
 
+let currentGrades = $ref<any>({...props.grades});
+let rows = $ref([])
 const exportToPDF = () => {
     html2pdf(document.getElementById("test"), {
         margin: 1,
@@ -190,40 +182,78 @@ const exportToPDF = () => {
         jsPDF: {unit: 'in', format: 'a4', orientation: 'landscape'}
     });
 }
-const rows = props.students.map(student => {
-            const object = {student: student, numberInClass: student.numberInClass}
-            const evaluations = props.subjects.map(subject =>
-                    props.grades[subject.id][student.id]?.filter(it => it.semester == props.semester)
-            ).flat(1)
-            object["average"] = <Pair<string, string>>{
-                first: calculateAverageGrade(evaluations),
-                second: calculateAverageGrade(evaluations, true)
-            }
-            props.subjects.forEach(subject =>
-                    object[subject.id] = props.grades[subject.id][student.id]?.filter(it => it.semester == props.semester)
-            )
-            return object
-        }
-)
 
-const object = <any>{}
-props.subjects.forEach(subject => {
-    const evaluations: Evaluation[] = <Evaluation[]>Object.values(props.grades[subject.id]).flat(1).filter(it => it.semester == props.semester)
-    object[subject.id] = <Pair<string, string>>{
-        first: calculateAverageGrade(evaluations),
-        second: calculateAverageGrade(evaluations, true)
-    }
+watch(currentGrades, () => {
+    defineRows()
 })
-const allEvaluations = props.subjects.map(subject =>
-        <Evaluation[]>Object.values(props.grades[subject.id]).flat(1).filter(it => it.semester == props.semester)
-).flat(1)
-object['average'] = <Pair<string, string>>{
-    first: calculateAverageGrade(allEvaluations),
-    second: calculateAverageGrade(allEvaluations, true)
-}
-rows.push(object)
 
-const columns = (props.grades ? Object.keys(props.grades).map(subjectId => {
+const defineRows = () => {
+    rows = props.students.map(student => {
+                const object = {student: student, numberInClass: student.numberInClass}
+                const evaluations = props.subjects.map(subject =>
+                        currentGrades[subject.id][student.id]?.filter(it => it.semester == props.semester)
+                ).flat(1)
+                object["average"] = <Pair<string, string>>{
+                    first: calculateAverageGrade(evaluations),
+                    second: calculateAverageGrade(evaluations, true)
+                }
+                props.subjects.forEach(subject =>
+                        object[subject.id] = currentGrades[subject.id][student.id]?.filter(it => it.semester == props.semester)
+                )
+                return object
+            }
+    )
+
+    const object = <any>{}
+    props.subjects.forEach(subject => {
+        const evaluations: Evaluation[] = <Evaluation[]>Object.values(currentGrades[subject.id]).flat(1).filter(it => it.semester == props.semester)
+        object[subject.id] = <Pair<string, string>>{
+            first: calculateAverageGrade(evaluations),
+            second: calculateAverageGrade(evaluations, true)
+        }
+    })
+    const allEvaluations = props.subjects.map(subject =>
+            <Evaluation[]>Object.values(currentGrades[subject.id]).flat(1).filter(it => it.semester == props.semester)
+    ).flat(1)
+    object['average'] = <Pair<string, string>>{
+        first: calculateAverageGrade(allEvaluations),
+        second: calculateAverageGrade(allEvaluations, true)
+    }
+    rows.push(object)
+}
+defineRows()
+const quasar = useQuasar()
+const updateEvaluationDialog = (evaluation: Evaluation) => {
+    quasar.dialog({
+        component: EvaluationDialog,
+        componentProps: {
+            evaluation: evaluation,
+            periodId: periodId.value,
+            schoolId: schoolId.value,
+            readonly: false
+        },
+    }).onOk(async (payload) => {
+        const updatedGrade = payload.item.evaluation as Evaluation
+        if (payload.item.delete == false) {
+            await updateEvaluation(updatedGrade, periodId.value, schoolId.value).then(r => {
+                currentGrades[updatedGrade.subject.id][updatedGrade.student.id] = currentGrades[updatedGrade.subject.id][updatedGrade.student.id]?.map(
+                        it => {
+                            if (it.id == updatedGrade.id) {
+                                return updatedGrade
+                            } else {
+                                return it
+                            }
+                        })
+            })
+        } else {
+            await deleteEvaluation(updatedGrade, periodId.value, schoolId.value).then(e => {
+                currentGrades[updatedGrade.subject.id][updatedGrade.student.id] = currentGrades[updatedGrade.subject.id][updatedGrade.student.id]?.filter(it => it.id !== updatedGrade.id)
+            })
+        }
+    })
+}
+
+const columns = (currentGrades ? Object.keys(currentGrades).map(subjectId => {
     return {
         name: subjectId,
         align: "center",

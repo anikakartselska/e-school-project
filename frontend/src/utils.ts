@@ -29,12 +29,16 @@ export const translationOfRequestStatusForRole = {
     REJECTED: "НЕАКТИВНА",
 }
 
+export const translationOfEvaluationValue = {
+    GRADE: "оценка",
+    FEEDBACK: "отзив",
+    ABSENCE: "отсъствие",
+}
 export const translationOfSemester = {
     FIRST: "Първи срок",
     SECOND: "Втори срок",
     YEARLY: "Годишна",
 }
-
 export const translationOfWorkingDays = {
     MONDAY: "Понеделник",
     TUESDAY: "Вторник",
@@ -51,6 +55,10 @@ export const confirmActionPromiseDialog = (title: string, message: string) => ne
         message: message,
         ok: {
             label: "OK",
+            color: 'primary'
+        },
+        cancel: {
+            label: "Отказ",
             color: 'primary'
         },
         persistent: true

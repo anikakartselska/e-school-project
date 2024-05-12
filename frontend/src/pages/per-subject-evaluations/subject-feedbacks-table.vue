@@ -40,22 +40,11 @@
                v-if="props.row.student?.firstName !== undefined"
                :class="feedbacksMap.get(feedback.evaluationValue.feedback)===true? `text-green-14` : `text-red-14`"
                :icon="feedbacksMap.get(feedback.evaluationValue.feedback)===true? 'thumb_up_alt' : 'thumb_down_alt'"
+               @click="updateEvaluationDialog(feedback)"
                flat
                rounded
         >
-          <q-tooltip>
-            {{ feedbacksMapTranslation.get(feedback.evaluationValue.feedback) }}
-          </q-tooltip>
-          <q-popup-proxy>
-            <q-banner>
-              Въведен от:<span class="text-primary">{{
-                feedback.createdBy.firstName
-              }} {{ feedback.createdBy.lastName }}</span><br/>
-              Дата:<span class="text-primary">{{
-                feedback.evaluationDate
-              }}</span><br/>
-            </q-banner>
-          </q-popup-proxy>
+            <q-tooltip>Кликни за повече информация</q-tooltip>
         </q-btn>
       </q-td>
     </template>
@@ -94,21 +83,18 @@
 <script lang="ts" setup>
 import {$ref} from "vue/macros";
 import {StudentWithEvaluationDTO} from "../../model/StudentWithEvaluationDTO";
-import {
-    countFeedbacksSum,
-    feedbacksMap,
-    feedbacksMapTranslation
-} from "../../services/helper-services/EvaluationService";
+import {countFeedbacksSum, feedbacksMap} from "../../services/helper-services/EvaluationService";
 import {Semester} from "../../model/SchoolPeriod";
 import {Evaluation} from "../../model/Evaluation";
 import {Subject} from "../../model/Subject";
 import {StudentView} from "../../model/User";
-import {saveEvaluations} from "../../services/RequestService";
+import {deleteEvaluation, saveEvaluations, updateEvaluation} from "../../services/RequestService";
 import {periodId, schoolId} from "../../model/constants";
 import {useQuasar} from "quasar";
 import AddFeedbacksDialog from "./add-feedbacks-dialog.vue";
 import {SchoolLesson} from "../../model/SchoolLesson";
 import {commentPromiseDialog} from "../../utils";
+import EvaluationDialog from "../school-class/evaluation-tables/evaluation-dialog.vue";
 
 const props = defineProps<{
   evaluations: StudentWithEvaluationDTO[],
@@ -141,25 +127,65 @@ const addNewFeedbacks = async () => quasar.dialog({
   await saveEvaluations(payload.item, periodId.value, schoolId.value, comment).then(e => {
             const newlyAddedFeedbacks = e.data
             feedbacks.forEach(studentEvaluations => {
-                      const newlyAddedFeedbacksForCurrentStudent = newlyAddedFeedbacks.find(v => v.student.id == studentEvaluations.student.id)?.feedbacks
-                      if (studentEvaluations.student.id == 10000) {
-                        studentEvaluations.feedbacks = studentEvaluations.feedbacks.concat(newlyAddedFeedbacks.map(it => it.feedbacks).flat(1))
-                      }
-                      studentEvaluations.feedbacks = studentEvaluations.feedbacks.concat(newlyAddedFeedbacksForCurrentStudent ? newlyAddedFeedbacksForCurrentStudent : [])
+                        const newlyAddedFeedbacksForCurrentStudent = newlyAddedFeedbacks.find(v => v.student.id == studentEvaluations.student.id)?.feedbacks
+                        if (studentEvaluations.student.id == 10000) {
+                            studentEvaluations.feedbacks = studentEvaluations.feedbacks.concat(newlyAddedFeedbacks.map(it => it.feedbacks).flat(1))
+                        }
+                        studentEvaluations.feedbacks = studentEvaluations.feedbacks.concat(newlyAddedFeedbacksForCurrentStudent ? newlyAddedFeedbacksForCurrentStudent : [])
                     }
             )
           }
   )
 })
+
+const updateEvaluationDialog = (evaluation: Evaluation) => {
+    quasar.dialog({
+        component: EvaluationDialog,
+        componentProps: {
+            evaluation: evaluation,
+            periodId: periodId.value,
+            schoolId: schoolId.value,
+            readonly: false
+        },
+    }).onOk(async (payload) => {
+        const updatedFeedbacks = payload.item.evaluation as Evaluation
+        if (payload.item.delete == false) {
+            await updateEvaluation(updatedFeedbacks, periodId.value, schoolId.value).then(e => {
+                        feedbacks.forEach(evaluation => {
+                            if (evaluation.student.id == updatedFeedbacks.student.id || evaluation.student.id == 10000) {
+                                evaluation.feedbacks = evaluation.feedbacks.map(it => {
+                                    if (it.id == updatedFeedbacks.id) {
+                                        return updatedFeedbacks
+                                    } else {
+                                        return it
+                                    }
+                                })
+                            }
+                        })
+                    }
+            )
+        } else {
+            await deleteEvaluation(updatedFeedbacks, periodId.value, schoolId.value).then(e => {
+                        feedbacks.forEach(evaluation => {
+                            if (evaluation.student.id == updatedFeedbacks.student.id || evaluation.student.id == 10000) {
+                                evaluation.feedbacks = evaluation.feedbacks.filter(it => it.id !== updatedFeedbacks.id)
+                            }
+                        })
+                    }
+            )
+        }
+    })
+}
+
 const columns = [
-  {
-    name: "numberInClass",
-    label: "Номер в клас",
-    align: "center",
-    field: (row: StudentWithEvaluationDTO) => row?.student?.numberInClass != undefined ? `${row?.student?.numberInClass}` : '',
-    sortable: true
-  },
-  {
+    {
+        name: "numberInClass",
+        label: "Номер в клас",
+        align: "center",
+        field: (row: StudentWithEvaluationDTO) => row?.student?.numberInClass != undefined ? `${row?.student?.numberInClass}` : '',
+        sortable: true
+    },
+    {
     name: "student",
     label: "Име на ученика",
     align: "center",

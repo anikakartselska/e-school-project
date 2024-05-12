@@ -108,19 +108,12 @@
                 <div v-else class="row" style="width: 20vw">
                     <div v-if="semester !== Semester.YEARLY" class="col-8 text-center">
                         <q-btn v-for="absence in props.row[column.name]"
-                               :class="`q-ma-xs ${getAbsenceBackgroundColor(absence)}`" :label="absenceMap.get(absence.evaluationValue.absence)"
+                               :class="`q-ma-xs ${getAbsenceBackgroundColor(absence)}`"
+                               :label="absenceMap.get(absence.evaluationValue.absence)"
+                               @click="updateEvaluationDialog(absence)"
                                flat
                                rounded>
-                            <q-popup-proxy>
-                                <q-banner>
-                                    Въведен от:<span class="text-primary">{{
-                                    absence.createdBy.firstName
-                                    }} {{ absence.createdBy.lastName }}</span><br/>
-                                    Дата:<span class="text-primary">{{
-                                    absence.evaluationDate
-                                    }}</span><br/>
-                                </q-banner>
-                            </q-popup-proxy>
+                            <q-tooltip>Кликни за повече информация</q-tooltip>
                         </q-btn>
                     </div>
                     <q-separator v-if="semester !== Semester.YEARLY" vertical/>
@@ -157,6 +150,12 @@ import {Evaluation} from "../../../model/Evaluation";
 import {StudentView} from "../../../model/User";
 import {Subject} from "../../../model/Subject";
 import {Semester} from "../../../model/SchoolPeriod";
+import EvaluationDialog from "./evaluation-dialog.vue";
+import {periodId, schoolId} from "../../../model/constants";
+import {useQuasar} from "quasar";
+import {$ref} from "vue/macros";
+import {deleteEvaluation, updateEvaluation} from "../../../services/RequestService";
+import {watch} from "vue";
 
 const props = defineProps<{
     students: StudentView[],
@@ -164,51 +163,58 @@ const props = defineProps<{
     absences: any
     semester: Semester
 }>()
+let currentAbsences = $ref<any>({...props.absences});
+let rows = $ref([])
 
-const rows = props.students.map(student => {
-            const object = {student: student, numberInClass: student.numberInClass}
-            const evaluations = props.subjects.map(subject =>
-                    props.absences[subject.id][student.id]?.filter(it => props.semester == Semester.YEARLY || it.semester == props.semester)
-            ).flat(1)
-            object["total"] = <Pair<number, Pair<number, number>>>{
-                first: calculateAbsencesSum(evaluations),
-                second: <Pair<number, number>>{
-                    first: calculateAbsencesSum(evaluations, true),
-                    second: calculateAbsencesSum(evaluations, false)
-                }
-            }
-            props.subjects.forEach(subject =>
-                    object[subject.id] = props.absences[subject.id][student.id]?.filter(it => props.semester == Semester.YEARLY || it.semester == props.semester)
-            )
-            return object
-        }
-)
-
-const object = <any>{}
-props.subjects.forEach(subject => {
-    const evaluations: Evaluation[] = <Evaluation[]>Object.values(props.absences[subject.id]).flat(1).filter(it => props.semester == Semester.YEARLY || it.semester == props.semester)
-    object[subject.id] = <Pair<number, Pair<number, number>>>{
-        first: calculateAbsencesSum(evaluations),
-        second: <Pair<number, number>>{
-            first: calculateAbsencesSum(evaluations, true),
-            second: calculateAbsencesSum(evaluations, false)
-        }
-    }
+watch(currentAbsences, () => {
+    defineRows()
 })
-const allEvaluations = props.subjects.map(subject =>
-        <Evaluation[]>Object.values(props.absences[subject.id]).flat(1).filter(it => props.semester == Semester.YEARLY || it.semester == props.semester)
-).flat(1)
-object['total'] = <Pair<number, Pair<number, number>>>{
-    first: calculateAbsencesSum(allEvaluations),
-    second: <Pair<number, number>>{
-        first: calculateAbsencesSum(allEvaluations, true),
-        second: calculateAbsencesSum(allEvaluations, false)
+const defineRows = () => {
+    rows = props.students.map(student => {
+                const object = {student: student, numberInClass: student.numberInClass}
+                const evaluations = props.subjects.map(subject =>
+                        currentAbsences[subject.id][student.id]?.filter(it => props.semester == Semester.YEARLY || it.semester == props.semester)
+                ).flat(1)
+                object["total"] = <Pair<number, Pair<number, number>>>{
+                    first: calculateAbsencesSum(evaluations),
+                    second: <Pair<number, number>>{
+                        first: calculateAbsencesSum(evaluations, true),
+                        second: calculateAbsencesSum(evaluations, false)
+                    }
+                }
+                props.subjects.forEach(subject =>
+                        object[subject.id] = currentAbsences[subject.id][student.id]?.filter(it => props.semester == Semester.YEARLY || it.semester == props.semester)
+                )
+                return object
+            }
+    )
+
+    const object = <any>{}
+    props.subjects.forEach(subject => {
+        const evaluations: Evaluation[] = <Evaluation[]>Object.values(currentAbsences[subject.id]).flat(1).filter(it => props.semester == Semester.YEARLY || it.semester == props.semester)
+        object[subject.id] = <Pair<number, Pair<number, number>>>{
+            first: calculateAbsencesSum(evaluations),
+            second: <Pair<number, number>>{
+                first: calculateAbsencesSum(evaluations, true),
+                second: calculateAbsencesSum(evaluations, false)
+            }
+        }
+    })
+    const allEvaluations = props.subjects.map(subject =>
+            <Evaluation[]>Object.values(currentAbsences[subject.id]).flat(1).filter(it => props.semester == Semester.YEARLY || it.semester == props.semester)
+    ).flat(1)
+    object['total'] = <Pair<number, Pair<number, number>>>{
+        first: calculateAbsencesSum(allEvaluations),
+        second: <Pair<number, number>>{
+            first: calculateAbsencesSum(allEvaluations, true),
+            second: calculateAbsencesSum(allEvaluations, false)
+        }
     }
+    rows.push(object)
 }
-rows.push(object)
+defineRows()
 
-
-const columns = (props.absences ? Object.keys(props.absences).map(subjectId => {
+const columns = (currentAbsences ? Object.keys(currentAbsences).map(subjectId => {
     return {
         name: subjectId,
         align: "center",
@@ -239,5 +245,36 @@ columns.unshift({
     field: (row) => row["student"]?.numberInClass,
     sortable: true
 })
+const quasar = useQuasar()
+const updateEvaluationDialog = (evaluation: Evaluation) => {
+    quasar.dialog({
+        component: EvaluationDialog,
+        componentProps: {
+            evaluation: evaluation,
+            periodId: periodId.value,
+            schoolId: schoolId.value,
+            readonly: false
+        },
+    }).onOk(async (payload) => {
+                const updateAbsence = payload.item.evaluation as Evaluation
+                if (payload.item.delete == false) {
+                    await updateEvaluation(updateAbsence, periodId.value, schoolId.value).then(r => {
+                        currentAbsences[updateAbsence.subject.id][updateAbsence.student.id] = currentAbsences[updateAbsence.subject.id][updateAbsence.student.id]?.map(
+                                it => {
+                                    if (it.id == updateAbsence.id) {
+                                        return updateAbsence
+                                    } else {
+                                        return it
+                                    }
+                                })
+                    })
+                } else {
+                    await deleteEvaluation(updateAbsence, periodId.value, schoolId.value).then(e => {
+                        currentAbsences[updateAbsence.subject.id][updateAbsence.student.id] = currentAbsences[updateAbsence.subject.id][updateAbsence.student.id]?.filter(it => it.id !== updateAbsence.id)
+                    })
+                }
+            }
+    )
+}
 
 </script>

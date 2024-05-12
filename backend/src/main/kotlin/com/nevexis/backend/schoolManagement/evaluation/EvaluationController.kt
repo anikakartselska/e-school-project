@@ -59,4 +59,18 @@ class EvaluationController {
         @RequestParam schoolId: BigDecimal,
     ) = evaluationService.updateEvaluations(evaluations, periodId, schoolId)
 
+    @PostMapping("/update-evaluation")
+    fun updateEvaluation(
+        @RequestBody evaluation: Evaluation,
+        @RequestParam periodId: BigDecimal,
+        @RequestParam schoolId: BigDecimal,
+    ) = evaluationService.updateEvaluation(evaluation, periodId, schoolId)
+
+    @PostMapping("/delete-evaluation")
+    fun deleteEvaluation(
+        @RequestBody evaluation: Evaluation,
+        @RequestParam periodId: BigDecimal,
+        @RequestParam schoolId: BigDecimal,
+    ) = evaluationService.deleteEvaluation(evaluation, periodId, schoolId)
+
 }

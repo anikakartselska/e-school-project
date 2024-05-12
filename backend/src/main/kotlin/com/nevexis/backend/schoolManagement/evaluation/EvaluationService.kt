@@ -62,7 +62,7 @@ class EvaluationService : BaseService() {
                     .and(EVALUATION.SCHOOL_ID.eq(schoolClass.schoolId.toBigDecimal()))
                     .and(SCHOOL_CLASS_SUBJECT.SCHOOL_CLASS_ID.eq(schoolClass.id.toBigDecimal()))
                     .and(EVALUATION.EVALUATION_TYPE.eq(evaluationType.name))
-            ).fetch()
+            ).fetch().distinctBy { it.get(EVALUATION.ID) }
         val evaluationsMap = records.groupBy { it.get(EVALUATION.SUBJECT_ID)!!.toInt() }
             .mapValues { (_, values) -> values.groupBy { it.get(EVALUATION.USER_ID)?.toInt() } }
         return subjects.associate { subject ->
@@ -114,7 +114,7 @@ class EvaluationService : BaseService() {
                             and(EVALUATION.SCHOOL_LESSON_ID.eq(schoolLessonId))
                         }
                     }
-            ).fetch()
+            ).fetch().distinctBy { it.get(EVALUATION.ID) }
 
         val evaluationsMap = records.groupBy { it.get(EVALUATION.USER_ID)!! }
             .mapValues { (_, values) -> values.groupBy { it.get(EVALUATION.EVALUATION_TYPE) } }
@@ -167,7 +167,7 @@ class EvaluationService : BaseService() {
                     .and(EVALUATION.SCHOOL_ID.eq(schoolId))
                     .and(SCHOOL_CLASS_SUBJECT.SCHOOL_CLASS_ID.eq(schoolClassId))
                     .and(EVALUATION.USER_ID.eq(studentView.id.toBigDecimal()))
-            ).fetch()
+            ).fetch().distinctBy { it.get(EVALUATION.ID) }
 
         val evaluationsMap = records.groupBy { it.get(EVALUATION.SUBJECT_ID)!!.toInt() }
             .mapValues { (_, values) -> values.groupBy { it.get(EVALUATION.EVALUATION_TYPE) } }
@@ -219,6 +219,46 @@ class EvaluationService : BaseService() {
         }
     }
 
+    fun deleteEvaluation(
+        evaluation: Evaluation,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ) {
+        db.selectFrom(EVALUATION.where(EVALUATION.ID.eq(evaluation.id?.toBigDecimal()))).fetchAny()?.delete().also {
+            evaluationNotificationService.sendEmailForEvaluationsDelete(
+                listOf(evaluation),
+                periodId,
+                schoolId
+            )
+        }
+
+    }
+
+    fun updateEvaluation(
+        evaluation: Evaluation,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ) {
+
+        val evaluationRecordToEvaluation = evaluation.let { ev ->
+            val updatedEvaluationRecord = mapToEvaluationToEvaluationRecord(ev, schoolId, periodId)
+            val evaluationRecordFromDatabase =
+                db.selectFrom(EVALUATION).where(EVALUATION.ID.eq(ev.id?.toBigDecimal())).fetchAny()!!
+            if (updatedEvaluationRecord.compareToByMatchingPk(evaluationRecordFromDatabase) == 0) {
+                return
+            } else {
+                updatedEvaluationRecord to Pair(ev, evaluationRecordFromDatabase)
+            }
+        }
+        val evaluationRecord = evaluationRecordToEvaluation.first
+        evaluationRecord.update().also {
+            evaluationNotificationService.sendEmailForEvaluationsUpdate(
+                listOf(evaluationRecordToEvaluation.second),
+                periodId,
+                schoolId
+            )
+        }
+    }
 
     fun saveEvaluations(
         evaluations: List<StudentWithEvaluationDTO>,

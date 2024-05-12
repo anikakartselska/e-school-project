@@ -15,18 +15,10 @@
                      v-if="props.row.subject !== undefined"
                      :class="`q-ma-xs ${gradeBackgroundColorMap.get(grade.evaluationValue.grade)}`"
                      :label="gradeMap.get(grade.evaluationValue.grade)?.toString()"
+                     @click="updateEvaluationDialog(grade)"
                      flat
                      rounded>
-                  <q-popup-proxy>
-                      <q-banner>
-                          Въведен от:<span class="text-primary">{{
-                          grade.createdBy.firstName
-                          }} {{ grade.createdBy.lastName }}</span><br/>
-                          Дата:<span class="text-primary">{{
-                          grade.evaluationDate
-                          }}</span><br/>
-                      </q-banner>
-                  </q-popup-proxy>
+                  <q-tooltip>Кликни за повече информация</q-tooltip>
               </q-btn>
           </q-td>
       </template>
@@ -50,17 +42,9 @@
                      :class="`q-ma-xs ${gradeBackgroundColorMap.get(grade.evaluationValue.grade)}`"
                      :label="gradeMap.get(grade.evaluationValue.grade)?.toString()"
                      flat
+                     @click="updateEvaluationDialog(grade)"
                      rounded>
-                  <q-popup-proxy>
-                      <q-banner>
-                          Въведен от:<span class="text-primary">{{
-                          grade.createdBy.firstName
-                          }} {{ grade.createdBy.lastName }}</span><br/>
-                          Дата:<span class="text-primary">{{
-                          grade.evaluationDate
-                          }}</span><br/>
-                      </q-banner>
-                  </q-popup-proxy>
+                  <q-tooltip>Кликни за повече информация</q-tooltip>
               </q-btn>
               <q-btn v-else-if="!isNaN(calculateAverageGrade(props.row?.grades?.filter(it => it.evaluationValue.finalGrade === true && it.semester === semester),true))"
                      :class="`q-ma-xs ${getAverageGradeColorClass(calculateAverageGrade(props.row?.grades?.filter(it => it.evaluationValue.finalGrade === true && it.semester === semester),true))}`"
@@ -87,6 +71,9 @@ import {
 } from "../../services/helper-services/EvaluationService";
 import {Semester} from "../../model/SchoolPeriod";
 import {Evaluation} from "../../model/Evaluation";
+import {useQuasar} from "quasar";
+import EvaluationDialog from "../school-class/evaluation-tables/evaluation-dialog.vue";
+import {periodId, schoolId} from "../../model/constants";
 
 const props = defineProps<{
     evaluations: SubjectWithEvaluationDTO[],
@@ -99,6 +86,19 @@ const grades = $ref([...props.evaluations,
         absences: [],
         feedbacks: []
     }])
+
+const quasar = useQuasar()
+const updateEvaluationDialog = (evaluation: Evaluation) => {
+    quasar.dialog({
+        component: EvaluationDialog,
+        componentProps: {
+            evaluation: evaluation,
+            periodId: periodId.value,
+            schoolId: schoolId.value,
+            readonly: true
+        },
+    })
+}
 
 const columns = [
     {
