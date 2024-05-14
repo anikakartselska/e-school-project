@@ -10,17 +10,19 @@
           title="Отсъствия"
   >
     <template v-if="semester !== Semester.YEARLY" v-slot:top-right>
-      <q-btn color="primary"
-             icon="add_circle_outline"
-             label="Добави отсъствия за повече ученици"
-             outline
-             @click="addNewAbsences()"
-      />
-      <q-btn class="q-ml-sm"
-             color="secondary"
-             icon="check"
-             label="Извини отсъствия"
-             outline
+        <q-btn color="secondary" icon="add" label="Добави отсъствие" outline @click="addEvaluationDialog()"/>
+        <q-btn class="q-ml-sm"
+               color="primary"
+               icon="add_circle_outline"
+               label="Добави отсъствия за повече ученици"
+               outline
+               @click="addNewAbsences()"
+        />
+        <q-btn class="q-ml-sm"
+               color="secondary"
+               icon="check"
+               label="Извини отсъствия"
+               outline
              @click="updateAbsences()"
       />
     </template>
@@ -94,24 +96,32 @@ import {
     getAbsenceBackgroundColor,
 } from "../../services/helper-services/EvaluationService";
 import {Semester} from "../../model/SchoolPeriod";
-import {Evaluation} from "../../model/Evaluation";
+import {Evaluation, EvaluationType} from "../../model/Evaluation";
 import {StudentWithEvaluationDTO} from "../../model/StudentWithEvaluationDTO";
 import {Subject} from "../../model/Subject";
 import {StudentView} from "../../model/User";
 import {useQuasar} from "quasar";
 import AddAbsencesDialog from "./add-absences-dialog.vue";
-import {deleteEvaluation, saveEvaluations, updateEvaluation, updateEvaluations} from "../../services/RequestService";
+import {
+    deleteEvaluation,
+    saveEvaluation,
+    saveEvaluations,
+    updateEvaluation,
+    updateEvaluations
+} from "../../services/RequestService";
 import {periodId, schoolId} from "../../model/constants";
 import UpdateAbsencesDialog from "./update-absences-dialog.vue";
 import {SchoolLesson} from "../../model/SchoolLesson";
 import {commentPromiseDialog} from "../../utils";
-import EvaluationDialog from "../school-class/evaluation-tables/evaluation-dialog.vue";
+import EvaluationDialog from "../school-class/dialogs/evaluation-delete-update-dialog.vue";
+import EvaluationCreateDialog from "../school-class/dialogs/evaluation-create-dialog.vue";
+import {getCurrentUserAsUserView} from "../../services/LocalStorageService";
 
 const props = defineProps<{
-  evaluations: StudentWithEvaluationDTO[],
-  semester: Semester,
-  subject: Subject,
-  lesson?: SchoolLesson | null,
+    evaluations: StudentWithEvaluationDTO[],
+    semester: Semester,
+    subject: Subject,
+    lesson?: SchoolLesson | null,
 }>()
 
 const absences: StudentWithEvaluationDTO[] = $ref(props.evaluations ? [...props.evaluations] : [])
@@ -162,11 +172,11 @@ const updateAbsences = async () => quasar.dialog({
             const updatedAbsences = payload.item
             const allAbsences = (<Evaluation[]>updatedAbsences.map(it => it.absences)).flat(1)
             absences.forEach(studentEvaluations => {
-                      const updatedAbsencesForCurrentStudent = updatedAbsences.find(v => v.student.id == studentEvaluations.student.id)?.absences
-                      if (studentEvaluations.student.id == 10000) {
-                        studentEvaluations.absences = studentEvaluations.absences.map(absence =>
-                                allAbsences.find(oldAbsence => oldAbsence.id == absence.id) ? allAbsences.find(oldAbsence => oldAbsence.id == absence.id)!! : absence)
-                      }
+                        const updatedAbsencesForCurrentStudent = updatedAbsences.find(v => v.student.id == studentEvaluations.student.id)?.absences
+                        if (studentEvaluations.student.id == 10000) {
+                            studentEvaluations.absences = studentEvaluations.absences.map(absence =>
+                                    allAbsences.find(oldAbsence => oldAbsence.id == absence.id) ? allAbsences.find(oldAbsence => oldAbsence.id == absence.id)!! : absence)
+                        }
                         studentEvaluations.absences = studentEvaluations.absences.map(absence =>
                                 updatedAbsencesForCurrentStudent.find(it => it.id == absence.id) ? updatedAbsencesForCurrentStudent.find(it => it.id == absence.id) : absence)
 
@@ -214,15 +224,44 @@ const updateEvaluationDialog = (evaluation: Evaluation) => {
     })
 }
 
+const addEvaluationDialog = () => {
+    quasar.dialog({
+        component: EvaluationCreateDialog,
+        componentProps: {
+            evaluation: <Evaluation>{
+                evaluationType: EvaluationType.ABSENCE,
+                semester: props.semester,
+                createdBy: getCurrentUserAsUserView()
+            },
+            periodId: periodId.value,
+            schoolId: schoolId.value,
+            students: props.evaluations.map(it => it.student),
+            subjects: [],
+            subject: props.subject,
+            lessonId: props.lesson?.id
+        },
+    }).onOk(async (payload) => {
+        const createdAbsence = payload.item.evaluation as Evaluation
+        await saveEvaluation(createdAbsence, periodId.value, schoolId.value).then(newlyCreatedAbsence => {
+                    absences.forEach(evaluation => {
+                        if (evaluation.student.id == newlyCreatedAbsence.data.student.id || evaluation.student.id == 10000) {
+                            evaluation.absences = [...evaluation.absences, newlyCreatedAbsence.data]
+                        }
+                    })
+                }
+        )
+    })
+}
+
 const columns = [
-  {
-    name: "numberInClass",
-    label: "Номер в клас",
-    align: "center",
-    field: (row: StudentWithEvaluationDTO) => row?.student?.numberInClass != undefined ? `${row?.student?.numberInClass}` : '',
-    sortable: true
-  },
-  {
+    {
+        name: "numberInClass",
+        label: "Номер в клас",
+        align: "center",
+        field: (row: StudentWithEvaluationDTO) => row?.student?.numberInClass != undefined ? `${row?.student?.numberInClass}` : '',
+        sortable: true
+    },
+    {
     name: "student",
     label: "Име на ученика",
     align: "center",

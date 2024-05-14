@@ -10,6 +10,7 @@
           title="Оценки"
   >
     <template v-slot:top-right>
+      <q-btn class="q-mr-sm" color="secondary" icon="add" label="Добави оценка" outline @click="addEvaluationDialog()"/>
       <q-btn v-if="semester !== Semester.YEARLY"
              color="primary"
              icon="add_circle_outline"
@@ -86,22 +87,24 @@ import {
     gradeMap,
 } from "../../services/helper-services/EvaluationService";
 import {Semester} from "../../model/SchoolPeriod";
-import {Evaluation} from "../../model/Evaluation";
+import {Evaluation, EvaluationType} from "../../model/Evaluation";
 import {useQuasar} from "quasar";
 import AddGradesDialog from "./add-grades-dialog.vue";
 import {StudentView} from "../../model/User";
 import {Subject} from "../../model/Subject";
-import {deleteEvaluation, saveEvaluations, updateEvaluation} from "../../services/RequestService";
+import {deleteEvaluation, saveEvaluation, saveEvaluations, updateEvaluation} from "../../services/RequestService";
 import {periodId, schoolId} from "../../model/constants";
 import {SchoolLesson} from "../../model/SchoolLesson";
 import {commentPromiseDialog} from "../../utils";
-import EvaluationDialog from "../school-class/evaluation-tables/evaluation-dialog.vue";
+import EvaluationDialog from "../school-class/dialogs/evaluation-delete-update-dialog.vue";
+import EvaluationCreateDialog from "../school-class/dialogs/evaluation-create-dialog.vue";
+import {getCurrentUserAsUserView} from "../../services/LocalStorageService";
 
 const props = defineProps<{
-  evaluations: StudentWithEvaluationDTO[],
-  semester: Semester,
-  subject: Subject,
-  lesson?: SchoolLesson | null
+    evaluations: StudentWithEvaluationDTO[],
+    semester: Semester,
+    subject: Subject,
+    lesson?: SchoolLesson | null
 }>()
 const quasar = useQuasar()
 
@@ -176,16 +179,46 @@ const updateEvaluationDialog = (evaluation: Evaluation) => {
         }
     })
 }
+
+const addEvaluationDialog = () => {
+    quasar.dialog({
+        component: EvaluationCreateDialog,
+        componentProps: {
+            evaluation: <Evaluation>{
+                evaluationType: EvaluationType.GRADE,
+                semester: props.semester,
+                createdBy: getCurrentUserAsUserView()
+            },
+            periodId: periodId.value,
+            schoolId: schoolId.value,
+            students: props.evaluations.map(it => it.student),
+            subjects: [],
+            subject: props.subject,
+            lessonId: props.lesson?.id,
+            grades: grades
+        },
+    }).onOk(async (payload) => {
+        const createdGrade = payload.item.evaluation as Evaluation
+        await saveEvaluation(createdGrade, periodId.value, schoolId.value).then(newlyCreatedGrade => {
+                    grades.forEach(evaluation => {
+                        if (evaluation.student.id == newlyCreatedGrade.data.student.id || evaluation.student.id == 10000) {
+                            evaluation.grades = [...evaluation.grades, newlyCreatedGrade.data]
+                        }
+                    })
+                }
+        )
+    })
+}
 const getRowKey = (row) => {
     return row?.student ? row?.student : '1000'
 }
 const columns = [
-  {
-    name: "numberInClass",
-    label: "Номер в клас",
-    align: "center",
-    field: (row: StudentWithEvaluationDTO) => row?.student?.numberInClass != undefined ? `${row?.student?.numberInClass}` : '',
-    sortable: true
+    {
+        name: "numberInClass",
+        label: "Номер в клас",
+        align: "center",
+        field: (row: StudentWithEvaluationDTO) => row?.student?.numberInClass != undefined ? `${row?.student?.numberInClass}` : '',
+        sortable: true
   },
   {
     name: "student",

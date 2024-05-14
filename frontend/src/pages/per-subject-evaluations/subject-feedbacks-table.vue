@@ -10,6 +10,7 @@
           title="Отзиви"
   >
     <template v-if="semester !== Semester.YEARLY" v-slot:top-right>
+      <q-btn class="q-mr-sm" color="secondary" icon="add" label="Добави отзив" outline @click="addEvaluationDialog()"/>
       <q-btn color="primary"
              icon="add_circle_outline"
              label="Добави отзиви за повече ученици"
@@ -85,22 +86,24 @@ import {$ref} from "vue/macros";
 import {StudentWithEvaluationDTO} from "../../model/StudentWithEvaluationDTO";
 import {countFeedbacksSum, feedbacksMap} from "../../services/helper-services/EvaluationService";
 import {Semester} from "../../model/SchoolPeriod";
-import {Evaluation} from "../../model/Evaluation";
+import {Evaluation, EvaluationType} from "../../model/Evaluation";
 import {Subject} from "../../model/Subject";
 import {StudentView} from "../../model/User";
-import {deleteEvaluation, saveEvaluations, updateEvaluation} from "../../services/RequestService";
+import {deleteEvaluation, saveEvaluation, saveEvaluations, updateEvaluation} from "../../services/RequestService";
 import {periodId, schoolId} from "../../model/constants";
 import {useQuasar} from "quasar";
 import AddFeedbacksDialog from "./add-feedbacks-dialog.vue";
 import {SchoolLesson} from "../../model/SchoolLesson";
 import {commentPromiseDialog} from "../../utils";
-import EvaluationDialog from "../school-class/evaluation-tables/evaluation-dialog.vue";
+import EvaluationDialog from "../school-class/dialogs/evaluation-delete-update-dialog.vue";
+import EvaluationCreateDialog from "../school-class/dialogs/evaluation-create-dialog.vue";
+import {getCurrentUserAsUserView} from "../../services/LocalStorageService";
 
 const props = defineProps<{
-  evaluations: StudentWithEvaluationDTO[],
-  semester: Semester,
-  subject: Subject,
-  lesson?: SchoolLesson | null
+    evaluations: StudentWithEvaluationDTO[],
+    semester: Semester,
+    subject: Subject,
+    lesson?: SchoolLesson | null
 }>()
 const feedbacks: StudentWithEvaluationDTO[] = $ref(props.evaluations ? [...props.evaluations] : [])
 feedbacks.push(
@@ -177,6 +180,36 @@ const updateEvaluationDialog = (evaluation: Evaluation) => {
     })
 }
 
+const addEvaluationDialog = () => {
+    quasar.dialog({
+        component: EvaluationCreateDialog,
+        componentProps: {
+            evaluation: <Evaluation>{
+                evaluationType: EvaluationType.FEEDBACK,
+                semester: props.semester,
+                createdBy: getCurrentUserAsUserView()
+            },
+            periodId: periodId.value,
+            schoolId: schoolId.value,
+            students: props.evaluations.map(it => it.student),
+            subjects: [],
+            subject: props.subject,
+            lessonId: props.lesson?.id
+        },
+    }).onOk(async (payload) => {
+        const createdFeedback = payload.item.evaluation as Evaluation
+        await saveEvaluation(createdFeedback, periodId.value, schoolId.value).then(newlyCreatedFeedback => {
+                    feedbacks.forEach(evaluation => {
+                        if (evaluation.student.id == newlyCreatedFeedback.data.student.id || evaluation.student.id == 10000) {
+                            evaluation.feedbacks = [...evaluation.feedbacks, newlyCreatedFeedback.data]
+                        }
+                    })
+                }
+        )
+    })
+}
+
+
 const columns = [
     {
         name: "numberInClass",
@@ -186,16 +219,16 @@ const columns = [
         sortable: true
     },
     {
-    name: "student",
-    label: "Име на ученика",
-    align: "center",
-    field: (row: StudentWithEvaluationDTO) => row?.student?.firstName != undefined ? `${row?.student?.firstName} ${row?.student?.middleName} ${row?.student?.lastName}` : 'Общо',
-    sortable: true
-  },
-  {
-    name: "feedbacks",
-    align: "center",
-    label: "Отзиви",
+        name: "student",
+        label: "Име на ученика",
+        align: "center",
+        field: (row: StudentWithEvaluationDTO) => row?.student?.firstName != undefined ? `${row?.student?.firstName} ${row?.student?.middleName} ${row?.student?.lastName}` : 'Общо',
+        sortable: true
+    },
+    {
+        name: "feedbacks",
+        align: "center",
+        label: "Отзиви",
   },
   {
     name: "total",

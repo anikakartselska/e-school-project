@@ -72,7 +72,7 @@ import {
 import {Semester} from "../../model/SchoolPeriod";
 import {Evaluation} from "../../model/Evaluation";
 import {useQuasar} from "quasar";
-import EvaluationDialog from "../school-class/evaluation-tables/evaluation-dialog.vue";
+import EvaluationDialog from "../school-class/dialogs/evaluation-delete-update-dialog.vue";
 import {periodId, schoolId} from "../../model/constants";
 
 const props = defineProps<{

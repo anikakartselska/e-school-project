@@ -343,6 +343,14 @@ export const saveEvaluations = async (evaluations, periodId, schoolId, comment):
             headers: {'Content-Type': 'application/json'}
         })
 
+export const saveEvaluation = async (evaluation, periodId, schoolId): Promise<AxiosResponse<Evaluation>> => {
+    //@ts-ignore
+    return await api.post<Evaluation>(`/save-evaluation`, evaluation, {
+        params: {periodId: periodId, schoolId: schoolId},
+        headers: {'Content-Type': 'application/json'}
+    })
+}
+
 export const updateEvaluations = async (evaluations, periodId, schoolId): Promise<AxiosResponse<StudentWithEvaluationDTO[]>> =>
         await api.post<StudentWithEvaluationDTO[]>(`/update-evaluations`, evaluations, {
             params: {periodId: periodId, schoolId: schoolId},

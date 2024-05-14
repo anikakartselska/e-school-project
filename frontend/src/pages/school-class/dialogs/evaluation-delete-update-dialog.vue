@@ -170,8 +170,8 @@ import {
 } from "../../../services/helper-services/EvaluationService";
 import {Semester} from "../../../model/SchoolPeriod";
 import {periodId, schoolId} from "../../../model/constants";
-import GradesChooseComponent from "./grades-choose-component.vue";
-import AbsencesChooseComponent from "./absences-choose-component.vue";
+import GradesChooseComponent from "../evaluation-tables/grades-choose-component.vue";
+import AbsencesChooseComponent from "../evaluation-tables/absences-choose-component.vue";
 
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
@@ -179,9 +179,9 @@ const quasar = useQuasar()
 defineEmits([...useDialogPluginComponent.emits])
 
 const props = defineProps<{
-  evaluation: Evaluation,
-  periodId: number,
-  schoolId: number,
+    evaluation: Evaluation,
+    periodId: number,
+    schoolId: number,
   readonly: boolean
 }>()
 

@@ -11,6 +11,9 @@
             title="Отзиви"
             virtual-scroll
     >
+        <template v-slot:top-right>
+            <q-btn color="secondary" icon="add" label="Добави отзив" outline size="sm" @click="addEvaluationDialog()"/>
+        </template>
         <template v-slot:header-cell-total="props">
             <q-th>
                 <div>{{ props.col.label }}</div>
@@ -143,16 +146,18 @@
 <script lang="ts" setup>
 
 import {countFeedbacksSum, feedbacksMap} from "../../../services/helper-services/EvaluationService";
-import {Evaluation} from "../../../model/Evaluation";
+import {Evaluation, EvaluationType} from "../../../model/Evaluation";
 import {StudentView} from "../../../model/User";
 import {Subject} from "../../../model/Subject";
 import {Semester} from "../../../model/SchoolPeriod";
 import {useQuasar} from "quasar";
-import EvaluationDialog from "./evaluation-dialog.vue";
+import EvaluationDialog from "../dialogs/evaluation-delete-update-dialog.vue";
 import {periodId, schoolId} from "../../../model/constants";
 import {$ref} from "vue/macros";
 import {watch} from "vue";
-import {deleteEvaluation, updateEvaluation} from "../../../services/RequestService";
+import {deleteEvaluation, saveEvaluation, updateEvaluation} from "../../../services/RequestService";
+import EvaluationCreateDialog from "../dialogs/evaluation-create-dialog.vue";
+import {getCurrentUserAsUserView} from "../../../services/LocalStorageService";
 
 const props = defineProps<{
     students: StudentView[],
@@ -269,6 +274,28 @@ const updateEvaluationDialog = (evaluation: Evaluation) => {
                 currentFeedbacks[updatedFeedback.subject.id][updatedFeedback.student.id] = currentFeedbacks[updatedFeedback.subject.id][updatedFeedback.student.id]?.filter(it => it.id !== updatedFeedback.id)
             })
         }
+    })
+}
+const addEvaluationDialog = () => {
+    quasar.dialog({
+        component: EvaluationCreateDialog,
+        componentProps: {
+            evaluation: <Evaluation>{
+                evaluationType: EvaluationType.FEEDBACK,
+                semester: props.semester,
+                createdBy: getCurrentUserAsUserView()
+            },
+            periodId: periodId.value,
+            schoolId: schoolId.value,
+            students: props.students,
+            subjects: props.subjects
+        },
+    }).onOk(async (payload) => {
+        const createdFeedback = payload.item.evaluation as Evaluation
+        await saveEvaluation(createdFeedback, periodId.value, schoolId.value).then(newlyCreatedFeedback => {
+                    currentFeedbacks[createdFeedback?.subject?.id][createdFeedback?.student?.id] = [...currentFeedbacks[createdFeedback?.subject?.id][createdFeedback?.student?.id], newlyCreatedFeedback.data]
+                }
+        )
     })
 }
 </script>

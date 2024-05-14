@@ -11,6 +11,9 @@
              virtual-scroll
              id="test"
     >
+        <template v-slot:top-right>
+            <q-btn color="secondary" icon="add" label="Добави оценка" outline size="sm" @click="addEvaluationDialog()"/>
+        </template>
         <template v-slot:header-cell-average="props">
             <q-th>
                 <div>{{ props.col.label }}</div>
@@ -152,17 +155,19 @@ import {
     gradeBackgroundColorMap,
     gradeMap
 } from "../../../services/helper-services/EvaluationService";
-import {Evaluation} from "../../../model/Evaluation";
+import {Evaluation, EvaluationType} from "../../../model/Evaluation";
 import {StudentView} from "../../../model/User";
 import {Subject} from "../../../model/Subject";
 import {Semester} from "../../../model/SchoolPeriod";
 import html2pdf from "html2pdf.js";
 import {useQuasar} from "quasar";
-import EvaluationDialog from "./evaluation-dialog.vue";
+import EvaluationDialog from "../dialogs/evaluation-delete-update-dialog.vue";
 import {periodId, schoolId} from "../../../model/constants";
 import {$ref} from "vue/macros";
-import {deleteEvaluation, updateEvaluation} from "../../../services/RequestService";
+import {deleteEvaluation, saveEvaluation, updateEvaluation} from "../../../services/RequestService";
 import {watch} from "vue";
+import EvaluationCreateDialog from "../dialogs/evaluation-create-dialog.vue";
+import {getCurrentUserAsUserView} from "../../../services/LocalStorageService";
 
 const props = defineProps<{
     students: StudentView[],
@@ -250,6 +255,30 @@ const updateEvaluationDialog = (evaluation: Evaluation) => {
                 currentGrades[updatedGrade.subject.id][updatedGrade.student.id] = currentGrades[updatedGrade.subject.id][updatedGrade.student.id]?.filter(it => it.id !== updatedGrade.id)
             })
         }
+    })
+}
+
+const addEvaluationDialog = () => {
+    quasar.dialog({
+        component: EvaluationCreateDialog,
+        componentProps: {
+            evaluation: <Evaluation>{
+                evaluationType: EvaluationType.GRADE,
+                semester: props.semester,
+                createdBy: getCurrentUserAsUserView()
+            },
+            periodId: periodId.value,
+            schoolId: schoolId.value,
+            students: props.students,
+            subjects: props.subjects,
+            grades: currentGrades
+        },
+    }).onOk(async (payload) => {
+        const createdGrade = payload.item.evaluation as Evaluation
+        await saveEvaluation(createdGrade, periodId.value, schoolId.value).then(newlyCreatedGrade => {
+                    currentGrades[createdGrade?.subject?.id][createdGrade?.student?.id] = [...currentGrades[createdGrade?.subject?.id][createdGrade?.student?.id], newlyCreatedGrade.data]
+                }
+        )
     })
 }
 

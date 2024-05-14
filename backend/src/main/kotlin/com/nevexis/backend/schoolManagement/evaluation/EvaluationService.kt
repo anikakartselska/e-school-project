@@ -260,6 +260,27 @@ class EvaluationService : BaseService() {
         }
     }
 
+    fun saveEvaluation(
+        evaluation: Evaluation,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ): Evaluation {
+        val evaluationWithId = evaluation.copy(
+            id = getEvaluationSeqNextVal().toInt(),
+            evaluationDate = LocalDateTime.now()
+        )
+
+        val evaluationRecord = mapToEvaluationToEvaluationRecord(
+            evaluationWithId,
+            schoolId,
+            periodId
+        )
+        evaluationRecord.insert().also {
+            evaluationNotificationService.sendEmailForEvaluationsCreation(listOf(evaluation), periodId, schoolId)
+        }
+        return evaluationWithId
+    }
+
     fun saveEvaluations(
         evaluations: List<StudentWithEvaluationDTO>,
         schoolId: BigDecimal,
