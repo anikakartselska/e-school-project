@@ -14,12 +14,11 @@ import com.nevexis.backend.serializers.BigDecimalSerializer
 import com.nevexis.backend.serializers.LocalDateTimeSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
-import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Serializable
 data class SchoolLesson(
-    val id: BigDecimal,
+    val id: Int,
     val startTimeOfLesson: LocalDateTime,
     val endTimeOfLesson: LocalDateTime,
     val subject: Subject,

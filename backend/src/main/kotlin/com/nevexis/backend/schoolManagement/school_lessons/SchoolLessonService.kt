@@ -105,9 +105,9 @@ class SchoolLessonService : BaseService() {
     }
 
     fun updateSchoolLesson(schoolLesson: SchoolLesson) {
-        db.selectFrom(SCHOOL_LESSON).where(SCHOOL_LESSON.ID.eq(schoolLesson.id)).fetchAny()
+        db.selectFrom(SCHOOL_LESSON).where(SCHOOL_LESSON.ID.eq(schoolLesson.id.toBigDecimal())).fetchAny()
             ?.apply {
-                id = schoolLesson.id
+                id = schoolLesson.id.toBigDecimal()
                 startTimeOfLesson = schoolLesson.startTimeOfLesson
                 endTimeOfLesson = schoolLesson.endTimeOfLesson
                 subjectId = schoolLesson.subject.id.toBigDecimal()
@@ -308,7 +308,7 @@ class SchoolLessonService : BaseService() {
         schoolClass: SchoolClass,
         teacher: UserView
     ) = SchoolLesson(
-        id = it.id!!,
+        id = it.id!!.toInt(),
         startTimeOfLesson = it.startTimeOfLesson!!,
         endTimeOfLesson = it.endTimeOfLesson!!,
         subject = subject,

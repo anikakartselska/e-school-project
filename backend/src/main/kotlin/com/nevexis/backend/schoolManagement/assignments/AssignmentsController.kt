@@ -22,9 +22,12 @@ class AssignmentsController {
 
     @PostMapping("/delete-assignments")
     fun deleteAssignments(
-        @RequestParam assignmentsId: BigDecimal
+        @RequestBody assignments: Assignments,
+        @RequestParam schoolClassId: BigDecimal,
+        @RequestParam schoolId: BigDecimal,
+        @RequestParam periodId: BigDecimal
     ) {
-        assignmentsService.deleteAssignments(assignmentsId)
+        assignmentsService.deleteAssignments(assignments, schoolClassId, schoolId, periodId)
     }
 
     @GetMapping("/fetch-all-assignments-for-school-class-period-and-school")

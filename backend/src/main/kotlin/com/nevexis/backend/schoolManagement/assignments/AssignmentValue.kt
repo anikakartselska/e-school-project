@@ -4,7 +4,6 @@
 
 package com.nevexis.backend.schoolManagement.assignments
 
-import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.JsonNode
@@ -30,16 +29,13 @@ sealed class AssignmentValue {
 
     @Serializable
     data class HomeworkValue(
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm")
         val to: LocalDateTime,
         val homeworkLesson: SchoolLesson
     ) : AssignmentValue()
 
     @Serializable
     data class EventValue(
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm")
         val from: LocalDateTime,
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm")
         val to: LocalDateTime,
         val room: String
     ) : AssignmentValue()

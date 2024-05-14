@@ -586,10 +586,15 @@ export const mergeAssignments = async (assignments,
             headers: {'Content-Type': 'application/json'}
         }).then(p => p.data)
 
-export const deleteAssignments = async (assignmentsId): Promise<Assignments> =>
-        await api.post<Assignments>('/delete-assignments', null, {
+export const deleteAssignments = async (assignments,
+                                        schoolClassId,
+                                        schoolId,
+                                        periodId): Promise<Assignments> =>
+        await api.post<Assignments>('/delete-assignments', assignments, {
             params: {
-                assignmentsId: assignmentsId
+                schoolClassId: schoolClassId,
+                schoolId: schoolId,
+                periodId: periodId
             },
             headers: {'Content-Type': 'application/json'}
         }).then(p => p.data)

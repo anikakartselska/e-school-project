@@ -129,7 +129,7 @@ const updateAssignment = async (assignment: Assignments) => {
 }
 
 const deleteAssignment = async (assignment: Assignments) => {
-  await deleteAssignments(assignment.id).then(r =>
+  await deleteAssignments(assignment, props.schoolClass.id, props.schoolId, props.periodId).then(r =>
           assignmentsFilteredByAssignmentTypeAndSemester = assignmentsFilteredByAssignmentTypeAndSemester.filter(it =>
                   it.id != assignment.id
           )

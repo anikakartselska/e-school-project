@@ -23,6 +23,9 @@ class AssignmentsService : BaseService() {
     @Autowired
     private lateinit var userService: UserService
 
+    @Autowired
+    private lateinit var assignmentNotificationService: AssignmentNotificationService
+
     fun saveUpdateAssignments(
         assignments: Assignments,
         schoolClassId: BigDecimal,
@@ -32,15 +35,49 @@ class AssignmentsService : BaseService() {
         val id = assignments.id?.toBigDecimal() ?: getAssignmentSeqNextVal()
         val newOrUpdatedAssigment =
             assignments.copy(id = id.toInt(), createdOn = assignments.createdOn ?: LocalDateTime.now())
-        mapToAssignmentToAssignmentRecord(newOrUpdatedAssigment, schoolId, periodId, schoolClassId).store()
+        val assignmentRecord =
+            mapToAssignmentToAssignmentRecord(
+                newOrUpdatedAssigment,
+                schoolId,
+                periodId,
+                schoolClassId
+            ).also { it.store() }
+        if (assignments.id == null) {
+            assignmentNotificationService.sendEmailForAssignmentCreation(
+                newOrUpdatedAssigment,
+                periodId,
+                schoolId,
+                schoolClassId
+            )
+        } else {
+            assignmentNotificationService.sendEmailForAssignmentUpdate(
+                newOrUpdatedAssigment,
+                Json.decodeFromString(assignmentRecord.assignmentValue!!),
+                assignmentRecord.text!!,
+                periodId,
+                schoolId,
+                schoolClassId
+            )
+        }
+
         return newOrUpdatedAssigment
     }
 
     fun deleteAssignments(
-        assignmentsId: BigDecimal
+        assignments: Assignments,
+        schoolClassId: BigDecimal,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
     ) {
         db.selectFrom(ASSIGNMENTS)
-            .where(ASSIGNMENTS.ID.eq(assignmentsId)).fetchAny()?.delete()
+            .where(ASSIGNMENTS.ID.eq(assignments.id?.toBigDecimal())).fetchAny()?.delete().also {
+                assignmentNotificationService.sendEmailForAssignmentDelete(
+                    assignments,
+                    periodId,
+                    schoolId,
+                    schoolClassId
+                )
+            }
     }
 
     fun getAllAssignmentsForSchoolClassPeriodAndSchool(

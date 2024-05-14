@@ -42,6 +42,8 @@ import SchoolClassesPlansPage from "./pages/administration/school-classes-plans-
 import SchoolClassesPlanPage from "./pages/administration/school-classes-plan-page.vue";
 import TeacherLessonsPage from "./pages/teacher-pages/teacher-lessons-page.vue";
 import SchoolClassAssignmentsTab from "./pages/school-class/school-class-assignments-tab.vue";
+import PageNotFound from "./pages/page-not-found.vue";
+import UnauthorizedPage from "./pages/unauthorized-page.vue";
 
 const routes = [
     {
@@ -295,42 +297,55 @@ const routes = [
                         component: RoleRequestsTab
                     }
                 ],
-            }
+            },
+            {
+                path: '/component',
+                redirect: to => ({path: `/component/${new Date().getFullYear()}/${new Date().getMonth()}`}),
+            },
+            {
+                path: '/requests',
+                redirect: to => {
+                    return {path: `/requests/${periodId.value}/${schoolId.value}`}
+                },
+            },
+            {
+                path: '/users',
+                redirect: to => {
+                    return {path: `/users/${periodId.value}/${schoolId.value}`}
+                },
+            },
+            {
+                path: '/school-classes',
+                redirect: to => {
+                    return {path: `/school-classes/${periodId.value}/${schoolId.value}`}
+                },
+            },
+            {
+                path: '/calendar',
+                redirect: to => {
+                    return {path: `/calendar/${periodId.value}/${schoolId.value}`}
+                },
+            },
+            {
+                path: '/program',
+                redirect: to => {
+                    return {path: `/program/${periodId.value}/${schoolId.value}`}
+                },
+            },
         ]
     },
     {
-        path: '/component',
-        redirect: to => ({path: `/component/${new Date().getFullYear()}/${new Date().getMonth()}`}),
+        path: `/:pathMatch(.*)*`,
+        name: 'page-not-found',
+        component: PageNotFound,
+        beforeEnter: (to, from) => {
+            if (!userIsLoggedIn()) return '/login'
+            return true
+        }
     },
     {
-        path: '/requests',
-        redirect: to => {
-            return {path: `/requests/${periodId.value}/${schoolId.value}`}
-        },
-    },
-    {
-        path: '/users',
-        redirect: to => {
-            return {path: `/users/${periodId.value}/${schoolId.value}`}
-        },
-    },
-    {
-        path: '/school-classes',
-        redirect: to => {
-            return {path: `/school-classes/${periodId.value}/${schoolId.value}`}
-        },
-    },
-    {
-        path: '/calendar',
-        redirect: to => {
-            return {path: `/calendar/${periodId.value}/${schoolId.value}`}
-        },
-    },
-    {
-        path: '/program',
-        redirect: to => {
-            return {path: `/program/${periodId.value}/${schoolId.value}`}
-        },
+        path: `/unauthorized`,
+        component: UnauthorizedPage
     },
 ]
 

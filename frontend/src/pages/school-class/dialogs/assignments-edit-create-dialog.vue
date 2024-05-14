@@ -55,16 +55,16 @@
                             </q-date>
                         </q-popup-proxy>
                     </q-icon>
-              </template>
+                </template>
 
-              <template v-slot:append>
-                <q-icon class="cursor-pointer" name="access_time">
-                  <q-popup-proxy cover transition-hide="scale" transition-show="scale">
-                    <q-time v-model="dateTo" format24h mask="MM/DD/YYYY HH:mm">
-                      <div class="row items-center justify-end">
-                        <q-btn v-close-popup color="primary" flat label="Затвори"/>
-                      </div>
-                    </q-time>
+                <template v-slot:append>
+                    <q-icon class="cursor-pointer" name="access_time">
+                        <q-popup-proxy cover transition-hide="scale" transition-show="scale">
+                            <q-time v-model="dateTo" format24h mask="MM/DD/YYYY HH:mm">
+                                <div class="row items-center justify-end">
+                                    <q-btn v-close-popup color="primary" flat label="Затвори"/>
+                                </div>
+                            </q-time>
                   </q-popup-proxy>
                 </q-icon>
               </template>
@@ -73,28 +73,28 @@
                       label-color="primary"
                       use-input/>
           </div>
-          <div v-if="updatedAssignment.assignmentType === AssignmentType.HOMEWORK">
-              <q-input v-model="dateTo" :model-value="dateTimeToBulgarianLocaleString(dateTo)">
-                  <template v-slot:prepend>
-                      <q-icon class="cursor-pointer" name="event">
-                          <q-popup-proxy cover transition-hide="scale" transition-show="scale">
-                              <q-date v-model="dateTo" mask="MM/DD/YYYY HH:mm">
-                                  <div class="row items-center justify-end">
-                                      <q-btn v-close-popup color="primary" flat label="Затвори"/>
-                                  </div>
-                              </q-date>
-                          </q-popup-proxy>
-                      </q-icon>
-              </template>
+            <div v-if="updatedAssignment.assignmentType === AssignmentType.HOMEWORK">
+                <q-input v-model="dateTo" :model-value="dateTimeToBulgarianLocaleString(dateTo)">
+                    <template v-slot:prepend>
+                        <q-icon class="cursor-pointer" name="event">
+                            <q-popup-proxy cover transition-hide="scale" transition-show="scale">
+                                <q-date v-model="dateTo" mask="MM/DD/YYYY HH:mm">
+                                    <div class="row items-center justify-end">
+                                        <q-btn v-close-popup color="primary" flat label="Затвори"/>
+                                    </div>
+                                </q-date>
+                            </q-popup-proxy>
+                        </q-icon>
+                    </template>
 
-              <template v-slot:append>
-                <q-icon class="cursor-pointer" name="access_time">
-                  <q-popup-proxy cover transition-hide="scale" transition-show="scale">
-                    <q-time v-model="dateTo" format24h mask="MM/DD/YYYY HH:mm">
-                      <div class="row items-center justify-end">
-                        <q-btn v-close-popup color="primary" flat label="Затвори"/>
-                      </div>
-                    </q-time>
+                    <template v-slot:append>
+                        <q-icon class="cursor-pointer" name="access_time">
+                            <q-popup-proxy cover transition-hide="scale" transition-show="scale">
+                                <q-time v-model="dateTo" format24h mask="MM/DD/YYYY HH:mm">
+                                    <div class="row items-center justify-end">
+                                        <q-btn v-close-popup color="primary" flat label="Затвори"/>
+                                    </div>
+                                </q-time>
                   </q-popup-proxy>
                 </q-icon>
               </template>
@@ -123,24 +123,24 @@ const quasar = useQuasar()
 defineEmits([...useDialogPluginComponent.emits])
 
 const props = defineProps<{
-  assignments: Assignments,
-  rooms: string[],
-  title: string,
+    assignments: Assignments,
+    rooms: string[],
+    title: string,
 }>()
 
 const updatedAssignment = $ref(cloneDeep(props.assignments))
-const dateFrom = $ref(updatedAssignment.assignmentValue.to ? updatedAssignment.assignmentValue.to : '')
-const dateTo = $ref(updatedAssignment.assignmentValue.from ? updatedAssignment.assignmentValue.from : '')
+const dateFrom = $ref(updatedAssignment.assignmentValue.from ? updatedAssignment.assignmentValue.from : '')
+const dateTo = $ref(updatedAssignment.assignmentValue.to ? updatedAssignment.assignmentValue.to : '')
 const submit = () => {
-  let assignmentValue;
-  if (updatedAssignment.assignmentType == AssignmentType.HOMEWORK) {
-      assignmentValue = {...updatedAssignment.assignmentValue, to: new Date(dateTo).toISOString().slice(0, 19)}
-  } else if (updatedAssignment.assignmentType == AssignmentType.EVENT) {
-    assignmentValue = {
-        ...updatedAssignment.assignmentValue,
-        to: new Date(dateTo).toISOString().slice(0, 19),
-        from: new Date(dateFrom).toISOString().slice(0, 19)
-    }
+    let assignmentValue;
+    if (updatedAssignment.assignmentType == AssignmentType.HOMEWORK) {
+        assignmentValue = {...updatedAssignment.assignmentValue, to: new Date(dateTo).toISOString().slice(0, 19)}
+    } else if (updatedAssignment.assignmentType == AssignmentType.EVENT) {
+        assignmentValue = {
+            ...updatedAssignment.assignmentValue,
+            to: new Date(dateTo).toISOString().slice(0, 19),
+            from: new Date(dateFrom).toISOString().slice(0, 19)
+        }
   } else {
     assignmentValue = updatedAssignment.assignmentValue
   }

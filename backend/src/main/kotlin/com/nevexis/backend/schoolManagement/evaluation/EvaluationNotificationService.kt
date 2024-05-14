@@ -36,7 +36,7 @@ class EvaluationNotificationService {
                     notificationService.sendNotification(
                         listOf(email, evaluation.student.email),
                         "НОВО оценяване",
-                        TemplateType.EVALUATION_ENTER,
+                        TemplateType.EVALUATION_CREATE,
                         getContextForEvaluationCreation(evaluation)
                     )
                 }
