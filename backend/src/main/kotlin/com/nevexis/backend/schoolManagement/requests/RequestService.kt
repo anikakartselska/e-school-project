@@ -276,7 +276,7 @@ class RequestService : BaseService() {
                         .and(REQUEST.REQUEST_VALUE.like("%\"status\":\"${newStatus}\"%"))
                 ).fetchAny()?.also {
                     throw SMSError(
-                        "ALREADY_EXISTING",
+                        "Вече съществуващи данни",
                         "Вече има създадена заявка за промяна на статуса на текущия потребител.Проверете заявките."
                     )
                 }
@@ -316,7 +316,7 @@ class RequestService : BaseService() {
                         .and(REQUEST.REQUEST_VALUE.like("%\"status\":\"${newStatus}\"%"))
                 ).fetchAny()?.also {
                     throw SMSError(
-                        "ALREADY_EXISTING",
+                        "Вече съществуващи данни",
                         "Вече има създадена заявка за промяна на статуса на избраната роля.Проверете заявките."
                     )
                 }

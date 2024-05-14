@@ -111,7 +111,7 @@ class SchoolClassService : BaseService() {
             SCHOOL_CLASS.SCHOOL_PERIOD_ID.eq(periodId)
         ).fetchAny()?.map {
             mapRecordToInternalModel(it)
-        } ?: throw SMSError("NOT_FOUND", "School class $name does not exist")
+        } ?: throw SMSError("Данните не са намерени", "Паралелка $name не съществува")
 
     fun getSchoolClasses(dsl: DSLContext = db): List<SchoolClass> =
         schoolClassRecordSelectOnConditionStep(dsl).orderBy(SCHOOL_CLASS.NAME)

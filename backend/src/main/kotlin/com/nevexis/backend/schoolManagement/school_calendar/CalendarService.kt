@@ -45,8 +45,8 @@ class CalendarService : BaseService() {
         periodId: BigDecimal
     ): List<Week> {
         val calendar = getSchoolCalendarForSchoolAndPeriod(schoolId, periodId) ?: throw SMSError(
-            "DATA_NOT_FOUND",
-            "There is no calendar for school with id:${schoolId} and period with id:${periodId}"
+            "Данните не са намерени",
+            "Училището няма календар за текущия период"
         )
 
         return generateSequence(calendar.beginningOfYear) { it.plusDays(1) }
@@ -62,8 +62,8 @@ class CalendarService : BaseService() {
         periodId: BigDecimal
     ): List<Week> {
         val calendar = getSchoolCalendarForSchoolAndPeriod(schoolId, periodId) ?: throw SMSError(
-            "DATA_NOT_FOUND",
-            "There is no calendar for school with id:${schoolId} and period with id:${periodId}"
+            "Данните не са намерени",
+            "Училището няма календар за текущия период"
         )
 
         return generateSequence(calendar.beginningOfYear) { it.plusDays(1) }

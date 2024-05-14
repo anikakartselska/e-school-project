@@ -66,7 +66,7 @@ class SchoolLessonService : BaseService() {
                     )
                 }
                 mapRecordToInternalModel(schoolLessonRecord, subject, schoolClass, teacher)
-            } ?: throw SMSError("DATA_NOT_FOUND", "School lesson with id:${schoolLessonId} does not exist")
+            } ?: throw SMSError("Данните не са намерени", "Урокът,който търсите не съществува или е бил изтрит")
 
     fun getAvailableRoomsForSchoolLesson(
         schoolLesson: SchoolLesson,

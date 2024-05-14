@@ -87,8 +87,8 @@ class EvaluationService : BaseService() {
             schoolId
         ) ?: error(
             SMSError(
-                "NOT_FOUND",
-                "Subject with id $subjectId does not exist"
+                "Данните не са намерени",
+                "Предметът не съществува"
             )
         )
         val students = userService.getAllStudentsInSchoolClass(
@@ -145,8 +145,8 @@ class EvaluationService : BaseService() {
     ): List<SubjectWithEvaluationDTO> {
         val studentView = userService.getStudentByIdAndSchoolClass(studentId, schoolClassId, periodId) ?: error(
             SMSError(
-                "NOT_FOUND",
-                "STUDENT with id $studentId does not exist or is not approved yet"
+                "Данните не са намерени",
+                "Студентът, който търсите не съществува или не е ОДОБРЕН в системата"
             )
         )
         val subjects = subjectService.getAllSubjectsBySchoolClassId(

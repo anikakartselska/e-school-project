@@ -81,7 +81,7 @@ fun getTranslationFromBulgarianToEnglish(bulgarianGender: String): Gender {
     return when (bulgarianGender.uppercase()) {
         "МЪЖ" -> Gender.MALE
         "ЖЕНА" -> Gender.FEMALE
-        else -> throw SMSError("NOT_FOUNT", "Gender not exist")
+        else -> throw SMSError("Данните не са намерени", "Полът не съществува")
     }
 }
 

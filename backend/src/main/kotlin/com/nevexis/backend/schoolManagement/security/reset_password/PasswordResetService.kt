@@ -31,8 +31,8 @@ class PasswordResetService : BaseService() {
         email: String
     ): Boolean {
         val user: UserSecurity = userSecurityService.findUserByEmail(email) ?: throw SMSError(
-            "NOT_FOUND",
-            "User with email $email does not exist"
+            "Данните не са намерени",
+            "Не съществува потребител с имейл:$email"
         )
         val token = UUID.randomUUID().toString()
         val passwordResetToken = createPasswordResetTokenForUser(user, token)

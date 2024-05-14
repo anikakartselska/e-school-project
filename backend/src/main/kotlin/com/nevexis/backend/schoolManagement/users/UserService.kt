@@ -92,7 +92,7 @@ class UserService : UserBaseService() {
             ).and(USER.ID.eq(userId))
         ).fetchAny()?.let {
             mapToUserView(it, roles)
-        } ?: throw SMSError("NOT_FOUND", "User with id:${userId} does not exist")
+        } ?: throw SMSError("Данните не са намерени", "Потребителят, който търсите не съществува или е бил изтрит")
     }
 
     fun getAllApprovedTeachersFromSchool(

@@ -177,7 +177,7 @@ class ImportService : BaseService() {
                             status = existingUser?.status ?: RequestStatus.PENDING
                         )
                     }
-                } ?: throw SMSError("EMPTY", "Workbook empty !")
+                } ?: throw SMSError("Празно", "Файлът е празен")
         }
     }
 

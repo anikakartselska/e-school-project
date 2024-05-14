@@ -93,7 +93,10 @@ class SchoolPlanForClassesService : BaseService() {
                     },
                     schoolClassesWithTheSchoolPlan = schoolClassService.getSchoolClassesWithSchoolPlanId(it.id!!)
                 )
-            } ?: throw SMSError("NOT FOUND", "School plan with id:${planForClassesId} does not exist")
+            } ?: throw SMSError(
+            "Данните не са намерени",
+            "Училищният план, който търсите не съществува или е бил изтрит"
+        )
     }
 
     fun saveUpdateSchoolPlansForClasses(

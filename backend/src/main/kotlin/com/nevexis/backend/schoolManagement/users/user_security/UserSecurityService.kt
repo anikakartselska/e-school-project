@@ -25,7 +25,7 @@ class UserSecurityService : UserBaseService() {
             db.selectFrom(PASSWORD_RESET_TOKEN).where(PASSWORD_RESET_TOKEN.TOKEN.eq(passwordResetToken))
                 .fetchAny()
         if (passwordResetTokenRecord?.expiryDate?.isBefore(LocalDateTime.now()) == true) {
-            throw SMSError("RESET_PASSWORD_TOKEN_ERROR", "Reset password token expired")
+            throw SMSError("Грешка при промяна на паролата", "Токенър за промяна на паролата е изтекъл")
         }
         db.selectFrom(USER).where(USER.ID.eq(passwordResetTokenRecord?.userId!!))
             .fetchAny()?.apply {
@@ -35,9 +35,12 @@ class UserSecurityService : UserBaseService() {
 
     fun changeUserPassword(userId: BigDecimal, newPassword: String, oldPassword: String) {
         val userRecord = db.selectFrom(USER).where(USER.ID.eq(userId))
-            .fetchAny() ?: throw SMSError("NOT_FOUND", "User with id $userId was not found")
+            .fetchAny() ?: throw SMSError(
+            "Данните не са намерени",
+            "Потребителят, който търсите не съществува или е бил изтрит"
+        )
         if (!passwordEncoder.matches(oldPassword, userRecord.password)) {
-            throw SMSError("WRONG_PASSWORD", "Your old password is not correct!")
+            throw SMSError("Грешна парола", "Старата ви парола не е правилна!")
         }
         userRecord.apply {
             password = passwordEncoder.encode(newPassword)
