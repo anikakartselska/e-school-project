@@ -1,6 +1,7 @@
 package com.nevexis.backend.schoolManagement.school_schedule
 
 import com.nevexis.backend.schoolManagement.BaseService
+import com.nevexis.backend.schoolManagement.school.RoomToSubjects
 import com.nevexis.backend.schoolManagement.school_class.SchoolClassWithPlan
 import com.nevexis.backend.schoolManagement.users.TeacherView
 import org.springframework.stereotype.Service
@@ -21,7 +22,7 @@ class SchoolProgramGenerationService : BaseService() {
         teachers: List<TeacherView>,
         schoolClasses: List<SchoolClassWithPlan>,
         subjects: List<String>,
-        rooms: List<String>
+        rooms: List<RoomToSubjects>
     ): List<PlannedSchoolLesson> {
         var population = populate(teachers, schoolClasses, subjects, rooms)
 
@@ -36,7 +37,7 @@ class SchoolProgramGenerationService : BaseService() {
         teachersList: List<TeacherView>,
         schoolClasses: List<SchoolClassWithPlan>,
         subjects: List<String>,
-        rooms: List<String>
+        rooms: List<RoomToSubjects>
     ): List<PlannedSchoolLesson> {
         val subjectToTeachersTeachingIt = subjects.associateWith { subject ->
             teachersList.filter { teacher -> teacher.qualifiedSubjects.contains(subject) }
@@ -186,7 +187,7 @@ class SchoolProgramGenerationService : BaseService() {
 
     private fun populate(
         teachers: List<TeacherView>, schoolClasses: List<SchoolClassWithPlan>, subjects: List<String>,
-        rooms: List<String>
+        rooms: List<RoomToSubjects>
     ): Population {
         return Population((1..100).toList().parallelStream()
             .map {
@@ -202,7 +203,7 @@ class SchoolProgramGenerationService : BaseService() {
         teachers: List<TeacherView>,
         schoolClasses: List<SchoolClassWithPlan>,
         subjects: List<String>,
-        rooms: List<String>
+        rooms: List<RoomToSubjects>
     ): Population {
         return Population(
             (0 until pop.schedules.size).toList().parallelStream().map {
@@ -238,7 +239,7 @@ class SchoolProgramGenerationService : BaseService() {
         teachers: List<TeacherView>,
         schoolClasses: List<SchoolClassWithPlan>,
         subjects: List<String>,
-        rooms: List<String>
+        rooms: List<RoomToSubjects>
     ): Schedule {
         // Loop through genes
         val newSchedule = generateProgram(

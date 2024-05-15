@@ -1,8 +1,9 @@
 import {TeacherView} from "./User";
 import {SchoolClassWithPlan} from "./SchoolClass";
+import {RoomToSubjects} from "./School";
 
 export interface PlannedSchoolLesson {
-    room: string,
+    room: RoomToSubjects,
     workingHour: WorkingHour,
     teacher: TeacherView,
     subject: string,

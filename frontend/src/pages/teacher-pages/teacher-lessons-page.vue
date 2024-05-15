@@ -31,7 +31,7 @@
                       {{ lesson.subject.teacher?.firstName }} {{ lesson.subject.teacher?.lastName }}</span>
             <br>
             Стая:<span class="text-primary">
-                      {{ lesson.room }}
+                      {{ lesson.room.room }}
           </span>
             <br>
             Час на провеждане: <span class="text-primary">

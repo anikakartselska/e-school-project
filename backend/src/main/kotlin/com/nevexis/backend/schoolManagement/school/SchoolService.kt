@@ -34,9 +34,10 @@ class SchoolService : BaseService() {
             )
         } ?: error("School with id $id does not exist")
 
-    fun getAllRoomsFromSchool(schoolId: BigDecimal, dsl: DSLContext = db): List<String> = dsl.select(SCHOOL.ROOMS).from(
-        SCHOOL
-    ).where(SCHOOL.ID.eq(schoolId)).fetchAny().let { Json.decodeFromString(it!!.into(String::class.java)) }
+    fun getAllRoomsFromSchool(schoolId: BigDecimal, dsl: DSLContext = db): List<RoomToSubjects> =
+        dsl.select(SCHOOL.ROOMS).from(
+            SCHOOL
+        ).where(SCHOOL.ID.eq(schoolId)).fetchAny().let { Json.decodeFromString(it!!.into(String::class.java)) }
 
     fun updateSchool(school: School) {
         db.selectFrom(SCHOOL)

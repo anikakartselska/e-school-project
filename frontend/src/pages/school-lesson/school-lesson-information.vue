@@ -31,8 +31,8 @@
             currentLesson?.taken === true ? 'Да' : 'Не'
           }}</span><br>
           Стая: <span class="text-primary">{{
-            currentLesson?.room
-          }}</span><br>
+            currentLesson?.room?.room
+            }}</span><br>
           Час на провеждане: <span class="text-primary">{{
             `${dateTimeToBulgarianLocaleString(currentLesson?.startTimeOfLesson)} - ${dateTimeToBulgarianLocaleString(currentLesson?.endTimeOfLesson)}`
           }}</span><br>

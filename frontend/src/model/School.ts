@@ -3,5 +3,14 @@ export interface School {
     schoolName: string,
     city: string,
     address: string
-    rooms: string[] | null
+    rooms: RoomToSubjects[] | null
+}
+
+export interface RoomToSubjects {
+    room: string
+    subjects: string[]
+}
+
+export const roomToSubjectsText = (roomToSubjects: RoomToSubjects) => {
+    return `${roomToSubjects.room} ${roomToSubjects.subjects.length > 0 ? ` - Стая за часове по: ${roomToSubjects.subjects.join(',')}` : ''}`
 }

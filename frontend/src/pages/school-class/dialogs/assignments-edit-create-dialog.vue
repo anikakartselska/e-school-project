@@ -45,56 +45,57 @@
               </template>
             </q-input>
             <q-input v-model="dateTo" :model-value="dateTimeToBulgarianLocaleString(dateTo)">
-                <template v-slot:prepend>
-                    <q-icon class="cursor-pointer" name="event">
-                        <q-popup-proxy cover transition-hide="scale" transition-show="scale">
-                            <q-date v-model="dateTo" mask="MM/DD/YYYY HH:mm">
-                                <div class="row items-center justify-end">
-                                    <q-btn v-close-popup color="primary" flat label="Затвори"/>
-                                </div>
-                            </q-date>
-                        </q-popup-proxy>
-                    </q-icon>
-                </template>
+              <template v-slot:prepend>
+                <q-icon class="cursor-pointer" name="event">
+                  <q-popup-proxy cover transition-hide="scale" transition-show="scale">
+                    <q-date v-model="dateTo" mask="MM/DD/YYYY HH:mm">
+                      <div class="row items-center justify-end">
+                        <q-btn v-close-popup color="primary" flat label="Затвори"/>
+                      </div>
+                    </q-date>
+                  </q-popup-proxy>
+                </q-icon>
+              </template>
 
-                <template v-slot:append>
-                    <q-icon class="cursor-pointer" name="access_time">
-                        <q-popup-proxy cover transition-hide="scale" transition-show="scale">
-                            <q-time v-model="dateTo" format24h mask="MM/DD/YYYY HH:mm">
-                                <div class="row items-center justify-end">
-                                    <q-btn v-close-popup color="primary" flat label="Затвори"/>
-                                </div>
-                            </q-time>
+              <template v-slot:append>
+                <q-icon class="cursor-pointer" name="access_time">
+                  <q-popup-proxy cover transition-hide="scale" transition-show="scale">
+                    <q-time v-model="dateTo" format24h mask="MM/DD/YYYY HH:mm">
+                      <div class="row items-center justify-end">
+                        <q-btn v-close-popup color="primary" flat label="Затвори"/>
+                      </div>
+                    </q-time>
                   </q-popup-proxy>
                 </q-icon>
               </template>
             </q-input>
             <q-select v-model="updatedAssignment.assignmentValue.room" :options="rooms" class="text-black" label="Място"
+                      :option-label="option=>roomToSubjectsText(option)"
                       label-color="primary"
                       use-input/>
           </div>
-            <div v-if="updatedAssignment.assignmentType === AssignmentType.HOMEWORK">
-                <q-input v-model="dateTo" :model-value="dateTimeToBulgarianLocaleString(dateTo)">
-                    <template v-slot:prepend>
-                        <q-icon class="cursor-pointer" name="event">
-                            <q-popup-proxy cover transition-hide="scale" transition-show="scale">
-                                <q-date v-model="dateTo" mask="MM/DD/YYYY HH:mm">
-                                    <div class="row items-center justify-end">
-                                        <q-btn v-close-popup color="primary" flat label="Затвори"/>
-                                    </div>
-                                </q-date>
-                            </q-popup-proxy>
-                        </q-icon>
-                    </template>
+          <div v-if="updatedAssignment.assignmentType === AssignmentType.HOMEWORK">
+            <q-input v-model="dateTo" :model-value="dateTimeToBulgarianLocaleString(dateTo)">
+              <template v-slot:prepend>
+                <q-icon class="cursor-pointer" name="event">
+                  <q-popup-proxy cover transition-hide="scale" transition-show="scale">
+                    <q-date v-model="dateTo" mask="MM/DD/YYYY HH:mm">
+                      <div class="row items-center justify-end">
+                        <q-btn v-close-popup color="primary" flat label="Затвори"/>
+                      </div>
+                    </q-date>
+                  </q-popup-proxy>
+                </q-icon>
+              </template>
 
-                    <template v-slot:append>
-                        <q-icon class="cursor-pointer" name="access_time">
-                            <q-popup-proxy cover transition-hide="scale" transition-show="scale">
-                                <q-time v-model="dateTo" format24h mask="MM/DD/YYYY HH:mm">
-                                    <div class="row items-center justify-end">
-                                        <q-btn v-close-popup color="primary" flat label="Затвори"/>
-                                    </div>
-                                </q-time>
+              <template v-slot:append>
+                <q-icon class="cursor-pointer" name="access_time">
+                  <q-popup-proxy cover transition-hide="scale" transition-show="scale">
+                    <q-time v-model="dateTo" format24h mask="MM/DD/YYYY HH:mm">
+                      <div class="row items-center justify-end">
+                        <q-btn v-close-popup color="primary" flat label="Затвори"/>
+                      </div>
+                    </q-time>
                   </q-popup-proxy>
                 </q-icon>
               </template>
@@ -117,30 +118,31 @@ import {useDialogPluginComponent, useQuasar} from "quasar";
 import {Assignments, AssignmentType} from "../../../model/Assignments";
 import {cloneDeep} from "lodash-es";
 import {dateTimeToBulgarianLocaleString} from "../../../utils";
+import {RoomToSubjects, roomToSubjectsText} from "../../../model/School";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
 const quasar = useQuasar()
 defineEmits([...useDialogPluginComponent.emits])
 
 const props = defineProps<{
-    assignments: Assignments,
-    rooms: string[],
-    title: string,
+  assignments: Assignments,
+  rooms: RoomToSubjects[],
+  title: string,
 }>()
 
 const updatedAssignment = $ref(cloneDeep(props.assignments))
 const dateFrom = $ref(updatedAssignment.assignmentValue.from ? updatedAssignment.assignmentValue.from : '')
 const dateTo = $ref(updatedAssignment.assignmentValue.to ? updatedAssignment.assignmentValue.to : '')
 const submit = () => {
-    let assignmentValue;
-    if (updatedAssignment.assignmentType == AssignmentType.HOMEWORK) {
-        assignmentValue = {...updatedAssignment.assignmentValue, to: new Date(dateTo).toISOString().slice(0, 19)}
-    } else if (updatedAssignment.assignmentType == AssignmentType.EVENT) {
-        assignmentValue = {
-            ...updatedAssignment.assignmentValue,
-            to: new Date(dateTo).toISOString().slice(0, 19),
-            from: new Date(dateFrom).toISOString().slice(0, 19)
-        }
+  let assignmentValue;
+  if (updatedAssignment.assignmentType == AssignmentType.HOMEWORK) {
+    assignmentValue = {...updatedAssignment.assignmentValue, to: new Date(dateTo).toISOString().slice(0, 19)}
+  } else if (updatedAssignment.assignmentType == AssignmentType.EVENT) {
+    assignmentValue = {
+      ...updatedAssignment.assignmentValue,
+      to: new Date(dateTo).toISOString().slice(0, 19),
+      from: new Date(dateFrom).toISOString().slice(0, 19)
+    }
   } else {
     assignmentValue = updatedAssignment.assignmentValue
   }

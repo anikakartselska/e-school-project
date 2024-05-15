@@ -5,6 +5,7 @@
 
 package com.nevexis.backend.schoolManagement.school_lessons
 
+import com.nevexis.backend.schoolManagement.school.RoomToSubjects
 import com.nevexis.backend.schoolManagement.school_class.SchoolClass
 import com.nevexis.backend.schoolManagement.school_period.Semester
 import com.nevexis.backend.schoolManagement.school_schedule.WorkingHour
@@ -25,7 +26,7 @@ data class SchoolLesson(
     val teacher: UserView,
     val schoolClass: SchoolClass,
     val lessonTopic: String? = null,
-    val room: String,
+    val room: RoomToSubjects,
     val taken: Boolean = false,
     val week: Int,
     val semester: Semester,

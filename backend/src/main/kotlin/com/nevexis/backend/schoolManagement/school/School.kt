@@ -9,5 +9,11 @@ data class School(
     val schoolName: String,
     val city: String,
     val address: String,
-    val rooms: List<String>? = null
+    val rooms: List<RoomToSubjects>? = null
+)
+
+@Serializable
+data class RoomToSubjects(
+    val room: String,
+    val subjects: List<String>
 )

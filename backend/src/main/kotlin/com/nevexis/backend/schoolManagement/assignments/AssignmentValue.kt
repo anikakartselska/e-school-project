@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.nevexis.backend.schoolManagement.school.RoomToSubjects
 import com.nevexis.backend.schoolManagement.school_lessons.SchoolLesson
 import com.nevexis.backend.serializers.LocalDateTimeSerializer
 import kotlinx.serialization.Serializable
@@ -37,7 +38,7 @@ sealed class AssignmentValue {
     data class EventValue(
         val from: LocalDateTime,
         val to: LocalDateTime,
-        val room: String
+        val room: RoomToSubjects
     ) : AssignmentValue()
 }
 

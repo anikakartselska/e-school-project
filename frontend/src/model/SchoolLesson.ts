@@ -3,6 +3,7 @@ import {SchoolClass} from "./SchoolClass";
 import {WorkingHour} from "./PlannedSchoolLesson";
 import {Semester} from "./SchoolPeriod";
 import {UserView} from "./User";
+import {RoomToSubjects} from "./School";
 
 export interface SchoolLesson {
     id: number,
@@ -11,7 +12,7 @@ export interface SchoolLesson {
     subject: Subject,
     schoolClass: SchoolClass,
     lessonTopic: string | null
-    room: string,
+    room: RoomToSubjects,
     taken: boolean
     week: number,
     semester: Semester,

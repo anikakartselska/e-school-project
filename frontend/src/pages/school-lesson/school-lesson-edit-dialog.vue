@@ -39,6 +39,7 @@
           </q-input>
           <q-checkbox v-model="updatedSchoolLesson.taken" label="Маркиран като взет" left-label/>
           <q-select v-model="updatedSchoolLesson.room" :options="rooms" class="text-black" label="Стая"
+                    :option-label="option=> roomToSubjectsText(option)"
                     label-color="primary"/>
           <q-field label="Час на провеждане" stack-label><span class="text-black">{{
               `${dateTimeToBulgarianLocaleString(updatedSchoolLesson?.startTimeOfLesson)} - ${dateTimeToBulgarianLocaleString(updatedSchoolLesson?.endTimeOfLesson)}`
@@ -68,6 +69,7 @@ import {SchoolLesson, SchoolLessonStatus, translationOfSchoolLessonStatus} from 
 import {$ref} from "vue/macros";
 import {dateTimeToBulgarianLocaleString, translationOfSemester, translationOfWorkingDays} from "../../utils";
 import {UserView} from "../../model/User";
+import {roomToSubjectsText} from "../../model/School";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
 const quasar = useQuasar()

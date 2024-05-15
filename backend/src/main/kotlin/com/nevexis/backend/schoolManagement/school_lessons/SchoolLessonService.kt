@@ -2,6 +2,7 @@ package com.nevexis.backend.schoolManagement.school_lessons
 
 import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.BaseService
+import com.nevexis.backend.schoolManagement.school.RoomToSubjects
 import com.nevexis.backend.schoolManagement.school.SchoolService
 import com.nevexis.backend.schoolManagement.school_calendar.Calendar
 import com.nevexis.backend.schoolManagement.school_calendar.Shift
@@ -72,15 +73,15 @@ class SchoolLessonService : BaseService() {
         schoolLesson: SchoolLesson,
         schoolId: BigDecimal,
         periodId: BigDecimal
-    ): List<String> {
-        val busyRooms = db.select(SCHOOL_LESSON.ROOM).from(SCHOOL_LESSON)
+    ): List<RoomToSubjects> {
+        val busyRooms: List<RoomToSubjects> = db.select(SCHOOL_LESSON.ROOM).from(SCHOOL_LESSON)
             .where(SCHOOL_LESSON.SEMESTER.eq(schoolLesson.semester.name))
             .and(SCHOOL_LESSON.WEEK.eq(schoolLesson.week.toBigDecimal())).and(SCHOOL_LESSON.SCHOOL_ID.eq(schoolId))
             .and(SCHOOL_LESSON.SCHOOL_PERIOD_ID.eq(periodId))
             .and(SCHOOL_LESSON.WORKING_HOUR.eq(Json.encodeToString(schoolLesson.workingDay)))
-            .fetchInto(String::class.java)
+            .fetchInto(String::class.java).map { Json.decodeFromString(it) }
         val allRooms = schoolService.getAllRoomsFromSchool(schoolId)
-        return (allRooms - busyRooms).distinct() + schoolLesson.room
+        return allRooms.filter { room -> busyRooms.find { busyRoom -> busyRoom.room == room.room } != null } + schoolLesson.room
     }
 
     fun getAvailableTeachersForSchoolLesson(
@@ -291,7 +292,7 @@ class SchoolLessonService : BaseService() {
                 plannedSchoolLesson.teacher.id.toBigDecimal()
             )]!!.id
             schoolClassId = plannedSchoolLesson.schoolClass.id?.toBigDecimal()
-            room = plannedSchoolLesson.room
+            room = Json.encodeToString(plannedSchoolLesson.room)
             this.schoolId = schoolId
             schoolPeriodId = periodId
             week = date.get(weekFields.weekOfYear()).toBigDecimal()
@@ -314,7 +315,7 @@ class SchoolLessonService : BaseService() {
         subject = subject,
         schoolClass = schoolClass,
         lessonTopic = it.lessonTopic,
-        room = it.room!!,
+        room = Json.decodeFromString(it.room!!),
         taken = it.taken == "Y",
         week = it.week!!.toInt(),
         semester = Semester.valueOf(it.semester!!),

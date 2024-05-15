@@ -33,7 +33,7 @@
                                 <br>
                                 Стая:<span class="text-primary">
               {{
-                                lesson.room
+                                lesson.room.room
                                 }}
                   </span>
                             </q-card-section>
