@@ -44,6 +44,7 @@ import TeacherLessonsPage from "./pages/teacher-pages/teacher-lessons-page.vue";
 import SchoolClassAssignmentsTab from "./pages/school-class/school-class-assignments-tab.vue";
 import PageNotFound from "./pages/page-not-found.vue";
 import UnauthorizedPage from "./pages/unauthorized-page.vue";
+import StatisticsComponent from "./pages/statistics/statistics-component.vue";
 
 const routes = [
     {
@@ -90,6 +91,12 @@ const routes = [
                 path: '/user/:id(\\d+)/:periodId(\\d+)/:schoolId(\\d+)',
                 name: 'user',
                 component: UserPage,
+                props: true
+            },
+            {
+                path: '/statistics/:studentId(\\d+)/:periodId(\\d+)/:schoolId(\\d+)',
+                name: 'statistics',
+                component: StatisticsComponent,
                 props: true
             },
             {

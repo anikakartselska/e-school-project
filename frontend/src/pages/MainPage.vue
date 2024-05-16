@@ -180,9 +180,9 @@ onBeforeMount(async () => {
 })
 
 const load = async () => {
-  userRoles = await getAllUserRoles(currentUser.id)
-  schoolPeriods = await getAllSchoolPeriods()
-  userRolesFilteredBySelectedPeriod = userRoles.filter(role => role.period.id == selectedPeriod?.id)
+    userRoles = await getAllUserRoles(currentUser.id)
+    schoolPeriods = await getAllSchoolPeriods()
+    userRolesFilteredBySelectedPeriod = userRoles.filter(role => role.period.id == selectedPeriod?.id)
     currentUserFile = await getUserProfilePicture(currentUser.id)
     school = currentUser.role.school
 }
@@ -224,6 +224,7 @@ const pages = [
   {to: `/school-classes-plans/${schoolId.value}/${periodId.value}`, label: "Учебни планове", show: true},
   {to: `/calendar`, label: "Учебен Календар", show: true},
   {to: `/program`, label: "Седмичен разпис", show: true},
+    {to: `/statistics/${periodId.value}/${schoolId.value}/${schoolId.value}`, label: "Статистики", show: true}
 ]
 
 </script>
