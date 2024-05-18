@@ -1,5 +1,6 @@
 package com.nevexis.backend.schoolManagement.school
 
+import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.`demo-project`.jooq.tables.records.SchoolRecord
 import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL
@@ -32,7 +33,7 @@ class SchoolService : BaseService() {
                 address = it.address!!,
                 rooms = Json.decodeFromString(it.rooms ?: "[]")
             )
-        } ?: error("School with id $id does not exist")
+        } ?: throw SMSError("Данните не са намерени", "Училището не съществува")
 
     fun getAllRoomsFromSchool(schoolId: BigDecimal, dsl: DSLContext = db): List<RoomToSubjects> =
         dsl.select(SCHOOL.ROOMS).from(

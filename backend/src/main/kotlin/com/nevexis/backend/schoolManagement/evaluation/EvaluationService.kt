@@ -29,7 +29,7 @@ import java.math.RoundingMode
 import java.time.LocalDateTime
 
 @Service
-class EvaluationService : BaseService() {
+class EvaluationService : BaseService(), Calculation {
 
     @Autowired
     private lateinit var userService: UserService
@@ -92,12 +92,11 @@ class EvaluationService : BaseService() {
             subjectId,
             periodId,
             schoolId
-        ) ?: error(
-            SMSError(
-                "Данните не са намерени",
-                "Предметът не съществува"
-            )
+        ) ?: throw SMSError(
+            "Данните не са намерени",
+            "Предметът не съществува"
         )
+
         val students = userService.getAllStudentsInSchoolClass(
             schoolClassId = schoolClassId,
             periodId = periodId

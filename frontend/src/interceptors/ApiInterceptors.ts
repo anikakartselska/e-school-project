@@ -26,7 +26,7 @@ const onRequest = (quasar: QVueGlobals) => (config: AxiosRequestConfig): AxiosRe
             progress: true,
             type: 'ongoing',
             position: 'top-right',
-            message: 'progressMessage',
+            message: 'Операцията се изпълнява...',
         }))
     }
     return config;
@@ -99,7 +99,7 @@ const successNotification = (response: AxiosResponse) => ({
     progress: true,
     position: 'top-right',
     timeout: 1000,
-    message: 'successMessage'
+    message: 'Успешна операция'
 });
 
 const failedNotification = (error: AxiosError) => ({
@@ -107,7 +107,7 @@ const failedNotification = (error: AxiosError) => ({
     progress: true,
     position: 'top-right',
     timeout: 1000,
-    message: 'errorMessage'
+    message: 'Грешка при изпълнението на операцията'
 });
 
 const handleBusinessError = (businessError: SmsError, quasar: QVueGlobals) => {

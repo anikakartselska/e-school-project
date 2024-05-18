@@ -63,7 +63,7 @@ class UserService : UserBaseService() {
             schoolUserRolesService.getAllSchoolUserRolesForPeriodAndSchool(id, schoolId, periodId)
         }
         mapUserRecordToUserModel(record, allUserRoles)
-    } ?: error("User with id:${id} does not exist in current school and period")
+    } ?: throw SMSError("Данните не са намерени", "Потребителят, който търсите не съществува или е бил изтрит")
 
     fun getAllUserViewsBySchool(schoolId: BigDecimal, periodId: BigDecimal, dsl: DSLContext = db): List<UserView> {
         val rolesForSchoolGroupedByUserId =
@@ -161,6 +161,7 @@ class UserService : UserBaseService() {
             .fetch()
             .map { record ->
                 val numberInClass = record.get(DSL.field("NUMBER_IN_CLASS", BigDecimal::class.java))?.toInt()
+                val schoolClassName = record.get(SCHOOL_CLASS.NAME).toString()
                 record.into(UserRecord::class.java).let { userRecord ->
                     StudentView(
                         id = userRecord.id?.toInt()!!,
@@ -169,7 +170,9 @@ class UserService : UserBaseService() {
                         middleName = userRecord.middleName!!,
                         lastName = userRecord.lastName!!,
                         username = userRecord.username!!,
-                        numberInClass = numberInClass
+                        numberInClass = numberInClass,
+                        schoolClassId = schoolClassId.toInt(),
+                        schoolClassName = schoolClassName
                     )
                 }
             }
@@ -192,6 +195,8 @@ class UserService : UserBaseService() {
             .fetch()
             .map { record ->
                 val numberInClass = record.get(DSL.field("NUMBER_IN_CLASS", BigDecimal::class.java))?.toInt()
+                val schoolClassId: Int = record.get(SCHOOL_CLASS.ID)!!.toInt()
+                val schoolClassName = record.get(SCHOOL_CLASS.NAME).toString()
                 record.into(UserRecord::class.java).let { userRecord ->
                     StudentView(
                         id = userRecord.id?.toInt()!!,
@@ -200,7 +205,9 @@ class UserService : UserBaseService() {
                         middleName = userRecord.middleName!!,
                         lastName = userRecord.lastName!!,
                         username = userRecord.username!!,
-                        numberInClass = numberInClass
+                        numberInClass = numberInClass,
+                        schoolClassId = schoolClassId,
+                        schoolClassName = schoolClassName
                     )
                 }
             }
@@ -224,6 +231,7 @@ class UserService : UserBaseService() {
             .fetchAny()
             ?.map { record ->
                 val numberInClass = record.get(DSL.field("NUMBER_IN_CLASS", BigDecimal::class.java))?.toInt()
+                val schoolClassName = record.get(SCHOOL_CLASS.NAME).toString()
                 record.into(UserRecord::class.java).let { userRecord ->
                     StudentView(
                         id = userRecord.id!!.toInt(),
@@ -232,7 +240,9 @@ class UserService : UserBaseService() {
                         middleName = userRecord.middleName!!,
                         lastName = userRecord.lastName!!,
                         username = userRecord.username!!,
-                        numberInClass = numberInClass
+                        numberInClass = numberInClass,
+                        schoolClassId = schoolClassId.toInt(),
+                        schoolClassName = schoolClassName
                     )
                 }
             }

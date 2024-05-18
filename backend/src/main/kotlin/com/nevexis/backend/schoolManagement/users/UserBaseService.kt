@@ -173,7 +173,9 @@ class UserBaseService : BaseService() {
         SCHOOL_USER_ROLE.asterisk(),
         SCHOOL_USER_PERIOD.asterisk(),
         SCHOOL_ROLE_PERIOD.asterisk(),
-        SCHOOL_PERIOD.asterisk()
+        SCHOOL_PERIOD.asterisk(),
+        SCHOOL_CLASS.ID,
+        SCHOOL_CLASS.NAME
     )
         .from(STUDENT_SCHOOL_CLASS)
         .leftJoin(SCHOOL_USER_ROLE).on(SCHOOL_USER_ROLE.ID.eq(STUDENT_SCHOOL_CLASS.STUDENT_SCHOOL_USER_ROLE_ID))
@@ -182,6 +184,7 @@ class UserBaseService : BaseService() {
         .leftJoin(SCHOOL_USER_PERIOD).on(SCHOOL_USER_PERIOD.ID.eq(SCHOOL_USER.ID))
         .leftJoin(SCHOOL_ROLE_PERIOD).on(SCHOOL_ROLE_PERIOD.SCHOOL_USER_ROLE_ID.eq(SCHOOL_USER_ROLE.ID))
         .leftJoin(SCHOOL_PERIOD).on(SCHOOL_PERIOD.ID.eq(SCHOOL_ROLE_PERIOD.PERIOD_ID))
+        .leftJoin(SCHOOL_CLASS).on(SCHOOL_CLASS.ID.eq(STUDENT_SCHOOL_CLASS.SCHOOL_CLASS_ID))
 
     fun mapTeacherViewToUserView(teacherView: TeacherView) = UserView(
         id = teacherView.id,

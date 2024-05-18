@@ -44,7 +44,8 @@ import TeacherLessonsPage from "./pages/teacher-pages/teacher-lessons-page.vue";
 import SchoolClassAssignmentsTab from "./pages/school-class/school-class-assignments-tab.vue";
 import PageNotFound from "./pages/page-not-found.vue";
 import UnauthorizedPage from "./pages/unauthorized-page.vue";
-import StatisticsComponent from "./pages/statistics/statistics-component.vue";
+import StudentStatisticsPage from "./pages/statistics/student-statistics-page.vue";
+import SchoolStatisticsPage from "./pages/statistics/school-statistics-page.vue";
 
 const routes = [
     {
@@ -96,7 +97,13 @@ const routes = [
             {
                 path: '/statistics/:periodId(\\d+)/:schoolId(\\d+)',
                 name: 'statistics',
-                component: StatisticsComponent,
+                component: StudentStatisticsPage,
+                props: true
+            },
+            {
+                path: '/school-statistics/:periodId(\\d+)/:schoolId(\\d+)',
+                name: 'school-statistics',
+                component: SchoolStatisticsPage,
                 props: true
             },
             {

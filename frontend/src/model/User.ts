@@ -35,6 +35,8 @@ export interface StudentView {
     lastName: string,
     username: string,
     numberInClass: number | null,
+    schoolClassId: number,
+    schoolClassName: string
 }
 
 export interface User {

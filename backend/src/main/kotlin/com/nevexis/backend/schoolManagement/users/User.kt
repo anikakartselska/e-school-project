@@ -58,6 +58,8 @@ data class StudentView(
     val lastName: String,
     val username: String,
     val numberInClass: Int?,
+    val schoolClassId: Int,
+    val schoolClassName: String
 )
 
 @Serializable
