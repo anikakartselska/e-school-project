@@ -224,7 +224,7 @@ const pages = [
   {to: `/school-classes-plans/${schoolId.value}/${periodId.value}`, label: "Учебни планове", show: true},
   {to: `/calendar`, label: "Учебен Календар", show: true},
   {to: `/program`, label: "Седмичен разпис", show: true},
-    {to: `/statistics/${periodId.value}/${schoolId.value}/${schoolId.value}`, label: "Статистики", show: true}
+    {to: `/statistics/${periodId.value}/${schoolId.value}`, label: "Статистики", show: true}
 ]
 
 </script>

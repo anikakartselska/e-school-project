@@ -94,7 +94,7 @@ const routes = [
                 props: true
             },
             {
-                path: '/statistics/:studentId(\\d+)/:periodId(\\d+)/:schoolId(\\d+)',
+                path: '/statistics/:periodId(\\d+)/:schoolId(\\d+)',
                 name: 'statistics',
                 component: StatisticsComponent,
                 props: true

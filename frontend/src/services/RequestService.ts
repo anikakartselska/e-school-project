@@ -15,6 +15,8 @@ import {PlannedSchoolLesson} from "../model/PlannedSchoolLesson";
 import {SchoolLesson} from "../model/SchoolLesson";
 import {SchoolPlanForClasses} from "../model/SchoolPlanForClasses";
 import {Assignments} from "../model/Assignments";
+import {StudentStatistics} from "../model/StudentStatistics";
+import {SchoolStatistics} from "../model/SchoolStatistics";
 
 export const login = async (email: string, password: string): Promise<AxiosResponse> =>
         await axios.post<string>(`/authenticate`, {username: email, password}, {
@@ -593,6 +595,24 @@ export const deleteAssignments = async (assignments,
         await api.post<Assignments>('/delete-assignments', assignments, {
             params: {
                 schoolClassId: schoolClassId,
+                schoolId: schoolId,
+                periodId: periodId
+            },
+            headers: {'Content-Type': 'application/json'}
+        }).then(p => p.data)
+
+export const fetchStatisticsForStudent = async (student: OneRoleUser, schoolId, periodId): Promise<StudentStatistics> =>
+        await api.post<StudentStatistics>('/fetch-statistics-for-student', student, {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId
+            },
+            headers: {'Content-Type': 'application/json'}
+        }).then(p => p.data)
+
+export const fetchStatisticsForSchool = async (schoolId, periodId): Promise<SchoolStatistics> =>
+        await api.get<SchoolStatistics>('/fetch-statistics-for-school', {
+            params: {
                 schoolId: schoolId,
                 periodId: periodId
             },

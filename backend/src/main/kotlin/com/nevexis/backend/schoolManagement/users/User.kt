@@ -30,7 +30,7 @@ data class OneRoleUser(
     val lastName: String,
     val username: String,
     val personalNumber: String,
-    val gender: Gender,
+    val gender: Gender? = null,
     val email: String,
     val phoneNumber: String,
     val address: String,

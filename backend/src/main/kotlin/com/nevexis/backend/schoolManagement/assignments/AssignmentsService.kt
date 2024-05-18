@@ -80,6 +80,30 @@ class AssignmentsService : BaseService() {
             }
     }
 
+    fun getAssignmentsCountForSchoolClassPeriodAndSchool(
+        schoolId: BigDecimal,
+        periodId: BigDecimal,
+        schoolClassId: BigDecimal,
+        assignmentType: AssignmentType
+    ) = db.fetchCount(
+        ASSIGNMENTS,
+        ASSIGNMENTS.ASSIGNMENT_TYPE.eq(assignmentType.name),
+        ASSIGNMENTS.SCHOOL_ID.eq(schoolId),
+        ASSIGNMENTS.SCHOOL_PERIOD_ID.eq(periodId),
+        ASSIGNMENTS.SCHOOL_CLASS_ID.eq(schoolClassId)
+    )
+
+    fun getAssignmentsCountForPeriodAndSchool(
+        schoolId: BigDecimal,
+        periodId: BigDecimal,
+        assignmentType: AssignmentType
+    ) = db.fetchCount(
+        ASSIGNMENTS,
+        ASSIGNMENTS.ASSIGNMENT_TYPE.eq(assignmentType.name),
+        ASSIGNMENTS.SCHOOL_ID.eq(schoolId),
+        ASSIGNMENTS.SCHOOL_PERIOD_ID.eq(periodId)
+    )
+
     fun getAllAssignmentsForSchoolClassPeriodAndSchool(
         schoolId: BigDecimal,
         periodId: BigDecimal,

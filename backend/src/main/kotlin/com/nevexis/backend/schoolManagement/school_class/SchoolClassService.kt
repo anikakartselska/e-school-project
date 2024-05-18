@@ -99,6 +99,14 @@ class SchoolClassService : BaseService() {
 
     }
 
+    fun getAllGraduationClassesIdsBySchoolClass(schoolClass: SchoolClass, schoolId: BigDecimal, periodId: BigDecimal) =
+        db.select(SCHOOL_CLASS.ID).from(SCHOOL_CLASS).where(
+            SCHOOL_CLASS.NAME.startsWith(schoolClass.name.dropLast(1)).and(
+                SCHOOL_CLASS.SCHOOL_PERIOD_ID.eq(periodId).and(SCHOOL_CLASS.SCHOOL_ID.eq(schoolId))
+            )
+        ).fetchInto(BigDecimal::class.java)
+
+
     fun getSchoolClassById(schoolClassId: BigDecimal, dsl: DSLContext = db) =
         schoolClassRecordSelectOnConditionStep(dsl).where(SCHOOL_CLASS.ID.eq(schoolClassId)).fetchAny()?.map {
             mapRecordToInternalModel(it)

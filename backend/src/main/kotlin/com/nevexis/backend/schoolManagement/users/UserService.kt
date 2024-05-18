@@ -174,6 +174,37 @@ class UserService : UserBaseService() {
                 }
             }
 
+    fun getAllStudentsFromSchool(
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ): List<StudentView> =
+        studentRecordSelectOnConditionStep()
+            .where(
+                SCHOOL_USER.SCHOOL_ID.eq(schoolId)
+                    .and(SCHOOL_USER_ROLE.SCHOOL_ID.eq(schoolId))
+                    .and(SCHOOL_USER_ROLE.ROLE.eq(SchoolRole.STUDENT.name))
+                    .and(SCHOOL_USER_PERIOD.PERIOD_ID.eq(periodId))
+                    .and(SCHOOL_USER_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
+                    .and(SCHOOL_ROLE_PERIOD.PERIOD_ID.eq(periodId))
+                    .and(SCHOOL_ROLE_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
+
+            ).orderBy(STUDENT_SCHOOL_CLASS.NUMBER_IN_CLASS)
+            .fetch()
+            .map { record ->
+                val numberInClass = record.get(DSL.field("NUMBER_IN_CLASS", BigDecimal::class.java))?.toInt()
+                record.into(UserRecord::class.java).let { userRecord ->
+                    StudentView(
+                        id = userRecord.id?.toInt()!!,
+                        email = userRecord.email!!,
+                        firstName = userRecord.firstName!!,
+                        middleName = userRecord.middleName!!,
+                        lastName = userRecord.lastName!!,
+                        username = userRecord.username!!,
+                        numberInClass = numberInClass
+                    )
+                }
+            }
+
     fun getStudentByIdAndSchoolClass(
         studentId: BigDecimal,
         schoolClassId: BigDecimal,

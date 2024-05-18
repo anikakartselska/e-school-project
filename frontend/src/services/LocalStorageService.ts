@@ -1,5 +1,5 @@
 import {useLocalStorage} from "@vueuse/core";
-import {User, UserSecurity, UserView} from "../model/User";
+import {OneRoleUser, User, UserSecurity, UserView} from "../model/User";
 import {SchoolUserRole} from "../model/SchoolUserRole";
 import {RequestStatus} from "../model/RequestStatus";
 
@@ -72,3 +72,20 @@ export const mapUserToUserView = (user: User, displayOnlyApprovedRoles: boolean 
         status: user.status
     }
 }
+
+export const mapUserSecurityToOneRoleUser = (user: UserSecurity): OneRoleUser => {
+
+    return <OneRoleUser>{
+        id: user.id,
+        firstName: user.firstName,
+        middleName: user.middleName,
+        lastName: user.lastName,
+        username: user.username,
+        personalNumber: "",
+        email: user.email,
+        phoneNumber: "",
+        address: "",
+        role: user.role
+    }
+}
+

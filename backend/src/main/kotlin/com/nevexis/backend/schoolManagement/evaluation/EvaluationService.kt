@@ -4,7 +4,9 @@ import com.nevexis.backend.compareToByMatchingPk
 import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.school_class.SchoolClass
+import com.nevexis.backend.schoolManagement.school_class.SchoolClassService
 import com.nevexis.backend.schoolManagement.school_period.Semester
+import com.nevexis.backend.schoolManagement.statistics.EvaluationsCount
 import com.nevexis.backend.schoolManagement.subject.Subject
 import com.nevexis.backend.schoolManagement.subject.SubjectService
 import com.nevexis.backend.schoolManagement.users.StudentView
@@ -18,10 +20,12 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jooq.Record
+import org.jooq.Result
 import org.jooq.impl.DSL
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.LocalDateTime
 
 @Service
@@ -34,6 +38,9 @@ class EvaluationService : BaseService() {
 
     @Autowired
     private lateinit var subjectService: SubjectService
+
+    @Autowired
+    private lateinit var schoolClassService: SchoolClassService
 
     fun getAllStudentSubjectEvaluationsFromSchoolClass(
         schoolClass: SchoolClass,
@@ -382,6 +389,206 @@ class EvaluationService : BaseService() {
             comment = it.comment
         )
     }
+
+    fun calculateAverageGradeForStudentSchoolAndPeriod(
+        studentId: BigDecimal,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ): BigDecimal {
+        val grades = db.select(EVALUATION.EVALUATION_VALUE).from(EVALUATION)
+            .where(EVALUATION.SCHOOL_ID.eq(schoolId))
+            .and(EVALUATION.SCHOOL_PERIOD_ID.eq(periodId))
+            .and(EVALUATION.USER_ID.eq(studentId))
+            .and(EVALUATION.EVALUATION_TYPE.eq(EvaluationType.GRADE.name))
+            .fetchInto(String::class.java)
+            .mapNotNull {
+                val gradeValue =
+                    kotlin.runCatching { Json.decodeFromString<EvaluationValue.GradeValue>(it) }.getOrNull()
+                if (gradeValue?.finalGrade == true) {
+                    null
+                } else {
+                    gradeValue
+                }
+            }
+
+        return (grades.sumOf { it.grade.value } / grades.size.toBigDecimal()).setScale(2, RoundingMode.HALF_UP)
+    }
+
+    fun calculateAverageGradeForSchoolAndPeriod(
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ): BigDecimal {
+        val grades = db.select(EVALUATION.EVALUATION_VALUE).from(EVALUATION)
+            .where(EVALUATION.SCHOOL_ID.eq(schoolId))
+            .and(EVALUATION.SCHOOL_PERIOD_ID.eq(periodId))
+            .and(EVALUATION.EVALUATION_TYPE.eq(EvaluationType.GRADE.name))
+            .fetchInto(String::class.java)
+            .mapNotNull {
+                val gradeValue =
+                    kotlin.runCatching { Json.decodeFromString<EvaluationValue.GradeValue>(it) }.getOrNull()
+                if (gradeValue?.finalGrade == true) {
+                    null
+                } else {
+                    gradeValue
+                }
+            }
+
+        return (grades.sumOf { it.grade.value } / grades.size.toBigDecimal()).setScale(2, RoundingMode.HALF_UP)
+    }
+
+    fun getEvaluationsCountForStudent(
+        studentId: BigDecimal,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ): EvaluationsCount {
+        val evaluations = db.select(EVALUATION.EVALUATION_TYPE).from(EVALUATION)
+            .where(EVALUATION.SCHOOL_ID.eq(schoolId))
+            .and(EVALUATION.SCHOOL_PERIOD_ID.eq(periodId))
+            .and(EVALUATION.USER_ID.eq(studentId))
+            .fetchInto(EvaluationType::class.java)
+
+        return EvaluationsCount(
+            evaluations.filter { it == EvaluationType.GRADE }.size,
+            evaluations.filter { it == EvaluationType.ABSENCE }.size,
+            evaluations.filter { it == EvaluationType.FEEDBACK }.size
+        )
+    }
+
+    fun getEvaluationsCountForSchool(
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ): EvaluationsCount {
+        val evaluations = db.select(EVALUATION.EVALUATION_TYPE).from(EVALUATION)
+            .where(EVALUATION.SCHOOL_ID.eq(schoolId))
+            .and(EVALUATION.SCHOOL_PERIOD_ID.eq(periodId))
+            .fetchInto(EvaluationType::class.java)
+
+        return EvaluationsCount(
+            evaluations.filter { it == EvaluationType.GRADE }.size,
+            evaluations.filter { it == EvaluationType.ABSENCE }.size,
+            evaluations.filter { it == EvaluationType.FEEDBACK }.size
+        )
+    }
+
+    fun calculateStudentsPlaceInGraduationClass(
+        schoolClass: SchoolClass,
+        studentId: BigDecimal,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ): Int {
+        val schoolClassesIds =
+            schoolClassService.getAllGraduationClassesIdsBySchoolClass(schoolClass, schoolId, periodId)
+        val records = db.select(EVALUATION.asterisk(), SCHOOL_CLASS_SUBJECT.asterisk()).from(EVALUATION)
+            .leftJoin(SCHOOL_CLASS_SUBJECT)
+            .on(SCHOOL_CLASS_SUBJECT.SUBJECT_ID.eq(EVALUATION.SUBJECT_ID))
+            .where(EVALUATION.SCHOOL_ID.eq(schoolId))
+            .and(EVALUATION.SCHOOL_PERIOD_ID.eq(periodId))
+            .and(SCHOOL_CLASS_SUBJECT.SCHOOL_CLASS_ID.`in`(schoolClassesIds))
+            .and(EVALUATION.EVALUATION_TYPE.eq(EvaluationType.GRADE.name))
+            .fetch()
+        return calculateUsersPlace(records, studentId)
+
+    }
+
+
+    fun calculateStudentsPlaceInSchoolClass(
+        schoolClassId: BigDecimal,
+        studentId: BigDecimal,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ): Int {
+        val records = db.select(EVALUATION.asterisk(), SCHOOL_CLASS_SUBJECT.asterisk()).from(EVALUATION)
+            .leftJoin(SCHOOL_CLASS_SUBJECT)
+            .on(SCHOOL_CLASS_SUBJECT.SUBJECT_ID.eq(EVALUATION.SUBJECT_ID))
+            .where(EVALUATION.SCHOOL_ID.eq(schoolId))
+            .and(EVALUATION.SCHOOL_PERIOD_ID.eq(periodId))
+            .and(SCHOOL_CLASS_SUBJECT.SCHOOL_CLASS_ID.eq(schoolClassId))
+            .and(EVALUATION.EVALUATION_TYPE.eq(EvaluationType.GRADE.name))
+            .fetch()
+        return calculateUsersPlace(records, studentId)
+
+    }
+
+    fun calculateStudentsPlaceInSchool(
+        studentId: BigDecimal,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ): Int {
+        val records = db.select(EVALUATION.asterisk(), SCHOOL_CLASS_SUBJECT.asterisk()).from(EVALUATION)
+            .leftJoin(SCHOOL_CLASS_SUBJECT)
+            .on(SCHOOL_CLASS_SUBJECT.SUBJECT_ID.eq(EVALUATION.SUBJECT_ID))
+            .where(EVALUATION.SCHOOL_ID.eq(schoolId))
+            .and(EVALUATION.SCHOOL_PERIOD_ID.eq(periodId))
+            .and(EVALUATION.EVALUATION_TYPE.eq(EvaluationType.GRADE.name))
+            .fetch()
+        return calculateUsersPlace(records, studentId)
+
+    }
+
+    fun calculateAverageGradeForAllStudents(
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ): List<Pair<BigDecimal, BigDecimal>> {
+        val records = db.select(EVALUATION.asterisk(), SCHOOL_CLASS_SUBJECT.asterisk()).from(EVALUATION)
+            .leftJoin(SCHOOL_CLASS_SUBJECT)
+            .on(SCHOOL_CLASS_SUBJECT.SUBJECT_ID.eq(EVALUATION.SUBJECT_ID))
+            .where(EVALUATION.SCHOOL_ID.eq(schoolId))
+            .and(EVALUATION.SCHOOL_PERIOD_ID.eq(periodId))
+            .and(EVALUATION.EVALUATION_TYPE.eq(EvaluationType.GRADE.name))
+            .fetch()
+        return calculateUsersAverageGrade(records)
+    }
+
+    fun calculateAverageGradeForAllSchoolClasses(
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ): List<Pair<BigDecimal, BigDecimal>> {
+        val records = db.select(EVALUATION.asterisk(), SCHOOL_CLASS_SUBJECT.asterisk()).from(EVALUATION)
+            .leftJoin(SCHOOL_CLASS_SUBJECT)
+            .on(SCHOOL_CLASS_SUBJECT.SUBJECT_ID.eq(EVALUATION.SUBJECT_ID))
+            .where(EVALUATION.SCHOOL_ID.eq(schoolId))
+            .and(EVALUATION.SCHOOL_PERIOD_ID.eq(periodId))
+            .and(EVALUATION.EVALUATION_TYPE.eq(EvaluationType.GRADE.name))
+            .fetch()
+        return calculateSchoolClassesAverageGrade(records)
+    }
+
+    private fun calculateUsersPlace(records: Result<Record>, studentId: BigDecimal) =
+        calculateUsersAverageGrade(records)
+            .indexOfFirst { (userId, _) -> userId == studentId } + 1
+
+    private fun calculateUsersAverageGrade(records: Result<Record>) = records.groupBy { it.get(EVALUATION.USER_ID)!! }
+        .mapValues { (_, evaluationRecords) ->
+            val grades = evaluationRecords.mapNotNull {
+                val gradeValue =
+                    kotlin.runCatching { Json.decodeFromString<EvaluationValue.GradeValue>(it.get(EVALUATION.EVALUATION_VALUE)!!) }
+                        .getOrNull()
+                if (gradeValue?.finalGrade == true) {
+                    null
+                } else {
+                    gradeValue
+                }
+            }
+            (grades.sumOf { it.grade.value } / grades.size.toBigDecimal()).setScale(2, RoundingMode.HALF_UP)
+        }.toList().sortedByDescending { (_, value) -> value }
+
+    private fun calculateSchoolClassesAverageGrade(records: Result<Record>) = records.groupBy {
+        it.get(
+            SCHOOL_CLASS_SUBJECT.SCHOOL_CLASS_ID
+        )!!
+    }.mapValues { (_, evaluationRecords) ->
+        val grades = evaluationRecords.mapNotNull {
+            val gradeValue =
+                kotlin.runCatching { Json.decodeFromString<EvaluationValue.GradeValue>(it.get(EVALUATION.EVALUATION_VALUE)!!) }
+                    .getOrNull()
+            if (gradeValue?.finalGrade == true) {
+                null
+            } else {
+                gradeValue
+            }
+        }
+        (grades.sumOf { it.grade.value } / grades.size.toBigDecimal()).setScale(2, RoundingMode.HALF_UP)
+    }.toList().sortedByDescending { (_, value) -> value }
 
     fun getEvaluationSeqNextVal(): BigDecimal =
         db.select(DSL.field("EVALUATION_SEQ.nextval")).from("DUAL")
