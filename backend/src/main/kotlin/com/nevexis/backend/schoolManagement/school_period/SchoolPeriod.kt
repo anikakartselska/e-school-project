@@ -9,13 +9,12 @@ import com.nevexis.backend.serializers.LocalDateSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import java.math.BigDecimal
-import java.time.LocalDate
 
 @Serializable
 data class SchoolPeriod(
-    val id: Int,
-    val startYear: LocalDate,
-    val endYear: LocalDate
+    val id: Int? = null,
+    val startYear: Int,
+    val endYear: Int
 )
 
 enum class Semester {
@@ -24,7 +23,7 @@ enum class Semester {
 
 data class SchoolPeriodWithSchoolIds(
     val id: BigDecimal,
-    val startYear: LocalDate,
-    val endYear: LocalDate,
+    val startYear: Int,
+    val endYear: Int,
     val schoolIds: List<BigDecimal>
 )

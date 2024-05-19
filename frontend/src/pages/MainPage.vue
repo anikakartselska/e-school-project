@@ -21,17 +21,17 @@
                 @click="left = !left"
         />
         <q-toolbar-title>{{ school?.schoolName }}</q-toolbar-title>
-        <q-btn :label="`${getCurrentUser().role.period.startYear.substring(0,4)}/${getCurrentUser().role.period.endYear.substring(0,4)}`"
+        <q-btn :label="`${getCurrentUser().role.period.startYear}/${getCurrentUser().role.period.endYear}`"
                dense flat
                icon="switch_account">
-          <q-menu>
-            <div class="row no-wrap q-pa-md">
-              <div class="column">
-                <div class="text-h6 q-mb-md">Смяна на роля</div>
-                <q-select v-model="selectedPeriod"
-                          :option-label="(option:SchoolPeriod) => `${option.startYear.substring(0,4)}/${option.endYear.substring(0,4)}`"
-                          :options="schoolPeriods"
-                          label="Учебна година"/>
+            <q-menu>
+                <div class="row no-wrap q-pa-md">
+                    <div class="column">
+                        <div class="text-h6 q-mb-md">Смяна на роля</div>
+                        <q-select v-model="selectedPeriod"
+                                  :option-label="(option:SchoolPeriod) => `${option.startYear}/${option.endYear}`"
+                                  :options="schoolPeriods"
+                                  label="Учебна година"/>
                 <q-select v-model="selectedRole" :disable="selectedPeriod==null"
                           :option-label="option => constructSchoolUserRoleMessage(option)"
                           :options="userRolesFilteredBySelectedPeriod"

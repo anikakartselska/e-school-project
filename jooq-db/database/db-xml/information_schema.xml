@@ -1426,7 +1426,7 @@
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>SCHOOL_PERIOD</table_name>
             <column_name>START_YEAR</column_name>
-            <data_type>date</data_type>
+            <data_type>numeric</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
@@ -1439,7 +1439,7 @@
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>SCHOOL_PERIOD</table_name>
             <column_name>END_YEAR</column_name>
-            <data_type>date</data_type>
+            <data_type>numeric</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>

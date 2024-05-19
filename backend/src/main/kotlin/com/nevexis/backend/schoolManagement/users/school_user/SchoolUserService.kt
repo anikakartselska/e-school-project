@@ -6,7 +6,7 @@ import com.nevexis.backend.schoolManagement.requests.RequestStatus
 import com.nevexis.backend.schoolManagement.requests.RequestValueJson
 import com.nevexis.backend.schoolManagement.school.School
 import com.nevexis.backend.schoolManagement.school.SchoolService
-import com.nevexis.backend.schoolManagement.school_period.SchoolPeriod
+import com.nevexis.backend.schoolManagement.school_period.mapSchoolPeriodRecordToSchoolPeriod
 import com.nevexis.backend.schoolManagement.users.UserService
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
 import com.nevexis.`demo-project`.jooq.tables.records.SchoolPeriodRecord
@@ -50,14 +50,14 @@ class SchoolUserService : BaseService() {
                         val existingRecordFromDataBase = transaction.dsl().fetchOne(
                             SCHOOL_USER_PERIOD,
                             SCHOOL_USER_PERIOD.SCHOOL_USER_ID.eq(schoolUser.id),
-                            SCHOOL_USER_PERIOD.PERIOD_ID.eq(period.id.toBigDecimal())
+                            SCHOOL_USER_PERIOD.PERIOD_ID.eq(period.id?.toBigDecimal())
                         )
                         schoolUser to if (existingRecordFromDataBase != null) {
                             existingRecordFromDataBase to false
                         } else {
                             transaction.dsl().newRecord(SCHOOL_USER_PERIOD).apply {
                                 this.schoolUserId = schoolUser.id
-                                this.periodId = period.id.toBigDecimal()
+                                this.periodId = period.id?.toBigDecimal()
                                 id = getSchoolUserPeriodSeqNextVal()
                                 status = RequestStatus.PENDING.name
                             } to true
@@ -97,7 +97,7 @@ class SchoolUserService : BaseService() {
     private fun mapRecordToModel(it: Record): SchoolUser {
         val schoolUserPeriodRecord = it.into(SchoolUserPeriodRecord::class.java)
         val schoolUserRecord = it.into(SchoolUserRecord::class.java)
-        val schoolPeriod = it.into(SchoolPeriodRecord::class.java).into(SchoolPeriod::class.java)
+        val schoolPeriod = it.into(SchoolPeriodRecord::class.java).mapSchoolPeriodRecordToSchoolPeriod()
         val school = it.into(SchoolRecord::class.java).into(School::class.java)
         val user = userService.mapUserRecordToUserModel(it, emptyList())
         return SchoolUser(

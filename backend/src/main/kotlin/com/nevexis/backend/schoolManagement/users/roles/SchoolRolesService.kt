@@ -5,7 +5,7 @@ import com.nevexis.backend.schoolManagement.requests.AdditionalRequestInformatio
 import com.nevexis.backend.schoolManagement.requests.RequestStatus
 import com.nevexis.backend.schoolManagement.requests.RequestValueJson
 import com.nevexis.backend.schoolManagement.school.SchoolService
-import com.nevexis.backend.schoolManagement.school_period.SchoolPeriod
+import com.nevexis.backend.schoolManagement.school_period.mapSchoolPeriodRecordToSchoolPeriod
 import com.nevexis.backend.schoolManagement.users.SchoolRole
 import com.nevexis.backend.schoolManagement.users.UserDetailsService
 import com.nevexis.`demo-project`.jooq.tables.records.SchoolPeriodRecord
@@ -49,7 +49,7 @@ class SchoolRolesService : BaseService() {
                     val existingRecordFromDataBase = transaction.dsl().fetchOne(
                         SCHOOL_ROLE_PERIOD,
                         SCHOOL_ROLE_PERIOD.SCHOOL_USER_ROLE_ID.eq(userRoleRecord.id),
-                        SCHOOL_ROLE_PERIOD.PERIOD_ID.eq(schoolUserRole.period.id.toBigDecimal())
+                        SCHOOL_ROLE_PERIOD.PERIOD_ID.eq(schoolUserRole.period.id!!.toBigDecimal())
                     )
                     userRoleRecord to if (existingRecordFromDataBase != null) {
                         existingRecordFromDataBase to false
@@ -210,13 +210,7 @@ class SchoolRolesService : BaseService() {
     fun mapToModel(record: Record): SchoolUserRole {
         record.into(SchoolUserRoleRecord::class.java).let {
             val schoolRolePeriodRecord = record.into(SchoolRolePeriodRecord::class.java)
-            val period = record.into(SchoolPeriodRecord::class.java).let { schoolPeriodRecord ->
-                SchoolPeriod(
-                    id = schoolPeriodRecord.id!!.toInt(),
-                    startYear = schoolPeriodRecord.startYear!!,
-                    endYear = schoolPeriodRecord.endYear!!
-                )
-            }
+            val period = record.into(SchoolPeriodRecord::class.java).mapSchoolPeriodRecordToSchoolPeriod()
             val school = schoolService.getSchoolById(it.schoolId!!)
 
             val schoolUserRole = SchoolUserRole(
@@ -230,7 +224,7 @@ class SchoolRolesService : BaseService() {
             return schoolUserRole.copy(
                 detailsForUser = userDetailsService.getUserDetailsPerSchoolUserRole(
                     schoolUserRole,
-                    period.id.toBigDecimal(),
+                    period.id!!.toBigDecimal(),
                     school.id.toBigDecimal()
                 )
             )

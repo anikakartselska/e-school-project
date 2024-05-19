@@ -104,7 +104,7 @@
                   <div class="col-3">
                     <q-select v-if="isCurrentUser"
                               v-model="selectedPeriod"
-                              :option-label="(option:SchoolPeriod) => `${option.startYear.substring(0,4)}/${option.endYear.substring(0,4)}`"
+                              :option-label="(option:SchoolPeriod) => `${option.startYear}/${option.endYear}`"
                               :options="allSchoolPeriods"
                               dense
                               label="Учебна година"/>

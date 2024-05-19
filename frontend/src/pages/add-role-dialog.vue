@@ -23,7 +23,7 @@
           </q-select>
           <q-select v-model="schoolUserRole.period"
                     :disable="disablePeriodAndSchoolSelections"
-                    :option-label="(option:SchoolPeriodWithSchoolIds) => `${option.startYear.substring(0,4)}/${option.endYear.substring(0,4)}`"
+                    :option-label="(option:SchoolPeriodWithSchoolIds) => `${option.startYear}/${option.endYear}`"
                     :option-value="(option: SchoolPeriodWithSchoolIds) => {return {
     id: option.id,
     startYear: option.startYear,

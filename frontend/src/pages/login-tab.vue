@@ -41,7 +41,7 @@
               :done="step > 2"
       >
         <q-select v-model="selectedPeriod"
-                  :option-label="(option:SchoolPeriod) => `${option.startYear.substring(0,4)}/${option.endYear.substring(0,4)}`"
+                  :option-label="(option:SchoolPeriod) => `${option.startYear}/${option.endYear}`"
                   :options="schoolPeriods"
                   label="Учебна година"/>
         <q-select v-model="selectedRole" :disable="selectedPeriod==null"

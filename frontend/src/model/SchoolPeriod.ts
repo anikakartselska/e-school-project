@@ -1,7 +1,7 @@
 export interface SchoolPeriod {
-    id: number,
-    startYear: string,
-    endYear: string
+    id: number | null,
+    startYear: number,
+    endYear: number
 }
 
 export enum Semester {
@@ -10,7 +10,7 @@ export enum Semester {
 
 export interface SchoolPeriodWithSchoolIds {
     id: number,
-    startYear: string,
-    endYear: string,
+    startYear: number,
+    endYear: number,
     schoolIds: number[]
 }

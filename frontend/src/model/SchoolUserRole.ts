@@ -16,7 +16,7 @@ export interface SchoolUserRole {
 
 export const constructSchoolUserRoleMessageWithSchoolAndPeriodInformation = (schoolUserRole: SchoolUserRole) => {
     const detailsMessage = constructDetailsMessage(schoolUserRole)
-    return `${translationOfRoles[schoolUserRole.role]} ${detailsMessage} - ${schoolUserRole.school.schoolName} - ${schoolUserRole.period.startYear.substring(0, 4)}/${schoolUserRole.period.endYear.substring(0, 4)}`
+    return `${translationOfRoles[schoolUserRole.role]} ${detailsMessage} - ${schoolUserRole.school.schoolName} - ${schoolUserRole.period.startYear}/${schoolUserRole.period.endYear}`
 }
 export const constructSchoolUserRoleMessage = (schoolUserRole: SchoolUserRole) => {
     const detailsMessage = constructDetailsMessage(schoolUserRole)
