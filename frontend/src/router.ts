@@ -46,6 +46,7 @@ import PageNotFound from "./pages/page-not-found.vue";
 import UnauthorizedPage from "./pages/unauthorized-page.vue";
 import StudentStatisticsPage from "./pages/statistics/student-statistics-page.vue";
 import SchoolStatisticsPage from "./pages/statistics/school-statistics-page.vue";
+import AdministrationScreen from "./pages/administration/administration-screen.vue";
 
 const routes = [
     {
@@ -110,6 +111,12 @@ const routes = [
                 path: '/school-classes/:periodId(\\d+)/:schoolId(\\d+)',
                 name: 'school-classes',
                 component: SchoolClassesPage,
+                props: true
+            },
+            {
+                path: '/administration-page/:periodId(\\d+)/:schoolId(\\d+)',
+                name: 'administration-page',
+                component: AdministrationScreen,
                 props: true
             },
             {

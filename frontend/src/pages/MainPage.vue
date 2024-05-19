@@ -21,8 +21,9 @@
                 @click="left = !left"
         />
         <q-toolbar-title>{{ school?.schoolName }}</q-toolbar-title>
-        <q-btn :label="`${getCurrentUser().role.period.startYear}/${getCurrentUser().role.period.endYear}`"
+        <q-btn :label="`${currentUser.role.period.startYear}/${currentUser.role.period.endYear}`"
                dense flat
+               @click="getSchoolPeriods()"
                icon="switch_account">
             <q-menu>
                 <div class="row no-wrap q-pa-md">
@@ -32,16 +33,16 @@
                                   :option-label="(option:SchoolPeriod) => `${option.startYear}/${option.endYear}`"
                                   :options="schoolPeriods"
                                   label="Учебна година"/>
-                <q-select v-model="selectedRole" :disable="selectedPeriod==null"
-                          :option-label="option => constructSchoolUserRoleMessage(option)"
-                          :options="userRolesFilteredBySelectedPeriod"
-                          label="Роля"/>
-                <q-item>
-                  <q-item-section>
-                    <q-btn color="primary" dense flat label="Промени роля" @click="changeUserRole()"/>
-                  </q-item-section>
-                </q-item>
-                <q-separator/>
+                        <q-select v-model="selectedRole" :disable="selectedPeriod==null"
+                                  :option-label="option => constructSchoolUserRoleMessage(option)"
+                                  :options="userRolesFilteredBySelectedPeriod"
+                                  label="Роля"/>
+                        <q-item>
+                            <q-item-section>
+                                <q-btn color="primary" dense flat label="Промени роля" @click="changeUserRole()"/>
+                            </q-item-section>
+                        </q-item>
+                        <q-separator/>
                 <q-item>
                   <q-item-section>
                     <q-btn color="primary" dense flat label="Промени парола" @click="resetUserPassword()"/>
@@ -138,7 +139,7 @@
 
 <script lang="ts" setup>
 import {useRouter} from "vue-router";
-import {$ref} from "vue/macros";
+import {$computed, $ref} from "vue/macros";
 import {clearUserStorage, getCurrentUser, updateUserInLocalStorage} from "../services/LocalStorageService";
 import {
     getAllSchoolPeriods,
@@ -166,7 +167,7 @@ const onLogoutClick = async () => {
   })
 }
 
-let currentUser = getCurrentUser();
+let currentUser = $ref(getCurrentUser());
 let currentUserFile = $ref<File | null>(null)
 let imageUrl = $ref<string | null>(null)
 let school = $ref<School | null>(null)
@@ -186,6 +187,10 @@ const load = async () => {
     currentUserFile = await getUserProfilePicture(currentUser.id)
     school = currentUser.role.school
 }
+const getSchoolPeriods = async () => {
+    userRoles = await getAllUserRoles(currentUser.id)
+    schoolPeriods = await getAllSchoolPeriods()
+}
 
 let userRolesFilteredBySelectedPeriod = $ref<SchoolUserRole[]>([])
 let selectedRole = $ref<SchoolUserRole | null>(currentUser.role)
@@ -204,6 +209,7 @@ const changeUserRole = async () => {
               school = currentUser.role.school
               schoolId.value = school.id.toString()
               periodId.value = currentUser.role.period.id.toString()
+              console.log(periodId.value)
               await router.push({path: '/'})
           }
   )
@@ -216,7 +222,8 @@ const resetUserPassword = () => {
   })
 }
 const left = $ref(true)
-const pages = [
+const pages = $computed(() => [
+    {to: `/administration-page/${periodId.value}/${schoolId.value}`, label: "Администрация", show: true},
     {to: `/school-page/${schoolId.value}`, label: "Училище", show: true},
     {to: `/users/${periodId.value}/${schoolId.value}/all`, label: "Потребители", show: true},
     {to: `/requests/${periodId.value}/${schoolId.value}/user-requests`, label: "Заявки", show: true},
@@ -226,7 +233,7 @@ const pages = [
     {to: `/program`, label: "Седмичен разпис", show: true},
     {to: `/statistics/${periodId.value}/${schoolId.value}`, label: "Статистики", show: true},
     {to: `/school-statistics/${periodId.value}/${schoolId.value}`, label: "Статистики на училището", show: true}
-]
+])
 
 </script>
 

@@ -2,7 +2,7 @@
   <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 500px;">
       <q-card-section class="dialog-header">
-          <span class="text-h6">Редактирай календар
+          <span class="text-h6">{{ title }}
         <q-btn v-close-popup
                class="float-right text-black"
                dense
@@ -79,7 +79,7 @@
 <script lang="ts" setup>
 import {useDialogPluginComponent, useQuasar} from "quasar";
 import {$ref} from "vue/macros";
-import {Calendar, RestDay} from "../../../model/Calendar";
+import {Calendar, DailySchedule, RestDay} from "../../../model/Calendar";
 import {formatToBulgarian, getRangeOf} from "../../../utils";
 import RestOrExamDayAddDialog from "./rest-or-exam-day-add-dialog.vue";
 import {cloneDeep} from "lodash-es";
@@ -90,20 +90,42 @@ const quasar = useQuasar()
 defineEmits([...useDialogPluginComponent.emits])
 
 const props = defineProps<{
-  calendar: Calendar,
+    calendar: Calendar | null,
+    title: string
 }>()
 
-const updatedCalendar = $ref(cloneDeep(props.calendar))
+const map = {
+    1: null,
+    2: null,
+    3: null,
+    4: null,
+    5: null,
+    6: null,
+    7: null,
+    8: null,
+    9: null,
+    10: null,
+    11: null,
+    12: null
+};
+const updatedCalendar = $ref(props.calendar ? cloneDeep(props.calendar) : <Calendar><unknown>{
+    classToEndOfYearDate: {...map},
+    classToSecondSemesterWeeksCount: {...map},
+    restDays: [],
+    examDays: [],
+    firstShiftSchedule: <DailySchedule>{},
+    secondShiftSchedule: <DailySchedule>{}
+})
 let classes = getRangeOf(1, 12, 1).map(it => it.toString())
 const deleteRestDay = (index) => {
-  updatedCalendar.restDays.splice(index, 1)
+    updatedCalendar.restDays.splice(index, 1)
 }
 
 const deleteExamDay = (index) => {
-  updatedCalendar.examDays.splice(index, 1)
+    updatedCalendar.examDays.splice(index, 1)
 }
 const submit = () => {
-  onDialogOK({
+    onDialogOK({
     item: updatedCalendar
   })
 }

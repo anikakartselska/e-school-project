@@ -1,7 +1,7 @@
 export interface Calendar {
-    beginningOfYear: string,
-    endOfFirstSemester: string,
-    beginningOfSecondSemester: string,
+    beginningOfYear: string | null,
+    endOfFirstSemester: string | null,
+    beginningOfSecondSemester: string | null,
     classToEndOfYearDate: Map<number, string>,
     firstSemesterWeeksCount: number | null,
     classToSecondSemesterWeeksCount: Map<number, number> | null,

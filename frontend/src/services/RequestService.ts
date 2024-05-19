@@ -477,8 +477,8 @@ export const fetchSchoolWeeksForSchoolClass = async (schoolClassName, schoolId,
         }).then(p => p.data)
 
 export const fetchSchoolCalendarForSchoolAndPeriod = async (schoolId,
-                                                            periodId): Promise<Calendar> =>
-        await api.get<Calendar>('/fetch-school-calendar-for-school-and-period', {
+                                                            periodId): Promise<Calendar | null> =>
+        await api.get<Calendar | null>('/fetch-school-calendar-for-school-and-period', {
             params: {
                 schoolId: schoolId,
                 periodId: periodId
@@ -615,6 +615,22 @@ export const fetchStatisticsForSchool = async (schoolId, periodId): Promise<Scho
             params: {
                 schoolId: schoolId,
                 periodId: periodId
+            },
+            headers: {'Content-Type': 'application/json'}
+        }).then(p => p.data)
+
+export const startSchoolYear = async (schoolPeriod: SchoolPeriod, schoolId): Promise<any> =>
+        await api.post<any>('/start-school-year', schoolPeriod, {
+            params: {
+                schoolId: schoolId,
+            },
+            headers: {'Content-Type': 'application/json'}
+        }).then(p => p.data)
+
+export const checkIfSchoolYearStarted = async (schoolPeriod: SchoolPeriod, schoolId): Promise<boolean> =>
+        await api.post<boolean>('/check-started-school-year', schoolPeriod, {
+            params: {
+                schoolId: schoolId,
             },
             headers: {'Content-Type': 'application/json'}
         }).then(p => p.data)

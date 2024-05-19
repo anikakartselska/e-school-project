@@ -5,6 +5,9 @@ import com.nevexis.backend.schoolManagement.requests.RequestStatus
 import com.nevexis.backend.schoolManagement.school_period.SchoolPeriod
 import com.nevexis.backend.schoolManagement.school_period.SchoolPeriodService
 import com.nevexis.`demo-project`.jooq.tables.records.SchoolClassRecord
+import com.nevexis.`demo-project`.jooq.tables.records.SchoolRolePeriodRecord
+import com.nevexis.`demo-project`.jooq.tables.records.SchoolUserPeriodRecord
+import com.nevexis.`demo-project`.jooq.tables.records.StudentSchoolClassRecord
 import com.nevexis.`demo-project`.jooq.tables.references.*
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -76,16 +79,15 @@ class StartSchoolYearService : BaseService() {
             .where(STUDENT_SCHOOL_CLASS.SCHOOL_CLASS_ID.`in`(oldSchoolClassIdsToNewSchoolClass.keys))
             .and(SCHOOL_USER_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
             .and(SCHOOL_ROLE_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
-            .fetch()
-            .map { oldStudentSchoolClassRecord ->
-                oldStudentSchoolClassRecord to dslContext.newRecord(STUDENT_SCHOOL_CLASS, oldStudentSchoolClassRecord)
+            .fetchInto(StudentSchoolClassRecord::class.java).associateWith { oldStudentSchoolClassRecord ->
+                dslContext.newRecord(STUDENT_SCHOOL_CLASS, oldStudentSchoolClassRecord)
                     .apply {
                         this.id = getStudentSchoolClassSeqNextVal()
                         this.schoolClassId = oldSchoolClassIdsToNewSchoolClass[oldStudentSchoolClassRecord.get(
                             STUDENT_SCHOOL_CLASS.SCHOOL_CLASS_ID, BigDecimal::class.java
                         )]?.id
                     }
-            }.toMap()
+            }
             .also {
                 dslContext.batchInsert(it.values).execute()
             }
@@ -114,7 +116,7 @@ class StartSchoolYearService : BaseService() {
                     }
             }.toMap()
             .also {
-                dslContext.batchInsert(it.keys).execute()
+                dslContext.batchInsert(it.values).execute()
             }
 
     }
@@ -132,7 +134,7 @@ class StartSchoolYearService : BaseService() {
             .where(SCHOOL_ROLE_PERIOD.PERIOD_ID.eq(oldPeriodId))
             .and(SCHOOL_ROLE_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
             .and(SCHOOL_USER_ROLE.SCHOOL_ID.eq(schoolId))
-            .fetch()
+            .fetchInto(SchoolRolePeriodRecord::class.java)
             .map {
                 dslContext.newRecord(SCHOOL_ROLE_PERIOD, it)
                     .apply {
@@ -156,7 +158,7 @@ class StartSchoolYearService : BaseService() {
             .where(SCHOOL_USER_PERIOD.PERIOD_ID.eq(oldPeriodId))
             .and(SCHOOL_USER_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
             .and(SCHOOL_USER.SCHOOL_ID.eq(schoolId))
-            .fetch()
+            .fetchInto(SchoolUserPeriodRecord::class.java)
             .map {
                 dslContext.newRecord(SCHOOL_USER_PERIOD, it)
                     .apply {

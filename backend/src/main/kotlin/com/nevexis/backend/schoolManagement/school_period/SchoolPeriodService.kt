@@ -16,9 +16,17 @@ class SchoolPeriodService : BaseService() {
     fun fetchAllSchoolPeriods(): List<SchoolPeriod> =
         db.selectFrom(SCHOOL_PERIOD).fetch().map { it.mapSchoolPeriodRecordToSchoolPeriod() }
 
+    fun checkIfSchoolPeriodIsStartedInSchool(schoolPeriod: SchoolPeriod, schoolId: BigDecimal) =
+        db.selectCount().from(SCHOOL_PERIOD_SCHOOL).leftJoin(SCHOOL_PERIOD)
+            .on(SCHOOL_PERIOD_SCHOOL.SCHOOL_PERIOD_ID.eq(SCHOOL_PERIOD.ID))
+            .where(SCHOOL_PERIOD_SCHOOL.SCHOOL_ID.eq(schoolId))
+            .and(SCHOOL_PERIOD.START_YEAR.eq(schoolPeriod.startYear.toBigDecimal()))
+            .and(SCHOOL_PERIOD.END_YEAR.eq(schoolPeriod.endYear.toBigDecimal()))
+            .fetchAnyInto(Int::class.java)?.let { it > 0 } ?: false
+
     fun saveSchoolPeriod(schoolPeriod: SchoolPeriod, dslContext: DSLContext) =
         (dslContext.selectFrom(SCHOOL_PERIOD).where(SCHOOL_PERIOD.START_YEAR.eq(schoolPeriod.startYear.toBigDecimal()))
-            .and(SCHOOL_PERIOD.END_YEAR.eq(schoolPeriod.endYear.toBigDecimal())).fetchAny() ?: dslContext.newRecord(
+            .and(SCHOOL_PERIOD.END_YEAR.eq(schoolPeriod.endYear.toBigDecimal())).fetchAny() ?: (dslContext.newRecord(
             SCHOOL_PERIOD
         ).apply {
             id = getSchoolPeriodSeqNextVal()
@@ -26,7 +34,7 @@ class SchoolPeriodService : BaseService() {
             endYear = schoolPeriod.endYear.toBigDecimal()
         }.also {
             it.insert()
-        }).mapSchoolPeriodRecordToSchoolPeriod()
+        })).mapSchoolPeriodRecordToSchoolPeriod()
 
     fun getPreviousPeriod(schoolPeriod: SchoolPeriod, dslContext: DSLContext) =
         dslContext.selectFrom(SCHOOL_PERIOD)

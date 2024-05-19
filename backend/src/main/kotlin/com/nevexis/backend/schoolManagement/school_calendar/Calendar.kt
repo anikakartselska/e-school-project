@@ -18,7 +18,7 @@ data class Calendar(
     val endOfFirstSemester: LocalDate,
     val beginningOfSecondSemester: LocalDate,
     val classToEndOfYearDate: Map<Int, LocalDate>,
-    val firstSemesterWeeksCount: Int?,
+    val firstSemesterWeeksCount: Int? = null,
     val classToSecondSemesterWeeksCount: Map<Int, Int?>,
     val restDays: List<RestDay>,
     val examDays: List<RestDay>,
