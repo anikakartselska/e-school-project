@@ -1,5 +1,5 @@
 import {api, auth} from "../boot/axios";
-import {OneRoleUser, StudentView, User, UserView} from "../model/User";
+import {OneRoleUser, StudentView, TeacherView, User, UserView} from "../model/User";
 import {SubjectWithEvaluationDTO} from "../model/SubjectWithEvaluationDTO";
 import {Subject, SubjectWithSchoolClassInformation} from "../model/Subject";
 import axios, {AxiosResponse} from "axios";
@@ -633,4 +633,13 @@ export const checkIfSchoolYearStarted = async (schoolPeriod: SchoolPeriod, schoo
                 schoolId: schoolId,
             },
             headers: {'Content-Type': 'application/json'}
+        }).then(p => p.data)
+
+export const fetchAllTeachers = async (schoolId,
+                                       periodId): Promise<TeacherView[]> =>
+        await api.get<TeacherView[]>('/get-all-approved-teachers-from-school', {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId
+            }
         }).then(p => p.data)

@@ -94,15 +94,11 @@ class UsersController {
         @RequestParam periodId: BigDecimal
     ) = userService.getStudentByIdAndSchoolClass(studentId, schoolClassId, periodId)
 
+    @GetMapping("/get-all-approved-teachers-from-school")
+    fun getTeachersFromSchool(
+        @RequestParam schoolId: BigDecimal,
+        @RequestParam periodId: BigDecimal
+    ) = userService.getAllApprovedTeachersFromSchool(schoolId, periodId)
+
+
 }
-//{
-//    "Литература": 5,
-//    "Биология": 3,
-//    "Математика": 4,
-//    "Информатика": 3,
-//    "Информационни технологии": 6,
-//    "Философия": 2,
-//    "Музика": 4,
-//    "Изобразително изкуство": 2,
-//    "Физическо възпитание и спорт": 2
-//}

@@ -58,7 +58,7 @@ class SchoolProgramGenerationService : BaseService() {
                     )
                 }
             }.flatten().let {
-                val randomDay = customNextInt(1, days.size)
+                val randomDay = customNextInt(0, days.size)
                 it.plus(
                     (1..left).toList().map {
                         WorkingHour(

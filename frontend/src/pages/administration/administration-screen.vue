@@ -3,26 +3,82 @@
       <div class="col-2"></div>
       <div class="col-8">
           <q-page class="page-content" padding>
-        <span class="text-h6">
-            Започване на учебна година
-             </span>
+              <q-stepper
+                      v-model="step"
+                      animated
+                      color="primary"
+                      header-nav
+                      vertical
+              >
+                  <q-step
+                          :done="step > 1"
+                          :name="1"
+                          icon="start"
+                          title="Започване на учебната година"
+                  >
               <span class="row">
-<q-select v-model="selectedPeriod"
-          :option-label="(option:SchoolPeriod) => `${option.startYear}/${option.endYear}`"
-          :options="schoolPeriodOptions"
-          dense
-          label="Учебна година"
-          style="width: 15vw"/>
-            <q-btn :disable="selectedPeriodStarted || selectedPeriod==null" class="q-ml-sm" color="primary"
-                   icon="start"
-                   @click="startYear()"
-            ></q-btn>
-            </span>
-              <div v-if="selectedPeriodStarted" class="text-negative">Учебната година вече е стартирана в училището
-              </div>
+        <q-select v-model="selectedPeriod"
+                  :option-label="(option:SchoolPeriod) => `${option.startYear}/${option.endYear}`"
+                  :options="schoolPeriodOptions"
+                  dense
+                  label="Учебна година"
+                  style="width: 15vw"/>
+                    <q-btn :disable="selectedPeriodStarted || selectedPeriod==null" class="q-ml-sm" color="primary"
+                           icon="start"
+                           @click="startYear()"
+                    ></q-btn>
+                    </span>
+                      <div v-if="selectedPeriodStarted" class="text-negative">Учебната година вече е стартирана в
+                          училището
+                      </div>
 
+                      <q-stepper-navigation>
+                          <q-btn color="primary" label="Напред" @click="step = 2"/>
+                      </q-stepper-navigation>
+                  </q-step>
+                  <q-step
+                          :done="step > 2"
+                          :name="2"
+                          icon="person"
+                          title="Менажиране на потребители"
+                  >
+                      <div>
+                          Добавяне на потребители ръчно или чрез ексел файлове, редактиране и деактивиране
+                      </div>
+                      <q-btn color="primary" icon="open_in_new" label="Страница за менажиране на потребители"
+                             outline @click="goToUsersPage()"></q-btn>
+                      <q-stepper-navigation>
+                          <q-btn color="primary" label="Напред" @click="step = 3"/>
+                          <q-btn class="q-ml-sm" color="primary" flat label="Назад" @click="step = 1"/>
+                      </q-stepper-navigation>
+                  </q-step>
+                  <q-step
+                          :done="step > 3"
+                          :name="3"
+                          icon="square_foot"
+                          title="Информация за учителите"
+                  >
+                      <teachers-table-component :period-id="props.periodId" :school-id="props.schoolId"/>
+                      <q-stepper-navigation>
+                          <q-btn color="primary" label="Напред" @click="step = 4"/>
+                          <q-btn class="q-ml-sm" color="primary" flat label="Назад" @click="step = 2"/>
+                      </q-stepper-navigation>
+
+                  </q-step>
+                  <q-step
+                          :done="step > 4"
+                          :name="4"
+                          icon="group"
+                          title="Информация за класовете"
+                  >
+                      <school-classes-with-shifts-component :period-id="props.periodId" :school-id="props.schoolId"/>
+                      <q-stepper-navigation>
+                          <q-btn color="primary" label="Напред" @click="step = 5"/>
+                          <q-btn class="q-ml-sm" color="primary" flat label="Назад" @click="step = 3"/>
+                      </q-stepper-navigation>
+                  </q-step>
+              </q-stepper>
               <q-separator class="q-mt-sm"/>
-
           </q-page>
     </div>
   </div>
@@ -37,6 +93,8 @@ import {$ref} from "vue/macros";
 import {watch} from "vue";
 import {checkIfSchoolYearStarted, startSchoolYear} from "../../services/RequestService";
 import {periodId, schoolId} from "../../model/constants";
+import TeachersTableComponent from "../user/teachers-table-component.vue";
+import SchoolClassesWithShiftsComponent from "../school-class/school-classes-with-shifts-component.vue";
 
 const props = defineProps<{
     periodId: number,
@@ -49,6 +107,7 @@ periodId.value = props.periodId.toString()
 const route = useRouter()
 const currentYear = (new Date()).getFullYear()
 const currentUserPeriod = getCurrentUser().role.period
+const step = $ref(1)
 const schoolPeriodOptions = [currentUserPeriod, <SchoolPeriod>{
     startYear: currentUserPeriod.startYear + 1,
     endYear: currentUserPeriod.endYear + 1
@@ -63,6 +122,10 @@ watch(() => selectedPeriod, async () => {
         selectedPeriodStarted = false
     }
 })
+
+const goToUsersPage = async () => {
+    await route.push(`/users/${periodId.value}/${schoolId.value}/all`)
+}
 
 const startYear = async () => {
     await startSchoolYear(selectedPeriod!!, props.periodId)

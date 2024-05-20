@@ -142,7 +142,7 @@ class SchoolClassService : BaseService() {
         )
             .orderBy(SCHOOL_CLASS.NAME).fetch().map {
                 mapRecordToInternalModel(it)
-            }
+            }.distinctBy { it.id }
 
     fun getAllSchoolClassesFromSchoolAndPeriodWithoutPlans(schoolId: BigDecimal, periodId: BigDecimal) =
         schoolClassRecordSelectOnConditionStep().where(
