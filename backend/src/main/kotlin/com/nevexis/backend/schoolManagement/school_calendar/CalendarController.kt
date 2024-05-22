@@ -1,6 +1,7 @@
 package com.nevexis.backend.schoolManagement.school_calendar
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
@@ -25,6 +26,7 @@ class CalendarController {
         @RequestParam periodId: BigDecimal
     ) = calendarService.getSchoolWeeksForSchoolClass(schoolClassName, schoolId, periodId)
 
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @PostMapping("/update-calendar")
     suspend fun updateCalendar(
         @RequestBody calendar: Calendar, @RequestParam schoolId: BigDecimal,

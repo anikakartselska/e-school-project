@@ -5,6 +5,7 @@ import com.nevexis.backend.schoolManagement.users.UserService
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.security.Principal
@@ -19,23 +20,27 @@ class SchoolClassController {
     @Autowired
     private lateinit var userService: UserService
 
-
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @GetMapping("/get-school-classes-from-school")
-    fun getAllSchoolClassesFromSchoolAndPeriod(
+    suspend fun fetchAllSchoolClassesFromSchoolAndPeriod(
         @RequestParam schoolId: BigDecimal,
         @RequestParam periodId: BigDecimal
-    ): List<SchoolClass> = schoolClassService.getAllSchoolClassesFromSchoolAndPeriod(schoolId, periodId)
+    ): List<SchoolClass> {
+        return schoolClassService.getAllSchoolClassesFromSchoolAndPeriod(schoolId, periodId)
+    }
 
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @GetMapping("/get-all-students-from-school-class")
-    fun getAllStudentsFromSchoolClass(
+    suspend fun getAllStudentsFromSchoolClass(
         @RequestParam schoolClassId: BigDecimal,
         @RequestParam periodId: BigDecimal
     ): List<StudentView> {
         return userService.getAllStudentsInSchoolClass(schoolClassId, periodId)
     }
 
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @GetMapping("/fetch-all-school-classes-from-school-and-period-without-plans")
-    fun fetchAllSchoolClassesFromSchoolAndPeriodWithoutPlans(
+    suspend fun fetchAllSchoolClassesFromSchoolAndPeriodWithoutPlans(
         @RequestParam schoolId: BigDecimal,
         @RequestParam periodId: BigDecimal
     ): List<SchoolClass> {
@@ -44,13 +49,14 @@ class SchoolClassController {
 
 
     @GetMapping("/get-school-class-by-id")
-    fun getSchoolClassById(
+    suspend fun getSchoolClassById(
         @RequestParam schoolClassId: BigDecimal,
         @RequestParam periodId: BigDecimal
     ): SchoolClass? {
         return schoolClassService.getSchoolClassById(schoolClassId)
     }
 
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @PostMapping("/save-school-class")
     suspend fun saveSchoolClass(
         @RequestPart schoolClass: String,
@@ -62,6 +68,7 @@ class SchoolClassController {
         principal.name.toBigDecimal()
     )
 
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @PostMapping("/sync-numbers-in-class")
     suspend fun syncNumbersInClass(@RequestParam schoolClassId: BigDecimal, @RequestParam periodId: BigDecimal) =
         schoolClassService.synchronizeNumbersInClass(schoolClassId, periodId)

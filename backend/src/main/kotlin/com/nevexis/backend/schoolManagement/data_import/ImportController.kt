@@ -2,6 +2,7 @@ package com.nevexis.backend.schoolManagement.data_import
 
 import com.nevexis.backend.schoolManagement.users.SchoolRole
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.security.Principal
@@ -14,8 +15,9 @@ class ImportController {
     @Autowired
     private lateinit var importService: ImportService
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/import-user-excel")
-    fun importUserExcel(
+    suspend fun importUserExcel(
         @RequestPart file: ByteArray,
         @RequestParam periodId: BigDecimal,
         @RequestParam schoolId: BigDecimal,

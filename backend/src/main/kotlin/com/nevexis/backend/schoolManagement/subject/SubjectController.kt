@@ -1,6 +1,7 @@
 package com.nevexis.backend.schoolManagement.subject
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
@@ -12,22 +13,16 @@ class SubjectController {
     private lateinit var subjectService: SubjectService
 
     @GetMapping("/get-subjects-by-school-class")
-    fun getAllSubjectsBySchoolClassId(
-        schoolClassId: BigDecimal,
-        schoolId: BigDecimal,
-        periodId: BigDecimal
-    ) = subjectService.getAllSubjectsBySchoolClassId(schoolClassId, periodId, schoolId)
-
-    @GetMapping("/get-subjects-by-school-class-for-school-year")
-    fun getAllSubjectsBySchoolClassIdForSchoolYear(
+    suspend fun getAllSubjectsBySchoolClassId(
         schoolClassId: BigDecimal,
         schoolId: BigDecimal,
         periodId: BigDecimal
     ) = subjectService.getAllSubjectsBySchoolClassId(schoolClassId, periodId, schoolId)
 
 
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @GetMapping("/get-all-subjects-taught-by-teacher")
-    fun fetchAllSubjectsTaughtByTeacher(
+    suspend fun fetchAllSubjectsTaughtByTeacher(
         teacherId: BigDecimal,
         periodId: BigDecimal,
         schoolId: BigDecimal
@@ -38,7 +33,7 @@ class SubjectController {
     )
 
     @GetMapping("/get-subject-by-id")
-    fun fetchSubjectsById(
+    suspend fun fetchSubjectsById(
         @RequestParam subjectId: BigDecimal,
         @RequestParam periodId: BigDecimal,
         @RequestParam schoolId: BigDecimal

@@ -44,7 +44,7 @@ export const currentUserHasAnyRole = (roles: SchoolRole[]): boolean => {
 
 export const userHasLoggedInSchoolAndPeriod = (params: any) => {
     const currentUser: UserSecurity = getCurrentUser()
-    return (!params.schoolId || params.schoolId == currentUser.role.school.id) && (!params.periodId || params.periodId == currentUser.role.period.id)
+    return (!params.schoolId || params.schoolId == currentUser.role.school?.id) && (!params.periodId || params.periodId == currentUser.role.period.id)
 }
 
 export const updateUserInLocalStorage = (user: UserSecurity) => localStorage.setItem('user', JSON.stringify(user));

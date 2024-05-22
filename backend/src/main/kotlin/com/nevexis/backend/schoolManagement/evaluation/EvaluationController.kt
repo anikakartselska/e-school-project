@@ -2,6 +2,7 @@ package com.nevexis.backend.schoolManagement.evaluation
 
 import com.nevexis.backend.schoolManagement.school_class.SchoolClass
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
@@ -13,15 +14,16 @@ class EvaluationController {
     @Autowired
     private lateinit var evaluationService: EvaluationService
 
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @PostMapping("/fetch-all-student-subject-evaluations-from-school-class")
-    fun fetchAllStudentSubjectEvaluationsFromSchoolClass(
+    suspend fun fetchAllStudentSubjectEvaluationsFromSchoolClass(
         @RequestBody schoolClass: SchoolClass,
         @RequestParam evaluationType: EvaluationType
     ): Map<Int, Map<Int, List<Evaluation>>> =
         evaluationService.getAllStudentSubjectEvaluationsFromSchoolClass(schoolClass, evaluationType)
 
     @PostMapping("/get-student-subjects-with-evaluation")
-    fun getStudentSubjectsAndTheirEvaluations(
+    suspend fun getStudentSubjectsAndTheirEvaluations(
         @RequestParam studentId: BigDecimal,
         @RequestParam periodId: BigDecimal,
         @RequestParam schoolId: BigDecimal,
@@ -29,8 +31,9 @@ class EvaluationController {
     ) = evaluationService.getAllEvaluationsForStudent(studentId, periodId, schoolId, schoolClassId)
 
 
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @PostMapping("/get-evaluation-for-subject-and-school-class")
-    fun getEvaluationForSubjectAndSchoolClass(
+    suspend fun getEvaluationForSubjectAndSchoolClass(
         @RequestParam subjectId: BigDecimal,
         @RequestParam periodId: BigDecimal,
         @RequestParam schoolId: BigDecimal,
@@ -44,37 +47,42 @@ class EvaluationController {
         schoolLessonId
     )
 
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @PostMapping("/save-evaluations")
-    fun saveEvaluations(
+    suspend fun saveEvaluations(
         @RequestBody evaluations: List<StudentWithEvaluationDTO>,
         @RequestParam periodId: BigDecimal,
         @RequestParam schoolId: BigDecimal,
         @RequestParam comment: String
     ) = evaluationService.saveEvaluations(evaluations, periodId, schoolId, comment)
 
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @PostMapping("/save-evaluation")
-    fun saveEvaluation(
+    suspend fun saveEvaluation(
         @RequestBody evaluation: Evaluation,
         @RequestParam periodId: BigDecimal,
         @RequestParam schoolId: BigDecimal
     ) = evaluationService.saveEvaluation(evaluation, periodId, schoolId)
 
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @PostMapping("/update-evaluations")
-    fun updateEvaluations(
+    suspend fun updateEvaluations(
         @RequestBody evaluations: List<StudentWithEvaluationDTO>,
         @RequestParam periodId: BigDecimal,
         @RequestParam schoolId: BigDecimal,
     ) = evaluationService.updateEvaluations(evaluations, periodId, schoolId)
 
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @PostMapping("/update-evaluation")
-    fun updateEvaluation(
+    suspend fun updateEvaluation(
         @RequestBody evaluation: Evaluation,
         @RequestParam periodId: BigDecimal,
         @RequestParam schoolId: BigDecimal,
     ) = evaluationService.updateEvaluation(evaluation, periodId, schoolId)
 
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @PostMapping("/delete-evaluation")
-    fun deleteEvaluation(
+    suspend fun deleteEvaluation(
         @RequestBody evaluation: Evaluation,
         @RequestParam periodId: BigDecimal,
         @RequestParam schoolId: BigDecimal,

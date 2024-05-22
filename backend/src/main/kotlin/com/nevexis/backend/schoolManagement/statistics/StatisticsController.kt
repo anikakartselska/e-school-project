@@ -2,6 +2,7 @@ package com.nevexis.backend.schoolManagement.statistics
 
 import com.nevexis.backend.schoolManagement.users.OneRoleUser
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
@@ -14,14 +15,15 @@ class StatisticsController {
     private lateinit var statisticsService: StatisticsService
 
     @PostMapping("/fetch-statistics-for-student")
-    fun fetchStatisticsForStudent(
+    suspend fun fetchStatisticsForStudent(
         @RequestBody student: OneRoleUser,
         schoolId: BigDecimal,
         periodId: BigDecimal
     ): StudentStatistics = statisticsService.getStatisticsForStudent(student, schoolId, periodId)
 
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @GetMapping("/fetch-statistics-for-school")
-    fun fetchStatisticsForSchool(
+    suspend fun fetchStatisticsForSchool(
         schoolId: BigDecimal,
         periodId: BigDecimal
     ): SchoolStatistics = statisticsService.getStatisticsForSchool(schoolId, periodId)

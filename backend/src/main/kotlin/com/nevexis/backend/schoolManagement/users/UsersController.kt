@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.security.Principal
@@ -21,7 +22,8 @@ class UsersController {
     @Autowired
     private lateinit var userSecurityService: UserSecurityService
 
-    @PostMapping("/update-user")
+
+    @PostMapping("/update-user")//TODO
     suspend fun updateUser(@RequestBody user: User, @RequestParam loggedUserId: BigDecimal) =
         userService.updateUser(user, loggedUserId)
 
@@ -31,7 +33,7 @@ class UsersController {
         @RequestParam periodId: BigDecimal
     ): List<UserView> = userService.getAllUserViewsBySchool(schoolId, periodId)
 
-
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @GetMapping("/get-all-teachers-that-do-not-have-school-class")
     suspend fun getAllTeachersWhichDoNotHaveSchoolClassForSchoolAndPeriod(
         @RequestParam schoolId: BigDecimal,
@@ -47,7 +49,7 @@ class UsersController {
 
 
     @GetMapping("/get-user-with-all-roles")
-    fun fetchUserWithAllItsRolesById(
+    suspend fun fetchUserWithAllItsRolesById(
         @RequestParam id: BigDecimal,
         @RequestParam schoolId: BigDecimal,
         @RequestParam periodId: BigDecimal,
@@ -55,7 +57,7 @@ class UsersController {
     ): User = userService.findUserWithAllItsRolesById(id, schoolId, periodId, principal.name)
 
     @PostMapping("/change-profile-picture")
-    fun changeProfilePicture(
+    suspend fun changeProfilePicture(
         @RequestPart profilePicture: ByteArray,
         @RequestParam userId: BigDecimal
     ) {
@@ -63,7 +65,7 @@ class UsersController {
     }
 
     @PostMapping("/get-user-profile-picture")
-    fun generateReportExcel(
+    suspend fun generateReportExcel(
         @RequestParam userId: BigDecimal
     ): ResponseEntity<ByteArrayResource>? {
 
@@ -88,14 +90,15 @@ class UsersController {
     }
 
     @GetMapping("/get-student-by-id-school-and-period")
-    fun getStudentById(
+    suspend fun getStudentById(
         @RequestParam studentId: BigDecimal,
         @RequestParam schoolClassId: BigDecimal,
         @RequestParam periodId: BigDecimal
     ) = userService.getStudentByIdAndSchoolClass(studentId, schoolClassId, periodId)
 
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @GetMapping("/get-all-approved-teachers-from-school")
-    fun getTeachersFromSchool(
+    suspend fun getTeachersFromSchool(
         @RequestParam schoolId: BigDecimal,
         @RequestParam periodId: BigDecimal
     ) = userService.getAllApprovedTeachersFromSchool(schoolId, periodId)

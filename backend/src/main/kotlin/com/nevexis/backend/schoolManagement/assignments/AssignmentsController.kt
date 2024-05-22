@@ -1,6 +1,7 @@
 package com.nevexis.backend.schoolManagement.assignments
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
@@ -12,16 +13,18 @@ class AssignmentsController {
     @Autowired
     private lateinit var assignmentsService: AssignmentsService
 
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @PostMapping("/merge-assignments")
-    fun mergeAssignments(
+    suspend fun mergeAssignments(
         @RequestBody assignments: Assignments,
         @RequestParam schoolClassId: BigDecimal,
         @RequestParam schoolId: BigDecimal,
         @RequestParam periodId: BigDecimal
     ): Assignments = assignmentsService.saveUpdateAssignments(assignments, schoolClassId, schoolId, periodId)
 
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @PostMapping("/delete-assignments")
-    fun deleteAssignments(
+    suspend fun deleteAssignments(
         @RequestBody assignments: Assignments,
         @RequestParam schoolClassId: BigDecimal,
         @RequestParam schoolId: BigDecimal,

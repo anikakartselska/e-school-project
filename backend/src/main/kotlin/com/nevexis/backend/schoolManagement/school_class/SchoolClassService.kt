@@ -136,7 +136,7 @@ class SchoolClassService : BaseService() {
             }
 
 
-    fun getAllSchoolClassesFromSchoolAndPeriod(schoolId: BigDecimal, periodId: BigDecimal) =
+    fun getAllSchoolClassesFromSchoolAndPeriod(schoolId: BigDecimal, periodId: BigDecimal): List<SchoolClass> =
         schoolClassRecordSelectOnConditionStep().where(
             SCHOOL_CLASS.SCHOOL_PERIOD_ID.eq(periodId).and(SCHOOL_CLASS.SCHOOL_ID.eq(schoolId))
         )
