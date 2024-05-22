@@ -496,11 +496,22 @@ export const fetchPlanById = async (planForClassesId, schoolId, periodId): Promi
 
 
 export const fetchPlannedSchoolLessonsForSchool = async (schoolId,
-                                                         periodId): Promise<PlannedSchoolLesson[]> =>
+                                                         periodId, semester): Promise<PlannedSchoolLesson[]> =>
         await api.get<PlannedSchoolLesson[]>('/get-planned-school-lessons-for-school', {
             params: {
                 schoolId: schoolId,
-                periodId: periodId
+                periodId: periodId,
+                semester: semester
+            }
+        }).then(p => p.data)
+
+export const generatePlannedSchoolLessonsForSchool = async (schoolId,
+                                                            periodId, semester): Promise<PlannedSchoolLesson[]> =>
+        await api.post<PlannedSchoolLesson[]>('/generate-planned-school-lessons-for-school', null, {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId,
+                semester: semester
             }
         }).then(p => p.data)
 
@@ -641,5 +652,50 @@ export const fetchAllTeachers = async (schoolId,
             params: {
                 schoolId: schoolId,
                 periodId: periodId
+            }
+        }).then(p => p.data)
+
+
+export const deleteSchoolLessons = async (schoolId,
+                                          periodId,
+                                          semester): Promise<any> =>
+        await api.delete<any>('/get-all-approved-teachers-from-school', {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId,
+                semester: semester
+            }
+        }).then(p => p.data)
+
+export const generateSchoolLessons = async (schoolId,
+                                            periodId,
+                                            semester): Promise<any> =>
+        await api.post<any>('/generate-school-lessons', null, {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId,
+                semester: semester
+            }
+        }).then(p => p.data)
+
+export const checkExistingPlannedSchoolLessonsForSemester = async (schoolId,
+                                                                   periodId,
+                                                                   semester): Promise<boolean> =>
+        await api.get<boolean>('/existing-planned-school-lessons-for-semester', {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId,
+                semester: semester
+            }
+        }).then(p => p.data)
+
+export const checkExistingSchoolLessonsForSemester = async (schoolId,
+                                                            periodId,
+                                                            semester): Promise<boolean> =>
+        await api.get<boolean>('/existing-school-lessons-for-semester', {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId,
+                semester: semester
             }
         }).then(p => p.data)

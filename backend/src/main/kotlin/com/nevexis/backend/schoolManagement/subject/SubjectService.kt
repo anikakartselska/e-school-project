@@ -96,6 +96,43 @@ class SubjectService : BaseService() {
         pairs.map { it.first }
     }
 
+
+    fun deleteSubjectsForSchoolAndPeriod(
+        semesterToPlannedSchoolLessons: Map<Semester, List<PlannedSchoolLesson>>,
+        schoolId: BigDecimal,
+        periodId: BigDecimal,
+        semester: Semester,
+        dsl: DSLContext = db,
+    ) {
+        val semesterToPairSubjectIdTeacherId = semesterToPlannedSchoolLessons.mapValues { (_, plannedSchoolLessons) ->
+            plannedSchoolLessons.map { Pair(it.subject, it.teacher.id) }.distinct()
+        }
+
+        dsl.transaction { transaction ->
+            val subjectsToDelete = semesterToPairSubjectIdTeacherId[semester]?.filter {
+                if (semester == Semester.FIRST) {
+                    semesterToPairSubjectIdTeacherId[Semester.SECOND]
+                } else {
+                    semesterToPairSubjectIdTeacherId[Semester.FIRST]
+                }?.contains(it) != true
+            } ?: emptyList()
+
+            val subjectRecordsToDelete = transaction.dsl().selectFrom(SUBJECT)
+                .where(SUBJECT.SCHOOL_ID.eq(schoolId))
+                .and(SUBJECT.SCHOOL_PERIOD_ID.eq(periodId))
+                .fetch()
+                .filter {
+                    subjectsToDelete.contains(Pair(it.name!!, it.teacherId!!.toInt()))
+                }
+
+            transaction.dsl().deleteFrom(SCHOOL_CLASS_SUBJECT)
+                .where(SCHOOL_CLASS_SUBJECT.SEMESTER.eq(semester.name))
+                .execute()
+
+            transaction.dsl().batchDelete(subjectRecordsToDelete).execute()
+        }
+    }
+
     fun getAllSubjectsBySchoolClassId(
         schoolClassId: BigDecimal,
         periodId: BigDecimal,

@@ -5,11 +5,13 @@ import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.school.RoomToSubjects
 import com.nevexis.backend.schoolManagement.school.SchoolService
 import com.nevexis.backend.schoolManagement.school_calendar.Calendar
+import com.nevexis.backend.schoolManagement.school_calendar.CalendarService
 import com.nevexis.backend.schoolManagement.school_calendar.Shift
 import com.nevexis.backend.schoolManagement.school_class.SchoolClass
 import com.nevexis.backend.schoolManagement.school_class.SchoolClassService
 import com.nevexis.backend.schoolManagement.school_period.Semester
 import com.nevexis.backend.schoolManagement.school_schedule.PlannedSchoolLesson
+import com.nevexis.backend.schoolManagement.school_schedule.PlannedSchoolLessonsService
 import com.nevexis.backend.schoolManagement.subject.Subject
 import com.nevexis.backend.schoolManagement.subject.SubjectService
 import com.nevexis.backend.schoolManagement.users.UserService
@@ -21,6 +23,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jooq.Configuration
+import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -44,6 +47,12 @@ class SchoolLessonService : BaseService() {
 
     @Autowired
     private lateinit var schoolService: SchoolService
+
+    @Autowired
+    private lateinit var plannedSchoolLessonsService: PlannedSchoolLessonsService
+
+    @Autowired
+    private lateinit var calendarService: CalendarService
 
     fun getSchoolLessonById(schoolLessonId: BigDecimal): SchoolLesson =
         db.selectFrom(SCHOOL_LESSON)
@@ -178,6 +187,31 @@ class SchoolLessonService : BaseService() {
 
     }
 
+    fun generateSchoolLessonsForTheWholeSemester(
+        semester: Semester,
+        periodId: BigDecimal,
+        schoolId: BigDecimal
+    ) {
+        val plannedSchoolLessons =
+            plannedSchoolLessonsService.getPlannedSchoolLessonsForSchoolAndPeriod(schoolId, periodId, semester)
+                ?: throw SMSError(
+                    "Данните не са намерени",
+                    "Няма генерирана програма за ${
+                        if (semester == Semester.FIRST) {
+                            "първи срок"
+                        } else {
+                            "втори срок"
+                        }
+                    }"
+                )
+        val calendar = calendarService.getSchoolCalendarForSchoolAndPeriod(schoolId, periodId) ?: throw SMSError(
+            "Данните не са намерени",
+            "Няма училището няма добавен календар за текущата учебна година"
+        )
+
+        createSchoolLessons(plannedSchoolLessons, calendar, semester, periodId, schoolId)
+    }
+
     fun createSchoolLessons(
         plannedSchoolLessons: List<PlannedSchoolLesson>,
         calendar: Calendar,
@@ -249,11 +283,68 @@ class SchoolLessonService : BaseService() {
                             }
                         } ?: emptyList()
                     }
-            }.apply {
-                transaction.dsl().batchInsert(this.flatten()).execute()
+            }.flatten().apply {
+                transaction.dsl().batchInsert(this).execute()
             }
         }
     }
+
+    fun deleteSchoolLessonsAndTheTablesRelatedToIt(
+        schoolId: BigDecimal,
+        periodId: BigDecimal,
+        semester: Semester
+    ) {
+        db.transaction { transaction ->
+            val plannedSchoolLessonsFirstSemester =
+                Semester.FIRST to (plannedSchoolLessonsService.getPlannedSchoolLessonsForSchoolAndPeriod(
+                    schoolId,
+                    periodId,
+                    Semester.FIRST
+                ) ?: emptyList())
+            val plannedSchoolLessonsSecondSemester =
+                Semester.SECOND to (plannedSchoolLessonsService.getPlannedSchoolLessonsForSchoolAndPeriod(
+                    schoolId,
+                    periodId,
+                    Semester.SECOND
+                ) ?: emptyList())
+
+            plannedSchoolLessonsService.deletePlannedSchoolLessonsForSchoolAndPeriod(
+                schoolId,
+                periodId,
+                semester,
+                transaction.dsl()
+            )
+            deleteSchoolLessons(periodId, schoolId, semester, transaction.dsl())
+            subjectService.deleteSubjectsForSchoolAndPeriod(
+                mapOf(
+                    plannedSchoolLessonsFirstSemester,
+                    plannedSchoolLessonsSecondSemester
+                ),
+                schoolId, periodId, semester, transaction.dsl()
+            )
+        }
+    }
+
+    fun deleteSchoolLessons(
+        periodId: BigDecimal,
+        schoolId: BigDecimal,
+        semester: Semester,
+        dslContext: DSLContext = db
+    ) = dslContext.delete(SCHOOL_LESSON).where(
+        SCHOOL_LESSON.SCHOOL_PERIOD_ID.eq(periodId)
+            .and(SCHOOL_LESSON.SCHOOL_ID.eq(schoolId))
+            .and(SCHOOL_LESSON.SEMESTER.eq(semester.name))
+    ).execute()
+
+    fun checkIfThereAreSchoolLessonsForSemester(
+        periodId: BigDecimal,
+        schoolId: BigDecimal,
+        semester: Semester
+    ) = db.fetchCount(
+        SCHOOL_LESSON, SCHOOL_LESSON.SEMESTER.eq(semester.name), SCHOOL_LESSON.SCHOOL_PERIOD_ID.eq(periodId),
+        SCHOOL_LESSON.SCHOOL_ID.eq(schoolId)
+    ) > 0
+
 
     private fun getIsRestDayOrExamDay(
         calendar: Calendar,

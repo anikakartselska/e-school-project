@@ -1,5 +1,5 @@
 import {useLocalStorage} from "@vueuse/core";
-import {OneRoleUser, User, UserSecurity, UserView} from "../model/User";
+import {OneRoleUser, SchoolRole, User, UserSecurity, UserView} from "../model/User";
 import {SchoolUserRole} from "../model/SchoolUserRole";
 import {RequestStatus} from "../model/RequestStatus";
 
@@ -34,6 +34,19 @@ export const currentUserHasRole = (role: SchoolUserRole): boolean => {
     const currentUser: UserSecurity = getCurrentUser()
     return currentUser != null && currentUser.role == role;
 }
+
+export const currentUserHasAnyRole = (roles: SchoolRole[]): boolean => {
+    const currentUser: UserSecurity = getCurrentUser()
+    return currentUser != null && roles.some(role =>
+            currentUser.role.role == role
+    )
+}
+
+export const userHasLoggedInSchoolAndPeriod = (params: any) => {
+    const currentUser: UserSecurity = getCurrentUser()
+    return (!params.schoolId || params.schoolId == currentUser.role.school.id) && (!params.periodId || params.periodId == currentUser.role.period.id)
+}
+
 export const updateUserInLocalStorage = (user: UserSecurity) => localStorage.setItem('user', JSON.stringify(user));
 
 export const updateOneRoleUserInLocalStorage = (user: User) => {

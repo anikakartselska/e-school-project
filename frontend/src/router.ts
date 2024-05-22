@@ -11,7 +11,7 @@ import StudentSubjectsAndEvaluation from "./pages/per-student-evaluations/studen
 import LoginSingIn from "./pages/login-signin.vue";
 import LoginTab from "./pages/login-tab.vue";
 import SignInTab from "./pages/sign-in-tab.vue";
-import {userIsLoggedIn} from "./services/LocalStorageService";
+import {userHasLoggedInSchoolAndPeriod, userIsLoggedIn} from "./services/LocalStorageService";
 import RequestsPage from "./pages/requests/requests-page.vue";
 import {periodId, schoolId} from "./model/constants";
 import UserRequestsTab from "./pages/requests/user-requests-tab.vue";
@@ -68,6 +68,7 @@ const routes = [
         redirect: to => ({path: `/home/${periodId.value}/${schoolId.value}`}),
         beforeEnter: (to, from, next) => {
             if (!userIsLoggedIn()) return next('/login')
+            if (!userHasLoggedInSchoolAndPeriod(to.params)) return next('/unauthorized')
             return next()
         },
         children: [
@@ -117,13 +118,21 @@ const routes = [
                 path: '/administration-page/:periodId(\\d+)/:schoolId(\\d+)',
                 name: 'administration-page',
                 component: AdministrationScreen,
-                props: true
+                props: true,
+                beforeEnter: (to, from, next) => {
+                    if (!userHasLoggedInSchoolAndPeriod(to.params)) return next('/unauthorized')
+                    return next()
+                },
             },
             {
                 path: '/school-page/:schoolId(\\d+)',
                 name: 'school-page',
                 component: SchoolPage,
-                props: true
+                props: true,
+                beforeEnter: (to, from, next) => {
+                    if (!userHasLoggedInSchoolAndPeriod(to.params)) return next('/unauthorized')
+                    return next()
+                },
             },
             {
                 path: '/school-class-plan/:schoolId(\\d+)/:periodId(\\d+)/:schoolPlanId(\\d+)',

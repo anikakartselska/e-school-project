@@ -1,5 +1,6 @@
 package com.nevexis.backend.schoolManagement.school_lessons
 
+import com.nevexis.backend.schoolManagement.school_period.Semester
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
@@ -30,6 +31,28 @@ class SchoolLessonController {
         @RequestParam schoolId: BigDecimal,
         @RequestParam periodId: BigDecimal
     ) = schoolLessonService.getAvailableRoomsForSchoolLesson(schoolLesson, schoolId, periodId)
+
+    @DeleteMapping("/delete-school-lessons")
+    fun deleteSchoolLessons(
+        @RequestParam schoolId: BigDecimal,
+        @RequestParam periodId: BigDecimal,
+        @RequestParam semester: Semester
+    ) = schoolLessonService.deleteSchoolLessonsAndTheTablesRelatedToIt(schoolId, periodId, semester)
+
+
+    @GetMapping("/existing-school-lessons-for-semester")
+    fun checkExistingSchoolLessonsForSemester(
+        @RequestParam schoolId: BigDecimal,
+        @RequestParam periodId: BigDecimal,
+        @RequestParam semester: Semester
+    ) = schoolLessonService.checkIfThereAreSchoolLessonsForSemester(schoolId, periodId, semester)
+
+    @PostMapping("/generate-school-lessons")
+    fun generateSchoolLessons(
+        @RequestParam schoolId: BigDecimal,
+        @RequestParam periodId: BigDecimal,
+        @RequestParam semester: Semester
+    ) = schoolLessonService.generateSchoolLessonsForTheWholeSemester(semester, periodId, schoolId)
 
     @PostMapping("/fetch-available-teachers-for-school-lesson")
     fun fetchAvailableTeachersForSchoolLesson(
