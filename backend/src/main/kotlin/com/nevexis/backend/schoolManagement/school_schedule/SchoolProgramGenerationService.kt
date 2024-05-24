@@ -180,7 +180,7 @@ class SchoolProgramGenerationService : BaseService() {
 //             + // + notConsecutiveClasses +
         val fitness = 1 / (numberOfConflicts + 1.0)
         if (fitness > 0.3) {
-            //    println()
+//                println()
         }
         return fitness
     }

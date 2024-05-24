@@ -656,17 +656,6 @@ export const fetchAllTeachers = async (schoolId,
         }).then(p => p.data)
 
 
-export const deleteSchoolLessons = async (schoolId,
-                                          periodId,
-                                          semester): Promise<any> =>
-        await api.delete<any>('/get-all-approved-teachers-from-school', {
-            params: {
-                schoolId: schoolId,
-                periodId: periodId,
-                semester: semester
-            }
-        }).then(p => p.data)
-
 export const generateSchoolLessons = async (schoolId,
                                             periodId,
                                             semester): Promise<any> =>

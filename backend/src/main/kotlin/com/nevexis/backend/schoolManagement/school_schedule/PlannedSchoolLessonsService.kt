@@ -3,6 +3,7 @@ package com.nevexis.backend.schoolManagement.school_schedule
 import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.school.SchoolService
 import com.nevexis.backend.schoolManagement.school_class.SchoolClassService
+import com.nevexis.backend.schoolManagement.school_lessons.SchoolLessonService
 import com.nevexis.backend.schoolManagement.school_period.Semester
 import com.nevexis.backend.schoolManagement.subject.SubjectService
 import com.nevexis.backend.schoolManagement.users.UserService
@@ -13,6 +14,7 @@ import kotlinx.serialization.json.Json.Default.decodeFromString
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 
@@ -32,6 +34,10 @@ class PlannedSchoolLessonsService : BaseService() {
 
     @Autowired
     private lateinit var userService: UserService
+
+    @Autowired
+    @Lazy
+    private lateinit var schoolLessonsService: SchoolLessonService
     fun getAndSavePlannedSchoolLessonsForEachClass(
         schoolId: BigDecimal,
         periodId: BigDecimal,
@@ -43,21 +49,32 @@ class PlannedSchoolLessonsService : BaseService() {
         val subjects = subjectService.getAllSubjects()
         val rooms = schoolService.getAllRoomsFromSchool(schoolId)
 
-        val plannedSchoolLessons = schoolProgramGenerationService.generatePlannedSchoolLessonsForEachClass(
-            teacherViews,
-            schoolClassesWithPlan,
-            subjects,
-            rooms
-        )
-        db.newRecord(PLANNED_SCHOOL_LESSON).apply {
-            id = getPlannedSchoolLessonSeqNextVal()
-            this.schoolId = schoolId
-            this.schoolPeriodId = periodId
-            this.plannedSchoolLessons = Json.encodeToString(Schedule(plannedSchoolLessons, 1.0))
-            this.semester = semester.name
-        }.insert()
+        return db.transactionResult { transaction ->
+            schoolLessonsService.deleteSchoolLessonsAndTheTablesRelatedToIt(
+                schoolId,
+                periodId,
+                semester,
+                true,
+                transaction.dsl()
+            )
 
-        return plannedSchoolLessons
+
+            val plannedSchoolLessons = schoolProgramGenerationService.generatePlannedSchoolLessonsForEachClass(
+                teacherViews,
+                schoolClassesWithPlan,
+                subjects,
+                rooms
+            )
+            transaction.dsl().newRecord(PLANNED_SCHOOL_LESSON).apply {
+                id = getPlannedSchoolLessonSeqNextVal()
+                this.schoolId = schoolId
+                this.schoolPeriodId = periodId
+                this.plannedSchoolLessons = Json.encodeToString(Schedule(plannedSchoolLessons, 1.0))
+                this.semester = semester.name
+            }.insert()
+
+            plannedSchoolLessons
+        }
     }
 
 

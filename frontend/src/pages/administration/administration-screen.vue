@@ -1,7 +1,7 @@
 <template>
   <div class="bg-sms row">
-      <div class="col-2"></div>
-      <div class="col-8">
+      <div class="col-1"></div>
+      <div class="col-10">
           <q-page class="page-content" padding>
               <q-stepper
                       v-model="step"
@@ -77,6 +77,31 @@
                           <q-btn class="q-ml-sm" color="primary" flat label="Назад" @click="step = 3"/>
                       </q-stepper-navigation>
                   </q-step>
+                  <q-step
+                          :done="step > 5"
+                          :name="5"
+                          icon="group"
+                          title="Учебни планове"
+                  >
+                      <school-classes-plans-component :period-id="periodId" :school-id="schoolId"/>
+                      <q-stepper-navigation>
+                          <q-btn color="primary" label="Напред" @click="step = 6"/>
+                          <q-btn class="q-ml-sm" color="primary" flat label="Назад" @click="step = 4"/>
+                      </q-stepper-navigation>
+                  </q-step>
+                  <q-step
+                          :done="step > 6"
+                          :name="6"
+                          icon="group"
+                          title="Учебна програма"
+                  >
+                      <school-program-component :period-id="props.periodId" :school-id="props.schoolId"/>
+                      <q-stepper-navigation>
+                          <q-btn color="primary" label="Напред" @click="step = 7"/>
+                          <q-btn class="q-ml-sm" color="primary" flat label="Назад" @click="step = 5"/>
+                      </q-stepper-navigation>
+                  </q-step>
+
               </q-stepper>
               <q-separator class="q-mt-sm"/>
           </q-page>
@@ -95,6 +120,8 @@ import {checkIfSchoolYearStarted, startSchoolYear} from "../../services/RequestS
 import {periodId, schoolId} from "../../model/constants";
 import TeachersTableComponent from "../user/teachers-table-component.vue";
 import SchoolClassesWithShiftsComponent from "../school-class/school-classes-with-shifts-component.vue";
+import SchoolProgramComponent from "./components/school-program-component.vue";
+import SchoolClassesPlansComponent from "./components/school-classes-plans-component.vue";
 
 const props = defineProps<{
     periodId: number,

@@ -133,7 +133,7 @@ class SchoolClassService : BaseService() {
             .orderBy(SCHOOL_CLASS.NAME)
             .fetch().map {
                 mapRecordToInternalModel(it)
-            }
+            }.distinctBy { it.id }
 
 
     fun getAllSchoolClassesFromSchoolAndPeriod(schoolId: BigDecimal, periodId: BigDecimal): List<SchoolClass> =
@@ -152,7 +152,7 @@ class SchoolClassService : BaseService() {
             .fetch()
             .map {
                 mapRecordToInternalModel(it)
-            }
+            }.distinctBy { it.id }
 
     fun getAllSchoolClassesFromSchoolAndPeriodWithPlans(schoolId: BigDecimal, periodId: BigDecimal) =
         schoolClassRecordSelectOnConditionStepJoinedWithPlan().where(
@@ -160,7 +160,7 @@ class SchoolClassService : BaseService() {
         ).fetch()
             .map {
                 mapRecordToInternalModelWithPlan(it)
-            }
+            }.distinctBy { it.id }
 
 
     fun updateSchoolClassesProgram(

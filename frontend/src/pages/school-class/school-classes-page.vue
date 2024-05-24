@@ -39,12 +39,6 @@
                       <q-icon name="search"/>
                   </template>
               </q-input>
-              <q-btn
-                      color="primary"
-                      icon-right="archive"
-                      label="Export to csv"
-                      no-caps
-              />
           </template>
       </q-table>
     </q-card>

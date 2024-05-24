@@ -292,9 +292,11 @@ class SchoolLessonService : BaseService() {
     fun deleteSchoolLessonsAndTheTablesRelatedToIt(
         schoolId: BigDecimal,
         periodId: BigDecimal,
-        semester: Semester
+        semester: Semester,
+        deletePlannedSchoolLessons: Boolean = true,
+        dslContext: DSLContext = db
     ) {
-        db.transaction { transaction ->
+        dslContext.transaction { transaction ->
             val plannedSchoolLessonsFirstSemester =
                 Semester.FIRST to (plannedSchoolLessonsService.getPlannedSchoolLessonsForSchoolAndPeriod(
                     schoolId,
@@ -307,13 +309,15 @@ class SchoolLessonService : BaseService() {
                     periodId,
                     Semester.SECOND
                 ) ?: emptyList())
+            if (deletePlannedSchoolLessons) {
+                plannedSchoolLessonsService.deletePlannedSchoolLessonsForSchoolAndPeriod(
+                    schoolId,
+                    periodId,
+                    semester,
+                    transaction.dsl()
+                )
+            }
 
-            plannedSchoolLessonsService.deletePlannedSchoolLessonsForSchoolAndPeriod(
-                schoolId,
-                periodId,
-                semester,
-                transaction.dsl()
-            )
             deleteSchoolLessons(periodId, schoolId, semester, transaction.dsl())
             subjectService.deleteSubjectsForSchoolAndPeriod(
                 mapOf(
