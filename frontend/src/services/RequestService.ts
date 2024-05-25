@@ -17,6 +17,7 @@ import {SchoolPlanForClasses} from "../model/SchoolPlanForClasses";
 import {Assignments} from "../model/Assignments";
 import {StudentStatistics} from "../model/StudentStatistics";
 import {SchoolStatistics} from "../model/SchoolStatistics";
+import {StudentToYearlyResult, YearlyResults} from "../model/YearlyResults";
 
 export const login = async (email: string, password: string): Promise<AxiosResponse> =>
         await axios.post<string>(`/authenticate`, {username: email, password}, {
@@ -688,3 +689,26 @@ export const checkExistingSchoolLessonsForSemester = async (schoolId,
                 semester: semester
             }
         }).then(p => p.data)
+
+export const fetchAllYearlyResultsForSchoolClassPeriodAndSchool = async (schoolId,
+                                                                         periodId,
+                                                                         schoolClassId): Promise<StudentToYearlyResult[]> =>
+        await api.get<StudentToYearlyResult[]>('/fetch-all-yearly-results-for-school-class-period-and-school', {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId,
+                schoolClassId: schoolClassId
+            }
+        }).then(p => p.data)
+
+export const fetchYearlyResultsForStudentPeriodAndSchool = async (schoolId,
+                                                                  periodId,
+                                                                  studentId): Promise<YearlyResults | null> =>
+        await api.get<YearlyResults | null>('/fetch-yearly-results-for-student-period-and-school', {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId,
+                studentId: studentId
+            }
+        }).then(p => p.data)
+

@@ -14,9 +14,14 @@
                       reactive-rules
                       style="width: 250px"/>
             <q-space/>
-            <q-btn v-if="!hasLessons" class="q-mr-md text-negative" label="Генетирай програмите за всички класове отново"
+            <q-btn v-if="!hasLessons" class="q-mr-md text-negative"
+                   label="Генетирай програмите за всички класове отново"
                    outline
                    @click="generateProgram()"
+            ></q-btn>
+            <q-btn v-if="!hasLessons" class="q-mr-md text-secondary" label="Генерирай седмични разписи"
+                   outline
+                   @click="generateSchoolLessonsForAllClasses()"
             ></q-btn>
         </div>
         <q-separator class="q-mt-md q-mb-md"/>
@@ -53,6 +58,7 @@ import {
     checkExistingSchoolLessonsForSemester,
     fetchPlannedSchoolLessonsForSchool,
     generatePlannedSchoolLessonsForSchool,
+    generateSchoolLessons,
     getSchoolClassesFromSchool
 } from "../../../services/RequestService";
 import {Semester} from "../../../model/SchoolPeriod";
@@ -82,6 +88,14 @@ const generateProgram = async () => {
             r => {
                 schoolPlannedLessons = r
                 hasPlannedLessons = true
+            }
+    )
+}
+
+const generateSchoolLessonsForAllClasses = async () => {
+    await generateSchoolLessons(props.schoolId, props.periodId, props.semester).then(
+            r => {
+                hasLessons = true
             }
     )
 }

@@ -47,6 +47,8 @@ import UnauthorizedPage from "./pages/unauthorized-page.vue";
 import StudentStatisticsPage from "./pages/statistics/student-statistics-page.vue";
 import SchoolStatisticsPage from "./pages/statistics/school-statistics-page.vue";
 import AdministrationScreen from "./pages/administration/administration-screen.vue";
+import SchoolClassYearlyResultsTab from "./pages/school-class/school-class-yearly-results-tab.vue";
+import StudentYearlyResults from "./pages/per-student-evaluations/student-yearly-results.vue";
 
 const routes = [
     {
@@ -192,6 +194,10 @@ const routes = [
                         path: 'events',
                         component: SchoolClassAssignmentsTab
                     },
+                    {
+                        path: 'yearly-results',
+                        component: SchoolClassYearlyResultsTab
+                    },
                 ],
             },
             {
@@ -250,6 +256,10 @@ const routes = [
                     {
                         path: 'events',
                         component: SchoolClassAssignmentsTab
+                    },
+                    {
+                        path: 'yearly-result',
+                        component: StudentYearlyResults
                     },
                 ],
             },

@@ -101,7 +101,18 @@
                           <q-btn class="q-ml-sm" color="primary" flat label="Назад" @click="step = 5"/>
                       </q-stepper-navigation>
                   </q-step>
-
+                  <q-step
+                          :done="step > 7"
+                          :name="7"
+                          icon="group"
+                          title="Седмични разписи"
+                  >
+                      <school-lessons-component :period-id="props.periodId" :school-id="props.schoolId"/>
+                      <q-stepper-navigation>
+                          <q-btn color="primary" label="Напред" @click="step = 8"/>
+                          <q-btn class="q-ml-sm" color="primary" flat label="Назад" @click="step = 6"/>
+                      </q-stepper-navigation>
+                  </q-step>
               </q-stepper>
               <q-separator class="q-mt-sm"/>
           </q-page>
@@ -122,6 +133,7 @@ import TeachersTableComponent from "../user/teachers-table-component.vue";
 import SchoolClassesWithShiftsComponent from "../school-class/school-classes-with-shifts-component.vue";
 import SchoolProgramComponent from "./components/school-program-component.vue";
 import SchoolClassesPlansComponent from "./components/school-classes-plans-component.vue";
+import SchoolLessonsComponent from "./components/school-lessons-component.vue";
 
 const props = defineProps<{
     periodId: number,

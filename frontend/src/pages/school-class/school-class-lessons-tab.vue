@@ -1,12 +1,12 @@
 <template>
   <div>
     <div class="row">
-      <q-select v-model="selectedWeek"
-                :option-label="(option:Week) => `Седмица ${option.weekNumber} (${formatToBulgarian(option.startDate)} - ${formatToBulgarian(option.endDate)})`"
-                :options="weekOptions"
-                label="Седмица"
-
-      />
+        <q-select v-model="selectedWeek"
+                  :option-label="(option:Week) => `Седмица ${option.weekNumber} (${formatToBulgarian(option.startDate)} - ${formatToBulgarian(option.endDate)})`"
+                  :options="weekOptions"
+                  label="Седмица"/>
+        <q-space/>
+        <slot name="selectclass"/>
     </div>
     <q-separator/>
     <div class="row">
@@ -14,31 +14,31 @@
         <div class=" text-center text-primary text-h6">
           {{ workingDaysTranslation.get(day) }}
         </div>
-        <q-card v-for="lesson in schoolLessonsGroupedByDay.get(WorkingDays[day])"
-                :class="schoolLessonClass(lesson)"
-                class="q-mb-sm my-box cursor-pointer q-hoverable"
-                style="height: 16vh" @click="reRouteToLessonPage(lesson.id)">
-          <q-card-section>
+          <q-card v-for="lesson in schoolLessonsGroupedByDay.get(WorkingDays[day])"
+                  :class="schoolLessonClass(lesson)"
+                  class="q-mb-sm my-box cursor-pointer q-hoverable"
+                  style="height: 19vh" @click="reRouteToLessonPage(lesson.id)">
+              <q-card-section>
               <span v-if="lesson.status !== SchoolLessonStatus.NORMAL" class="text-primary text-bold">
                   {{ translationOfSchoolLessonStatus[lesson.status] }}
                   <br>
               </span>
-            Предмет:<span class="text-primary">
+                  Предмет:<span class="text-primary">
                       {{
-              lesson.subject.name
-            }}</span><br>
-            Учител:<span class="text-primary">
+                  lesson.subject.name
+                  }}</span><br>
+                  Учител:<span class="text-primary">
                       {{ lesson.subject.teacher?.firstName }} {{ lesson.subject.teacher?.lastName }}</span>
-              <br>
-              Стая:<span class="text-primary">
+                  <br>
+                  Стая:<span class="text-primary">
                       {{ lesson.room.room }}
           </span>
-              <br>
-              Час на провеждане: <span class="text-primary">
+                  <br>
+                  Час на провеждане: <span class="text-primary">
               {{ formatTime(lesson.startTimeOfLesson) }} - {{ formatTime(lesson.endTimeOfLesson) }}
           </span>
-          </q-card-section>
-        </q-card>
+              </q-card-section>
+          </q-card>
           <q-card v-if="schoolLessonsGroupedByDay.get(WorkingDays[day]).length === 0"
                   class="q-mb-sm my-box cursor-pointer q-hoverable"
                   style="height: 16vh">
@@ -83,7 +83,7 @@ const calendar = $ref(await fetchSchoolCalendarForSchoolAndPeriod(props.schoolId
 Object.keys(WorkingDays).forEach(day => {
     schoolLessonsGroupedByDay.set(day, schoolLessonsFromSelectedWeek.filter((lesson: SchoolLesson) => lesson.workingDay.workingDays == day))
 })
-watch(() => selectedWeek, async () => {
+watch(() => [selectedWeek, props.schoolClass], async () => {
     schoolLessonsFromSelectedWeek = await fetchSchoolLessonsForSchoolClassWeekSchoolAndPeriod(props.schoolClass.id, selectedWeek.weekNumber, props.schoolId, props.periodId)
     Object.keys(WorkingDays).forEach(day => {
         schoolLessonsGroupedByDay.set(day, schoolLessonsFromSelectedWeek.filter((lesson: SchoolLesson) => lesson.workingDay.workingDays == day))
@@ -130,9 +130,9 @@ const schoolLessonClass = (lesson: SchoolLesson): string => {
         return 'bg-blue-2'
     }
     if (lesson.status === SchoolLessonStatus.SUBSTITUTION) {
-    return 'bg-yellow-2'
-  }
-  return ''
+        return 'bg-yellow-2'
+    }
+    return ''
 }
 
 const reRouteToLessonPage = async (lessonId) => router.push(`/school-lesson/${props.periodId}/${props.schoolId}/${lessonId}/lesson`)

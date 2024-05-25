@@ -66,7 +66,7 @@ export const confirmActionPromiseDialog = (title: string, message: string) => ne
             .onCancel(() => {
             })
 });
-export const getRequestStatusColorClass = (requestStatus: RequestStatus) => {
+export const getRequestStatusColorClass = (requestStatus: RequestStatus | undefined) => {
     switch (requestStatus) {
         case RequestStatus.APPROVED:
             return `text-green`;

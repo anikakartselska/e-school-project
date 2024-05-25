@@ -23,7 +23,7 @@ class UsersController {
     private lateinit var userSecurityService: UserSecurityService
 
 
-    @PostMapping("/update-user")//TODO
+    @PostMapping("/update-user")
     suspend fun updateUser(@RequestBody user: User, @RequestParam loggedUserId: BigDecimal) =
         userService.updateUser(user, loggedUserId)
 
