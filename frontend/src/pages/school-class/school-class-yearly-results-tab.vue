@@ -44,8 +44,12 @@ import {useRouter} from "vue-router";
 import {useQuasar} from "quasar";
 import {SchoolClass} from "../../model/SchoolClass";
 import {$ref} from "vue/macros";
-import {fetchAllYearlyResultsForSchoolClassPeriodAndSchool} from "../../services/RequestService";
+import {
+    fetchAllYearlyResultsForSchoolClassPeriodAndSchool,
+    saveYearlyResultsForStudent
+} from "../../services/RequestService";
 import {getResultTypeColorClass, StudentToYearlyResult, translationOfResultType} from "../../model/YearlyResults";
+import YearlyResultsEditDialog from "./dialogs/yearly-results-edit-dialog.vue";
 
 const props = defineProps<{
   periodId: number,
@@ -56,11 +60,26 @@ const props = defineProps<{
 const router = useRouter()
 const quasar = useQuasar()
 
-const yearlyResults = $ref(await fetchAllYearlyResultsForSchoolClassPeriodAndSchool(props.schoolId, props.periodId, props.schoolClass.id))
+let yearlyResults = $ref(await fetchAllYearlyResultsForSchoolClassPeriodAndSchool(props.schoolId, props.periodId, props.schoolClass.id))
 
-const saveUpdateYearlyResults = (studentToYearlyResults: StudentToYearlyResult) => {
-
-}
+const saveUpdateYearlyResults = (studentToYearlyResults: StudentToYearlyResult) => quasar.dialog({
+    component: YearlyResultsEditDialog,
+    componentProps: {
+        studentToYearlyResult: studentToYearlyResults
+    },
+}).onOk(async (payload) => {
+    const updatedStudentToYearlyResults = payload.item as StudentToYearlyResult
+    await saveYearlyResultsForStudent(updatedStudentToYearlyResults).then(r => {
+                yearlyResults = yearlyResults.map(results => {
+                    if (results.studentView.id == updatedStudentToYearlyResults.studentView.id) {
+                        return updatedStudentToYearlyResults
+                    } else {
+                        return results
+                    }
+                })
+            }
+    )
+})
 
 const columns = [
   {

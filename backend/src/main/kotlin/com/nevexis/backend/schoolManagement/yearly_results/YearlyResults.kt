@@ -9,6 +9,7 @@ data class YearlyResults(
     val resultAfterTakingResitExams: ResultType? = null,
 )
 
+@Serializable
 data class StudentToYearlyResult(
     val studentView: StudentView,
     val yearlyResults: YearlyResults? = null

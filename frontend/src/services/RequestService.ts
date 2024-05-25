@@ -668,6 +668,9 @@ export const generateSchoolLessons = async (schoolId,
             }
         }).then(p => p.data)
 
+export const saveYearlyResultsForStudent = async (studentToYearlyResult: StudentToYearlyResult): Promise<any> =>
+        await api.post<any>('/save-yearly-results-for-student', studentToYearlyResult).then(p => p.data)
+
 export const checkExistingPlannedSchoolLessonsForSemester = async (schoolId,
                                                                    periodId,
                                                                    semester): Promise<boolean> =>

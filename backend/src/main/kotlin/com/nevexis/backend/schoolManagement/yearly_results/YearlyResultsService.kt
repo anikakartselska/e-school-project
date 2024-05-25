@@ -2,9 +2,11 @@ package com.nevexis.backend.schoolManagement.yearly_results
 
 import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.users.UserService
+import com.nevexis.`demo-project`.jooq.tables.records.StudentSchoolClassRecord
 import com.nevexis.`demo-project`.jooq.tables.references.SCHOOL_USER_ROLE
 import com.nevexis.`demo-project`.jooq.tables.references.STUDENT_SCHOOL_CLASS
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -58,6 +60,18 @@ class YearlyResultsService : BaseService() {
                     Json.decodeFromString<YearlyResults>(it)
                 }
             }
+    }
+
+    fun saveUpdateYearlyResultsForStudent(studentToYearlyResult: StudentToYearlyResult) {
+        db.select(STUDENT_SCHOOL_CLASS.asterisk()).from(STUDENT_SCHOOL_CLASS)
+            .leftJoin(SCHOOL_USER_ROLE)
+            .on(SCHOOL_USER_ROLE.ID.eq(STUDENT_SCHOOL_CLASS.STUDENT_SCHOOL_USER_ROLE_ID))
+            .where(SCHOOL_USER_ROLE.USER_ID.eq(studentToYearlyResult.studentView.id.toBigDecimal()))
+            .fetchAnyInto(StudentSchoolClassRecord::class.java)?.let { record ->
+                record.apply {
+                    this.yearlyResults = studentToYearlyResult.yearlyResults?.let { Json.encodeToString(it) }
+                }
+            }?.update()
     }
 
 }

@@ -2,10 +2,7 @@ package com.nevexis.backend.schoolManagement.yearly_results
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.web.bind.annotation.CrossOrigin
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
 
@@ -32,5 +29,13 @@ class YearlyResultsController {
         periodId: BigDecimal,
         studentId: BigDecimal,
     ): YearlyResults? = yearlyResultsService.getYearlyResultsForStudentPeriodAndSchool(schoolId, periodId, studentId)
+
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
+    @PostMapping("/save-yearly-results-for-student")
+    suspend fun saveYearlyResultsForStudent(
+        @RequestBody studentToYearlyResult: StudentToYearlyResult,
+    ) {
+        yearlyResultsService.saveUpdateYearlyResultsForStudent(studentToYearlyResult)
+    }
 
 }
