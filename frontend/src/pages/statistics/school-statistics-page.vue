@@ -12,7 +12,7 @@
       >
         <q-card-section>
           <div class="text-h6">Среден успех</div>
-          <div class="text-h1">{{ statistics.success.toPrecision(2) }}</div>
+          <div class="text-h1">{{ statistics.success?.toPrecision(2) }}</div>
         </q-card-section>
       </q-card>
       <q-card

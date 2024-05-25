@@ -12,18 +12,22 @@
             rows-per-page-label="Редове на страница"
             virtual-scroll
     >
-      <template v-if="tab === AssignmentType.EVENT || lesson!=null" v-slot:top-right>
-          <div class="q-pr-xs">
-              <q-btn color="secondary" icon="add"
-                     outline rounded @click="addNewAssignment()">
-              </q-btn>
-          </div>
-      </template>
+        <template
+                v-if="(tab === AssignmentType.EVENT || lesson!=null) && currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])"
+                v-slot:top-right>
+            <div class="q-pr-xs">
+                <q-btn color="secondary" icon="add"
+                       outline rounded @click="addNewAssignment()">
+                </q-btn>
+            </div>
+        </template>
         <template v-slot:body-cell-edit="props">
             <q-td>
-                <q-btn color="primary" dense flat icon="edit" @click="updateAssignment(props.row)">
+                <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])" color="primary" dense flat icon="edit"
+                       @click="updateAssignment(props.row)">
                 </q-btn>
-                <q-btn color="negative" dense flat icon="delete" @click="deleteAssignment(props.row)">
+                <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])" color="negative" dense flat icon="delete"
+                       @click="deleteAssignment(props.row)">
                 </q-btn>
             </q-td>
         </template>
@@ -52,9 +56,10 @@ import {deleteAssignments, fetchSchoolById, mergeAssignments} from "../../../ser
 import {useQuasar} from "quasar";
 import AssignmentsEditCreateDialog from "../dialogs/assignments-edit-create-dialog.vue";
 import {SchoolLesson} from "../../../model/SchoolLesson";
-import {getCurrentUserAsUserView} from "../../../services/LocalStorageService";
+import {currentUserHasAnyRole, getCurrentUserAsUserView} from "../../../services/LocalStorageService";
 import {watch} from "vue";
 import {dateTimeToBulgarianLocaleString} from "../../../utils";
+import {SchoolRole} from "../../../model/User";
 
 const props = defineProps<{
   periodId: number

@@ -66,6 +66,7 @@ import {
     getSchoolClassById
 } from "../../services/RequestService";
 import {$ref} from "vue/macros";
+import {watch} from "vue";
 
 const props = defineProps<{
     schoolClassId: number,
@@ -76,7 +77,14 @@ const props = defineProps<{
 const schoolClass = $ref(await getSchoolClassById(props.schoolClassId, props.periodId))
 let subject = $ref(await fetchSubjectById(props.subjectId, props.periodId, props.schoolId))
 let studentWithEvaluationDTO = $ref(await getEvaluationForSubjectAndSchoolClass(props.subjectId, props.periodId, props.schoolId, props.schoolClassId))
-
+watch(() => [props.subjectId], async () => {
+            subject = await fetchSubjectById(props.subjectId, props.periodId, props.schoolId)
+        }
+)
+watch(() => [props.schoolClassId], async () => {
+            schoolClass = await getSchoolClassById(props.schoolClassId, props.periodId)
+        }
+)
 </script>
 
 <style scoped>

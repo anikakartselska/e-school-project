@@ -1,7 +1,9 @@
 <template>
     <div v-if="!hasPlannedLessons">
-        <div class="q-pl-md text-negative">Все още няма генерирана програма за срока</div>
-        <q-btn class="q-ma-md" color="primary" label="Генерирай програма" @click="generateProgram()"></q-btn>
+        <div v-if="currentUserHasAnyRole([SchoolRole.ADMIN])" class="q-pl-md text-negative">Все още няма генерирана
+            програма
+            за срока
+        </div>
     </div>
     <div v-else>
         <div class="row">
@@ -14,12 +16,13 @@
                       reactive-rules
                       style="width: 250px"/>
             <q-space/>
-            <q-btn v-if="!hasLessons" class="q-mr-md text-negative"
+            <q-btn v-if="!hasLessons && currentUserHasAnyRole([SchoolRole.ADMIN])" class="q-mr-md text-negative"
                    label="Генетирай програмите за всички класове отново"
                    outline
                    @click="generateProgram()"
             ></q-btn>
-            <q-btn v-if="!hasLessons" class="q-mr-md text-secondary" label="Генерирай седмични разписи"
+            <q-btn v-if="!hasLessons && currentUserHasAnyRole([SchoolRole.ADMIN])" class="q-mr-md text-secondary"
+                   label="Генерирай седмични разписи"
                    outline
                    @click="generateSchoolLessonsForAllClasses()"
             ></q-btn>
@@ -71,6 +74,8 @@ import {
 } from "../../../model/PlannedSchoolLesson";
 import {watch} from "vue";
 import {$ref} from "vue/macros";
+import {currentUserHasAnyRole} from "../../../services/LocalStorageService";
+import {SchoolRole} from "../../../model/User";
 
 const props = defineProps<{
     periodId: number,

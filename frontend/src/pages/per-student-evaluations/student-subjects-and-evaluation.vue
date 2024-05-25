@@ -44,7 +44,7 @@
                 <q-route-tab :name="AssignmentType.EXAMINATION" label="Контролни" to="examinations"/>
                 <q-route-tab :name="AssignmentType.HOMEWORK" label="Домашни работи" to="homeworks"/>
                 <q-route-tab :name="AssignmentType.EVENT" label="Събития" to="events"/>
-                <q-route-tab label="Годични резултати" name="yearly-result" to="yearly-result"/>
+                <q-route-tab label="Годишни резултати" name="yearly-result" to="yearly-result"/>
               </q-tabs>
             </div>
             <div class="col-12">

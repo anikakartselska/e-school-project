@@ -13,7 +13,7 @@
             >
                 <q-card-section>
                     <div class="text-h6">Среден успех</div>
-                    <div class="text-h1">{{ statistics.success.toPrecision(3) }}</div>
+                    <div class="text-h1">{{ statistics.success?.toPrecision(3) }}</div>
                 </q-card-section>
             </q-card>
             <q-card
@@ -79,7 +79,7 @@
             >
                 <q-card-section>
                     <div class="text-h6">Място в класа</div>
-                    <div class="text-h1">{{ statistics.placeInClass }}
+                    <div class="text-h1">{{ statistics.placeInClass !== 0 ? statistics.placeInClass : '_' }}
                         <q-icon name="bar_chart"/>
                     </div>
                 </q-card-section>
@@ -88,7 +88,9 @@
                     class="my-card text-primary col-3 q-ml-md q-mr-md">
                 <q-card-section>
                     <div class="text-h6">Място във випуска</div>
-                    <div class="text-h1">{{ statistics.placeInGraduationClass }}
+                    <div class="text-h1">{{
+                        statistics.placeInGraduationClass !== 0 ? statistics.placeInGraduationClass : '_'
+                        }}
                         <q-icon name="bar_chart"/>
                     </div>
                 </q-card-section>
@@ -99,7 +101,7 @@
             >
                 <q-card-section>
                     <div class="text-h6">Място в училище</div>
-                    <div class="text-h1">{{ statistics.placeInSchool }}
+                    <div class="text-h1">{{ statistics.placeInSchool !== 0 ? statistics.placeInSchool : '_' }}
                         <q-icon name="bar_chart"/>
                     </div>
                 </q-card-section>

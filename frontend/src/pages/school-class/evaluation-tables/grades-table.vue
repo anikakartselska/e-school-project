@@ -156,7 +156,7 @@ import {
     gradeMap
 } from "../../../services/helper-services/EvaluationService";
 import {Evaluation, EvaluationType} from "../../../model/Evaluation";
-import {StudentView} from "../../../model/User";
+import {SchoolRole, StudentView} from "../../../model/User";
 import {Subject} from "../../../model/Subject";
 import {Semester} from "../../../model/SchoolPeriod";
 import html2pdf from "html2pdf.js";
@@ -167,13 +167,14 @@ import {$ref} from "vue/macros";
 import {deleteEvaluation, saveEvaluation, updateEvaluation} from "../../../services/RequestService";
 import {watch} from "vue";
 import EvaluationCreateDialog from "../dialogs/evaluation-create-dialog.vue";
-import {getCurrentUserAsUserView} from "../../../services/LocalStorageService";
+import {currentUserHasAnyRole, getCurrentUserAsUserView} from "../../../services/LocalStorageService";
+import {Pair} from "../../../model/Pair";
 
 const props = defineProps<{
-    students: StudentView[],
-    subjects: Subject[],
-    grades: any
-    semester: Semester
+  students: StudentView[],
+  subjects: Subject[],
+  grades: any
+  semester: Semester
 }>()
 
 let currentGrades = $ref<any>({...props.grades});
@@ -235,7 +236,7 @@ const updateEvaluationDialog = (evaluation: Evaluation) => {
             evaluation: evaluation,
             periodId: periodId.value,
             schoolId: schoolId.value,
-            readonly: false
+          readonly: currentUserHasAnyRole([SchoolRole.PARENT, SchoolRole.STUDENT])
         },
     }).onOk(async (payload) => {
         const updatedGrade = payload.item.evaluation as Evaluation

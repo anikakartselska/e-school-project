@@ -1,31 +1,25 @@
 <template>
-  <h1> HOME </h1>
-  <div>
-    <div>{{ number }}</div>
-    <q-btn icon="add" @click="myFunction()"></q-btn>
+  <div v-if="currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])">
+    <school-statistics-page :period-id="props.periodId" :school-id="props.schoolId"/>
   </div>
-
+  <div v-else>
+    <student-statistics-page :period-id="props.periodId" :school-id="props.schoolId"/>
+  </div>
 </template>
 
 <script lang="ts" setup>
 
-import {$ref} from "vue/macros";
-import {periodId, schoolId} from "../model/constants";
+import {currentUserHasAnyRole} from "../services/LocalStorageService";
+import {SchoolRole} from "../model/User";
+import SchoolStatisticsPage from "./statistics/school-statistics-page.vue";
+import StudentStatisticsPage from "./statistics/student-statistics-page.vue";
 
 const props = defineProps<{
   periodId: number,
   schoolId: number
 }>()
 
-let number = $ref(1)
-schoolId.value = props.schoolId.toString()
-periodId.value = props.periodId.toString()
 
-console.log(props)
-console.log(schoolId.value)
-console.log(periodId.value)
-
-const myFunction = () => number++;
 </script>
 
 <style scoped>

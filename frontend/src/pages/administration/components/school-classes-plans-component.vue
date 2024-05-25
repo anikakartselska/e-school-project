@@ -15,14 +15,17 @@
         <q-td>
           <q-btn dense flat icon="open_in_new" @click="openSchoolPlan(props.row)">
           </q-btn>
-          <q-btn color="primary" dense flat icon="edit" @click="updateSchoolPlan(props.row)">
+          <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN])" color="primary" dense flat icon="edit"
+                 @click="updateSchoolPlan(props.row)">
           </q-btn>
-          <q-btn color="negative" dense flat icon="delete" @click="deleteSchoolPlan(props.row)">
+          <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN])" color="negative" dense flat icon="delete"
+                 @click="deleteSchoolPlan(props.row)">
           </q-btn>
         </q-td>
       </template>
       <template v-slot:top-right="props">
-        <q-btn class="q-ml-md" color="primary" icon="add" outline round @click="addNewSchoolPlan">
+        <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN])" class="q-ml-md" color="primary" icon="add" outline round
+               @click="addNewSchoolPlan">
           <q-tooltip>Добави нов</q-tooltip>
         </q-btn>
         <q-input v-model="filter" debounce="300" dense outlined placeholder="Търсене">
@@ -47,6 +50,8 @@ import {
 } from "../../../services/RequestService";
 import {SchoolPlanForClasses} from "../../../model/SchoolPlanForClasses";
 import SchoolPlanAddDialog from "../dialogs/school-plan-add-dialog.vue";
+import {currentUserHasAnyRole} from "../../../services/LocalStorageService";
+import {SchoolRole} from "../../../model/User";
 
 const props = defineProps<{
   schoolId: number,

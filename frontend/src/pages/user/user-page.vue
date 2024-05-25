@@ -94,17 +94,17 @@
 
             </q-card>
           </div>
-          <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-            <q-card style="height: 78vh">
-              <q-card-section>
-                <div class="row">
-                  <div class="col-4">
-                    <span class="text-h4">Роли</span>
-                  </div>
-                  <div class="col-3">
-                    <q-select v-if="isCurrentUser"
-                              v-model="selectedPeriod"
-                              :option-label="(option:SchoolPeriod) => `${option.startYear}/${option.endYear}`"
+          <div v-if="isAdminCurrentUserOrCurrentUserParent" class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+              <q-card style="height: 78vh">
+                  <q-card-section>
+                      <div class="row">
+                          <div class="col-4">
+                              <span class="text-h4">Роли</span>
+                          </div>
+                          <div class="col-3">
+                              <q-select v-if="isCurrentUser"
+                                        v-model="selectedPeriod"
+                                        :option-label="(option:SchoolPeriod) => `${option.startYear}/${option.endYear}`"
                               :options="allSchoolPeriods"
                               dense
                               label="Учебна година"/>
@@ -234,8 +234,9 @@
                       </q-card-section>
                       <q-card-section v-if="role.role===SchoolRole.PARENT">
                         <div class="text-h4">Ученик</div>
-                        <q-btn :disable="role.status!==RequestStatus.APPROVED"
-                               :to="`/student-diary/${role.detailsForUser.child.role.detailsForUser.schoolClass.id}/${role.detailsForUser.child.id}/${props.periodId}/${props.schoolId}/grades`" label="Дневник"/>
+                          <q-btn :disable="role.status!==RequestStatus.APPROVED"
+                                 :to="`/student-diary/${role.detailsForUser.child.role.detailsForUser.schoolClass.id}/${role.detailsForUser.child.id}/${props.periodId}/${props.schoolId}/grades`"
+                                 label="Дневник"/>
                         <q-field label="Име" readonly stack-label>
                           <template v-slot:default>
                             <router-link
@@ -282,7 +283,7 @@ import {
     updateUser,
     updateUserProfilePicture
 } from "../../services/RequestService";
-import {$ref} from "vue/macros";
+import {$computed, $ref} from "vue/macros";
 import {DetailsForParent, DetailsForStudent, Gender, SchoolRole} from "../../model/User";
 import {onUnmounted, watch} from "vue";
 import {useRouter} from "vue-router";
@@ -315,16 +316,18 @@ const allSchoolClasses = await getAllSchoolClasses()
 const allSchoolPeriods = await getAllSchoolPeriodsWithTheSchoolsTheyAreStarted()
 const allSubjects = await getAllSubjects()
 const currentUser = getCurrentUser()
-const isCurrentUser = currentUser.id == user.id
-const isAdminAndNotCurrentUser = !isCurrentUser && currentUser.role.role == SchoolRole.ADMIN
-const isNotCurrentUserAndNotAdmin = !isCurrentUser && !isAdminAndNotCurrentUser
+const isCurrentUser = $computed(() => currentUser.id == user.id)
+const isCurrentUsersParent = $computed(() => currentUser.role.role == SchoolRole.PARENT && (currentUser.role.detailsForUser as DetailsForParent).child?.id == currentUser.id)
+const isAdminAndNotCurrentUser = $computed(() => !isCurrentUser && currentUser.role.role == SchoolRole.ADMIN)
+const isNotCurrentUserAndNotAdmin = $computed(() => !isCurrentUser && !isAdminAndNotCurrentUser)
+const isAdminCurrentUserOrCurrentUserParent = $computed(() => isCurrentUsersParent || isCurrentUser || currentUser.role.role == SchoolRole.ADMIN)
 const selectedPeriod = $ref(currentUser.role.period)
 let userRolesFilteredBySelectedPeriod = $ref<SchoolUserRole[]>(user?.roles?.filter(role => role.period.id == selectedPeriod?.id))
 
 watch(props, async () => {
-  databaseUser = await fetchUserWithAllItsRolesById(props.id, props.periodId, props.schoolId)
-  user = cloneDeep(databaseUser)
-  userRolesFilteredBySelectedPeriod = user?.roles?.filter(role => role.period.id == selectedPeriod?.id)
+    databaseUser = await fetchUserWithAllItsRolesById(props.id, props.periodId, props.schoolId)
+    user = cloneDeep(databaseUser)
+    userRolesFilteredBySelectedPeriod = user?.roles?.filter(role => role.period.id == selectedPeriod?.id)
 })
 
 watch(() => selectedPeriod, () => {

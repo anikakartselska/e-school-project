@@ -33,7 +33,7 @@ class PlannedSchoolLessonController {
     ): List<PlannedSchoolLesson> =
         plannedSchoolLessonsService.getAndSavePlannedSchoolLessonsForEachClass(schoolId, periodId, semester)
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @GetMapping("/existing-planned-school-lessons-for-semester")
     suspend fun checkExistingPlannedSchoolLessonsForSemester(
         @RequestParam schoolId: BigDecimal,

@@ -5,7 +5,7 @@ import com.nevexis.backend.schoolManagement.users.StudentView
 import java.math.BigDecimal
 
 data class SchoolStatistics(
-    val success: BigDecimal,
+    val success: BigDecimal? = null,
     val grades: Int,
     val absences: Int,
     val feedback: Int,

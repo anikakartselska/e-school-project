@@ -11,7 +11,7 @@ export interface Subject {
 
 export interface SubjectWithSchoolClassInformation {
     id: number,
-    subjectName: string,
+    name: string,
     schoolClass: SchoolClass,
     semester: Semester
 }

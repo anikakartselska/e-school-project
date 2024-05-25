@@ -43,14 +43,14 @@
                             </q-item-section>
                         </q-item>
                         <q-separator/>
-                <q-item>
-                  <q-item-section>
-                    <q-btn color="primary" dense flat label="Промени парола" @click="resetUserPassword()"/>
-                  </q-item-section>
-                </q-item>
-              </div>
-            </div>
-          </q-menu>
+                        <q-item>
+                            <q-item-section>
+                                <q-btn color="primary" dense flat label="Промени парола" @click="resetUserPassword()"/>
+                            </q-item-section>
+                        </q-item>
+                    </div>
+                </div>
+            </q-menu>
         </q-btn>
         <q-btn
                 :icon="$q.dark.isActive ? 'nights_stay' : 'wb_sunny'"
@@ -94,25 +94,46 @@
             <q-toolbar-title>{{ currentUser.firstName }} {{ currentUser.lastName }}</q-toolbar-title>
           </q-toolbar>
           <hr/>
-          <q-scroll-area style="height:100%;">
-            <q-list v-for="page in pages" padding>
-              <q-item
-                      active-class="tab-active"
-                      :to="page.to"
-                      exact
-                      class="navigation-item"
-                      clickable
-                      v-ripple
-              >
-                <q-item-section avatar>
-                  <q-icon name="dashboard"/>
-                </q-item-section>
-                <q-item-section>
-                  {{ page.label }}
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </q-scroll-area>
+            <q-scroll-area style="height:100%;">
+                <q-list>
+                    <div v-for="page in pages">
+                        <q-item v-if="page.show"
+                                v-ripple
+                                :to="page.to"
+                                active-class="tab-active"
+                                class="navigation-item q-ma-sm"
+                                clickable
+                                exact
+                        >
+                            <q-item-section avatar>
+                                <q-icon :name="page.icon"/>
+                            </q-item-section>
+                            <q-item-section>
+                                {{ page.label }}
+                            </q-item-section>
+                        </q-item>
+                    </div>
+                    <q-expansion-item v-for="expansionItem in expansionItemsList"
+                                      v-if="currentUser.role.role === SchoolRole.TEACHER"
+                                      :content-inset-level="1"
+                                      :icon="expansionItem.icon"
+                                      :label="expansionItem.label"
+                                      class="q-pl-sm"
+                    >
+                        <q-list>
+                            <q-item v-for="item in expansionItem.items"
+                                    v-close-popup
+                                    :to="`/subject-diary/${item.schoolClass?.id}/${item.id}/${currentUser.role.period.id}/${currentUser.role.school.id}/grades`" clickable>
+                                <q-item-section>
+                                    <q-item-label style="white-space: break-spaces;">
+                                        {{ item.name }} - {{ item.schoolClass.name }}
+                                    </q-item-label>
+                                </q-item-section>
+                            </q-item>
+                        </q-list>
+                    </q-expansion-item>
+                </q-list>
+            </q-scroll-area>
         </div>
       </div>
     </q-drawer>
@@ -140,8 +161,14 @@
 <script lang="ts" setup>
 import {useRouter} from "vue-router";
 import {$computed, $ref} from "vue/macros";
-import {clearUserStorage, getCurrentUser, updateUserInLocalStorage} from "../services/LocalStorageService";
 import {
+    clearUserStorage,
+    currentUserHasAnyRole,
+    getCurrentUser,
+    updateUserInLocalStorage
+} from "../services/LocalStorageService";
+import {
+    fetchAllSubjectsTaughtByTeacher,
     getAllSchoolPeriods,
     getAllUserRoles,
     getUserProfilePicture,
@@ -157,14 +184,16 @@ import {periodId, schoolId} from "../model/constants";
 import {useQuasar} from "quasar";
 import PasswordChangeDialog from "./reset-password/password-change-dialog.vue";
 import {School} from "../model/School";
+import {DetailsForParent, DetailsForStudent, SchoolRole} from "../model/User";
+import {SubjectWithSchoolClassInformation} from "../model/Subject";
 
 const router = useRouter();
 const quasar = useQuasar()
 const onLogoutClick = async () => {
-  await logout().then(async r => {
-    clearUserStorage()
-    await router.push('/login')
-  })
+    await logout().then(async r => {
+        clearUserStorage()
+        await router.push('/login')
+    })
 }
 
 let currentUser = $ref(getCurrentUser());
@@ -173,6 +202,7 @@ let imageUrl = $ref<string | null>(null)
 let school = $ref<School | null>(null)
 let userRoles = $ref(<SchoolUserRole[]>[]);
 let schoolPeriods = $ref(<SchoolPeriod[]>[]);
+let subjectWithSchoolClassInformation = $ref(<SubjectWithSchoolClassInformation[]>[])
 onBeforeMount(async () => {
   currentUser = getCurrentUser()
   await load()
@@ -186,6 +216,9 @@ const load = async () => {
     userRolesFilteredBySelectedPeriod = userRoles.filter(role => role.period.id == selectedPeriod?.id)
     currentUserFile = await getUserProfilePicture(currentUser.id)
     school = currentUser.role.school
+    if (currentUser.role.role === SchoolRole.TEACHER) {
+        subjectWithSchoolClassInformation = await fetchAllSubjectsTaughtByTeacher(currentUser.id, periodId.value, schoolId.value)
+    }
 }
 const getSchoolPeriods = async () => {
     userRoles = await getAllUserRoles(currentUser.id)
@@ -209,30 +242,94 @@ const changeUserRole = async () => {
               school = currentUser.role.school
               schoolId.value = school.id.toString()
               periodId.value = currentUser.role.period.id.toString()
-              console.log(periodId.value)
+              if (currentUser.role.role === SchoolRole.TEACHER) {
+                  subjectWithSchoolClassInformation = await fetchAllSubjectsTaughtByTeacher(currentUser.id, periodId.value, schoolId.value)
+              } else {
+                  subjectWithSchoolClassInformation = []
+              }
               await router.push({path: '/'})
           }
   )
 }
 const resetUserPassword = () => {
-  quasar.dialog({
-    component: PasswordChangeDialog,
-  }).onOk(async (payload) => {
+    quasar.dialog({
+        component: PasswordChangeDialog,
+    }).onOk(async (payload) => {
 
-  })
+    })
 }
+
 const left = $ref(true)
+
+const expansionItemsList = $computed(() =>
+        [{label: 'Предмети', icon: "reorder", items: subjectWithSchoolClassInformation}]
+)
 const pages = $computed(() => [
-    {to: `/administration-page/${periodId.value}/${schoolId.value}`, label: "Администрация", show: true},
-    {to: `/school-page/${schoolId.value}`, label: "Училище", show: true},
-    {to: `/users/${periodId.value}/${schoolId.value}/all`, label: "Потребители", show: true},
-    {to: `/requests/${periodId.value}/${schoolId.value}/user-requests`, label: "Заявки", show: true},
-    {to: `/school-classes/${periodId.value}/${schoolId.value}`, label: "Класове", show: true},
-    {to: `/school-classes-plans/${schoolId.value}/${periodId.value}`, label: "Учебни планове", show: true},
-    {to: `/calendar`, label: "Учебен Календар", show: true},
-    {to: `/program`, label: "Седмичен разпис", show: true},
-    {to: `/statistics/${periodId.value}/${schoolId.value}`, label: "Статистики", show: true},
-    {to: `/school-statistics/${periodId.value}/${schoolId.value}`, label: "Статистики на училището", show: true}
+    {
+        to: `/user/${currentUser.id}/${periodId.value}/${schoolId.value}`,
+        label: "Лична информация",
+        show: true,
+        icon: 'person'
+    },
+    {
+        to: `/student-diary/${((currentUser.role.detailsForUser as DetailsForParent)?.child?.role.detailsForUser as DetailsForStudent)?.schoolClass?.id}/${(currentUser.role.detailsForUser as DetailsForParent)?.child?.id}/${periodId.value}/${schoolId.value}/grades`,
+        label: "Дневник",
+        show: currentUserHasAnyRole([SchoolRole.PARENT]),
+        icon: 'menu_book'
+    },
+    {
+        to: `/teacher-lessons/${periodId.value}/${schoolId.value}/${currentUser.id}`,
+        label: "Моята програма",
+        show: currentUserHasAnyRole([SchoolRole.TEACHER]),
+        icon: 'event_note'
+    },
+    {
+        to: `/student-diary/${(currentUser.role.detailsForUser as DetailsForStudent)?.schoolClass?.id}/${currentUser.id}/${periodId.value}/${schoolId.value}/grades`,
+        label: "Дневник",
+        show: currentUserHasAnyRole([SchoolRole.STUDENT]),
+        icon: 'menu_book'
+    },
+    {
+        to: `/administration-page/${periodId.value}/${schoolId.value}`,
+        label: "Администрация",
+        show: currentUserHasAnyRole([SchoolRole.ADMIN]),
+        icon: 'admin_panel_settings'
+    },
+    {to: `/school-page/${schoolId.value}`, label: "Училище", show: true, icon: 'account_balance'},
+    {to: `/users/${periodId.value}/${schoolId.value}/all`, label: "Потребители", show: true, icon: 'people'},
+    {
+        to: `/requests/${periodId.value}/${schoolId.value}/user-requests`,
+        label: "Заявки",
+        show: currentUserHasAnyRole([SchoolRole.ADMIN]),
+        icon: 'checklist'
+    },
+    {
+        to: `/school-classes/${periodId.value}/${schoolId.value}`,
+        label: "Класове",
+        show: currentUserHasAnyRole([SchoolRole.ADMIN, SchoolRole.TEACHER]),
+        icon: 'school'
+    },
+    {
+        to: `/school-classes-plans/${schoolId.value}/${periodId.value}`,
+        label: "Учебни планове",
+        show: currentUserHasAnyRole([SchoolRole.ADMIN, SchoolRole.TEACHER]
+        ),
+        icon: 'description'
+    },
+    {to: `/calendar`, label: "Учебен Календар", show: true, icon: 'calendar_month'},
+    {
+        to: `/program`,
+        label: "Учебна програма",
+        show: currentUserHasAnyRole([SchoolRole.ADMIN, SchoolRole.TEACHER]),
+        icon: 'date_range'
+    },
+    {
+        to: `/school-lessons-page/${periodId.value}/${schoolId.value}`,
+        label: "Седмични разписи",
+        show: currentUserHasAnyRole([SchoolRole.ADMIN, SchoolRole.TEACHER]),
+        icon: 'event_note'
+    },
+
 ])
 
 </script>

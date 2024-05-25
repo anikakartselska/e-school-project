@@ -5,10 +5,12 @@
           <q-page class="page-content" padding>
               <div class="text-h4">
                   Календар
-                  <q-btn v-if="calendar" class="q-mr-xs" color="primary" flat
+                  <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN]) && calendar" class="q-mr-xs" color="primary"
+                         flat
                          icon="edit" round
                          @click="updateCalendar()"/>
-                  <q-btn v-else class="q-mr-xs" color="negative" flat icon="add" round
+                  <q-btn v-else-if="currentUserHasAnyRole([SchoolRole.ADMIN])" class="q-mr-xs" color="negative" flat
+                         icon="add" round
                          @click="createCalendar()"/>
               </div>
               <span v-if="!calendar" class="text-negative">Училището все още няма календар за текущата година</span>
@@ -95,6 +97,8 @@ import {watch} from "vue";
 import {date, useQuasar} from "quasar";
 import CalendarEditDialog from "./dialogs/calendar-edit-dialog.vue";
 import {Calendar} from "../../model/Calendar";
+import {currentUserHasAnyRole} from "../../services/LocalStorageService";
+import {SchoolRole} from "../../model/User";
 
 const props = defineProps<{
     periodId: number,
@@ -141,26 +145,26 @@ const createCalendar = async () => quasar.dialog({
 })
 let title = $ref<string | null>(null)
 watch(() => selectedDate, () => {
-    title = ''
-    if (selectedDate == null) {
-        title = null
-    } else {
-        if (selectedDate == formatWithDash(calendar?.beginningOfYear ? calendar?.beginningOfYear : null)) {
-            title = title + `Първи учебен ден<br>`
-        } else if (selectedDate == formatWithDash(calendar?.beginningOfSecondSemester ? calendar?.beginningOfSecondSemester : null)) {
-            title = title + `Начало на втори срок<br>`
-        } else if (selectedDate == formatWithDash(calendar?.endOfFirstSemester ? calendar.endOfFirstSemester : null)) {
-            title = title + `Край на първи срок<br>`
-        } else if ((calendar?.classToEndOfYearDate ? Object.values(calendar?.classToEndOfYearDate) : []).map(it => formatWithDash(it)).includes(selectedDate)) {
-            const selectedDateClass = (calendar?.classToEndOfYearDate ? Object.entries(calendar?.classToEndOfYearDate) : []).filter(it => selectedDate == formatWithDash(it[1]))!!
-            title = title + `Последен учебен ден за ${selectedDateClass.map(it => it[0])} клас<br>`
-        } else if (vacations.includes(selectedDate)) {
-            title = title!! + calendar?.restDays.concat(calendar.examDays).filter(it => isDateInRange(selectedDate!!, it.from, it.to))
-                    .map(it => `${it.holidayName}<br>`)
-        } else {
-            title = null
-        }
-          }
+            title = ''
+            if (selectedDate == null) {
+                title = null
+            } else {
+                if (selectedDate == formatWithDash(calendar?.beginningOfYear ? calendar?.beginningOfYear : null)) {
+                    title = title + `Първи учебен ден<br>`
+                } else if (selectedDate == formatWithDash(calendar?.beginningOfSecondSemester ? calendar?.beginningOfSecondSemester : null)) {
+                    title = title + `Начало на втори срок<br>`
+                } else if (selectedDate == formatWithDash(calendar?.endOfFirstSemester ? calendar.endOfFirstSemester : null)) {
+                    title = title + `Край на първи срок<br>`
+                } else if ((calendar?.classToEndOfYearDate ? Object.values(calendar?.classToEndOfYearDate) : []).map(it => formatWithDash(it)).includes(selectedDate)) {
+                    const selectedDateClass = (calendar?.classToEndOfYearDate ? Object.entries(calendar?.classToEndOfYearDate) : []).filter(it => selectedDate == formatWithDash(it[1]))!!
+                    title = title + `Последен учебен ден за ${selectedDateClass.map(it => it[0])} клас<br>`
+                } else if (vacations.includes(selectedDate)) {
+                    title = title!! + calendar?.restDays.concat(calendar.examDays).filter(it => isDateInRange(selectedDate!!, it.from, it.to))
+                            .map(it => `${it.holidayName}<br>`)
+                } else {
+                    title = null
+                }
+            }
         }
 )
 

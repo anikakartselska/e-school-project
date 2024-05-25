@@ -1,52 +1,61 @@
 <template>
-  <div>
-    <div class="row">
-      <q-select v-model="selectedWeek"
-                :option-label="(option:Week) => `Седмица ${option.weekNumber} (${formatToBulgarian(option.startDate)} - ${formatToBulgarian(option.endDate)})`"
-                :options="weekOptions"
-                label="Седмица"
+    <div class="bg-sms row">
+        <div class="col-2"></div>
+        <div class="col-8">
+            <q-page class="page-content" padding>
+                <div class="row">
+                    <div class="text-h6">
+                        Седмична програма
+                    </div>
+                    <q-space/>
+                    <q-select v-model="selectedWeek"
+                              :option-label="(option:Week) => `Седмица ${option.weekNumber} (${formatToBulgarian(option.startDate)} - ${formatToBulgarian(option.endDate)})`"
+                              :options="weekOptions"
+                              label="Седмица"
 
-      />
-    </div>
-    <q-separator/>
-    <div class="row">
-      <div v-for="day in Object.keys(WorkingDays)" class="col-2 q-ma-sm">
-        <div class=" text-center text-primary text-h6">
-          {{ workingDaysTranslation.get(day) }}
-        </div>
-        <q-card v-for="lesson in schoolLessonsGroupedByDay.get(WorkingDays[day])"
-                :class="schoolLessonClass(lesson)"
-                class="q-mb-sm my-box cursor-pointer q-hoverable"
-                style="height: 16vh" @click="reRouteToLessonPage(lesson.id)">
-          <q-card-section>
+                    />
+                </div>
+                <q-separator/>
+                <div class="row">
+                    <div v-for="day in Object.keys(WorkingDays)" class="col-2 q-ma-sm">
+                        <div class=" text-center text-primary text-h6">
+                            {{ workingDaysTranslation.get(day) }}
+                        </div>
+                        <q-card v-for="lesson in schoolLessonsGroupedByDay.get(WorkingDays[day])"
+                                :class="schoolLessonClass(lesson)"
+                                class="q-mb-sm my-box cursor-pointer q-hoverable"
+                                style="height: 16vh" @click="reRouteToLessonPage(lesson.id)">
+                            <q-card-section>
               <span v-if="lesson.status !== SchoolLessonStatus.NORMAL" class="text-primary text-bold">
                   {{ translationOfSchoolLessonStatus[lesson.status] }}
                   <br>
               </span>
-            Предмет:<span class="text-primary">
+                                Предмет:<span class="text-primary">
                       {{
-              lesson.subject.name
-            }}</span><br>
-            Учител:<span class="text-primary">
+                                lesson.subject.name
+                                }}</span><br>
+                                Учител:<span class="text-primary">
                       {{ lesson.subject.teacher?.firstName }} {{ lesson.subject.teacher?.lastName }}</span>
-            <br>
-            Стая:<span class="text-primary">
+                                <br>
+                                Стая:<span class="text-primary">
                       {{ lesson.room.room }}
           </span>
-            <br>
-            Час на провеждане: <span class="text-primary">
+                                <br>
+                                Час на провеждане: <span class="text-primary">
               {{ formatTime(lesson.startTimeOfLesson) }} - {{ formatTime(lesson.endTimeOfLesson) }}
           </span>
-          </q-card-section>
-        </q-card>
-        <q-card v-if="schoolLessonsGroupedByDay.get(WorkingDays[day]).length === 0"
-                class="q-mb-sm my-box cursor-pointer q-hoverable"
-                style="height: 16vh">
-          <q-card-section>
-            <span class="text-primary" v-html="defineDate(day)"/>
-          </q-card-section>
-        </q-card>
-      </div>
+                            </q-card-section>
+                        </q-card>
+                        <q-card v-if="schoolLessonsGroupedByDay.get(WorkingDays[day]).length === 0"
+                                class="q-mb-sm my-box cursor-pointer q-hoverable"
+                                style="height: 16vh">
+                            <q-card-section>
+                                <span class="text-primary" v-html="defineDate(day)"/>
+                            </q-card-section>
+                        </q-card>
+                    </div>
+                </div>
+            </q-page>
     </div>
   </div>
 </template>
@@ -142,13 +151,17 @@ const reRouteToLessonPage = async (lessonId) => await router.push(`/school-lesso
 
 <style scoped>
 .q-card:hover {
-  background-color: #cce3f8; /* Light grey when hovered in light mode */
+    background-color: #cce3f8; /* Light grey when hovered in light mode */
 }
 
 /* Dark mode specific hover background */
 .body--dark
 .q-card:hover {
-  background-color: #003038; /* Darker grey when hovered in dark mode */
+    background-color: #003038; /* Darker grey when hovered in dark mode */
+}
+
+.page-content {
+    box-shadow: 0 30px 25px rgba(0, 0, 0, 0.4);
 }
 
 </style>

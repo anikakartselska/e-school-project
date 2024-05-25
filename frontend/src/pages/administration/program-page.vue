@@ -4,7 +4,7 @@
     <div class="col-10">
       <q-page class="page-content" padding>
           <div class="text-h4">
-              Седмичен разпис
+              Учебна програма
           </div>
           <school-program-component :period-id="props.periodId" :school-id="props.schoolId"/>
       </q-page>

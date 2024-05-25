@@ -147,7 +147,7 @@
 
 import {countFeedbacksSum, feedbacksMap} from "../../../services/helper-services/EvaluationService";
 import {Evaluation, EvaluationType} from "../../../model/Evaluation";
-import {StudentView} from "../../../model/User";
+import {SchoolRole, StudentView} from "../../../model/User";
 import {Subject} from "../../../model/Subject";
 import {Semester} from "../../../model/SchoolPeriod";
 import {useQuasar} from "quasar";
@@ -157,13 +157,14 @@ import {$ref} from "vue/macros";
 import {watch} from "vue";
 import {deleteEvaluation, saveEvaluation, updateEvaluation} from "../../../services/RequestService";
 import EvaluationCreateDialog from "../dialogs/evaluation-create-dialog.vue";
-import {getCurrentUserAsUserView} from "../../../services/LocalStorageService";
+import {currentUserHasAnyRole, getCurrentUserAsUserView} from "../../../services/LocalStorageService";
+import {Pair} from "../../../model/Pair";
 
 const props = defineProps<{
-    students: StudentView[],
-    subjects: Subject[],
-    feedbacks: any
-    semester: Semester
+  students: StudentView[],
+  subjects: Subject[],
+  feedbacks: any
+  semester: Semester
 }>()
 let currentFeedbacks = $ref<any>({...props.feedbacks});
 let rows = $ref([])
@@ -254,7 +255,7 @@ const updateEvaluationDialog = (evaluation: Evaluation) => {
             evaluation: evaluation,
             periodId: periodId.value,
             schoolId: schoolId.value,
-            readonly: false
+          readonly: currentUserHasAnyRole([SchoolRole.PARENT, SchoolRole.STUDENT])
         },
     }).onOk(async (payload) => {
         const updatedFeedback = payload.item.evaluation as Evaluation

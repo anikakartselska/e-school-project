@@ -1,5 +1,5 @@
 export interface StudentStatistics {
-    success: number,
+    success: number | null,
     grades: number,
     absences: number,
     feedback: number,

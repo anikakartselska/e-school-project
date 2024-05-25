@@ -20,26 +20,27 @@
           </q-td>
         </template>
         <template v-slot:body-cell-main-teacher="props">
-            <q-td :props="props">
-                <router-link :to="`/user/${props.value.id}/${periodId}/${schoolId}`"
-                             active-class="text-negative" class="text-primary" exact-active-class="text-negative">
-                    {{ props.value.firstName }} {{ props.value.lastName }}
-                    <q-tooltip>
-                        Кликни за повече детайли
-                    </q-tooltip>
-                </router-link>
-            </q-td>
+          <q-td :props="props">
+            <router-link :to="`/user/${props.value.id}/${periodId}/${schoolId}`"
+                         active-class="text-negative" class="text-primary" exact-active-class="text-negative">
+              {{ props.value.firstName }} {{ props.value.lastName }}
+              <q-tooltip>
+                Кликни за повече детайли
+              </q-tooltip>
+            </router-link>
+          </q-td>
         </template>
-          <template v-slot:top-right="props">
-              <q-btn class="q-ml-md" color="primary" icon="add" outline round @click="addNewSchoolClass">
-                <q-tooltip>Добави нов</q-tooltip>
-              </q-btn>
-              <q-input v-model="filter" debounce="300" dense outlined placeholder="Търсене">
-                  <template v-slot:append>
-                      <q-icon name="search"/>
-                  </template>
-              </q-input>
-          </template>
+        <template v-slot:top-right="props">
+          <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN])" class="q-ml-md" color="primary" icon="add" outline
+                 round @click="addNewSchoolClass">
+            <q-tooltip>Добави нов</q-tooltip>
+          </q-btn>
+          <q-input v-model="filter" debounce="300" dense outlined placeholder="Търсене">
+            <template v-slot:append>
+              <q-icon name="search"/>
+            </template>
+          </q-input>
+        </template>
       </q-table>
     </q-card>
   </q-page>
@@ -57,36 +58,39 @@ import {SchoolClass} from "../../model/SchoolClass";
 import {periodId} from "../../model/constants";
 import {useQuasar} from "quasar";
 import SchoolClassAddDialog from "./dialogs/school-class-add-dialog.vue";
+import {currentUserHasAnyRole} from "../../services/LocalStorageService";
+import {SchoolRole} from "../../model/User";
+import {Pair} from "../../model/Pair";
 
 const props = defineProps<{
-    periodId: number,
-    schoolId: number
+  periodId: number,
+  schoolId: number
 }>()
 const quasar = useQuasar()
 const router = useRouter()
 const schoolClasses = $ref(await getSchoolClassesFromSchool(props.schoolId, props.periodId))
 const openSchoolClass = (schoolClass: SchoolClass) => {
-    router.push({
-        path: `/school-class/${props.periodId}/${props.schoolId}/${schoolClass.id}/students`,
-    });
+  router.push({
+    path: `/school-class/${props.periodId}/${props.schoolId}/${schoolClass.id}/students`,
+  });
 }
 
 
 const addNewSchoolClass = async () =>
         quasar.dialog({
-            component: SchoolClassAddDialog,
-            componentProps: {
-                schoolClass: <SchoolClass>{schoolPeriodId: props.periodId, schoolId: props.schoolId},
-                alreadyExistingSchoolClasses: schoolClasses,
-                teacherOptions: await getAllTeachersThatDoNotHaveSchoolClass(props.schoolId, props.periodId)
-            },
+          component: SchoolClassAddDialog,
+          componentProps: {
+            schoolClass: <SchoolClass>{schoolPeriodId: props.periodId, schoolId: props.schoolId},
+            alreadyExistingSchoolClasses: schoolClasses,
+            teacherOptions: await getAllTeachersThatDoNotHaveSchoolClass(props.schoolId, props.periodId)
+          },
         }).onOk(async (payload) => {
-            const schoolClassToStudentsFile = payload.item as Pair<SchoolClass, Blob>
-            await saveSchoolClass(schoolClassToStudentsFile.first, schoolClassToStudentsFile.second).then(e => {
-                        schoolClassToStudentsFile.first.id = e.data
-                        schoolClasses.push(schoolClassToStudentsFile.first)
-                    }
-            )
+          const schoolClassToStudentsFile = payload.item as Pair<SchoolClass, Blob>
+          await saveSchoolClass(schoolClassToStudentsFile.first, schoolClassToStudentsFile.second).then(e => {
+                    schoolClassToStudentsFile.first.id = e.data
+                    schoolClasses.push(schoolClassToStudentsFile.first)
+                  }
+          )
 
         })
 

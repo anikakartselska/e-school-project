@@ -16,7 +16,8 @@
           <div class="text-h6">
             <span class="text-primary">Име на учебния план: </span>
             {{ plan?.name }}
-            <q-btn color="primary" dense flat icon="edit" @click="updateSchoolPlan(plan)">
+            <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN])" color="primary" dense flat icon="edit"
+                   @click="updateSchoolPlan(plan)">
             </q-btn>
           </div>
           <div class="text-h6">
@@ -26,26 +27,30 @@
         </template>
         <template v-slot:top-right>
           <div class="q-pr-xs">
-            <q-btn color="secondary" icon="add" label="Добави нов предмет"
+            <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN])" color="secondary" icon="add"
+                   label="Добави нов предмет"
                    outline rounded @click="addNewSubjectAndClassesCount()">
             </q-btn>
           </div>
           <div class="q-pr-xs">
-            <q-btn color="primary" icon="save" label="Запази промените"
+            <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN])" color="primary" icon="save" label="Запази промените"
                    outline rounded @click="save()">
             </q-btn>
           </div>
           <div>
-            <q-btn color="negative" icon="restart_alt" label="Върни промените"
+            <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN])" color="negative" icon="restart_alt"
+                   label="Върни промените"
                    outline rounded @click="reset()">
             </q-btn>
           </div>
         </template>
         <template v-slot:body-cell-edit="props">
           <q-td>
-            <q-btn color="primary" dense flat icon="edit" @click="updateSubjectAndClassesCount(props.row)">
+            <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN])" color="primary" dense flat icon="edit"
+                   @click="updateSubjectAndClassesCount(props.row)">
             </q-btn>
-            <q-btn color="negative" dense flat icon="delete" @click="deleteSubjectAndClassesCount(props.row)">
+            <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN])" color="negative" dense flat icon="delete"
+                   @click="deleteSubjectAndClassesCount(props.row)">
             </q-btn>
           </q-td>
         </template>
@@ -69,6 +74,8 @@ import {SchoolPlanForClasses} from "../../model/SchoolPlanForClasses";
 import SchoolPlanAddDialog from "./dialogs/school-plan-add-dialog.vue";
 import SubjectAndClassesCountCreateUpdateDialog from "./dialogs/subject-and-classes-count-create-update-dialog.vue";
 import {cloneDeep} from "lodash-es";
+import {currentUserHasAnyRole} from "../../services/LocalStorageService";
+import {SchoolRole} from "../../model/User";
 
 
 const props = defineProps<{

@@ -3,7 +3,7 @@ import {StudentView} from "./User";
 import {Pair} from "./Pair";
 
 export interface SchoolStatistics {
-    success: number,
+    success: number | null,
     grades: number,
     absences: number,
     feedback: number,

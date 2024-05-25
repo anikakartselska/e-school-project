@@ -3,7 +3,7 @@ package com.nevexis.backend.schoolManagement.statistics
 import java.math.BigDecimal
 
 data class StudentStatistics(
-    val success: BigDecimal,
+    val success: BigDecimal? = null,
     val grades: Int,
     val absences: Int,
     val feedback: Int,

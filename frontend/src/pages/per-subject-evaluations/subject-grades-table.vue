@@ -10,8 +10,9 @@
           title="Оценки"
   >
     <template v-slot:top-right>
-      <q-btn class="q-mr-sm" color="secondary" icon="add" label="Добави оценка" outline @click="addEvaluationDialog()"/>
-      <q-btn v-if="semester !== Semester.YEARLY"
+      <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])" class="q-mr-sm" color="secondary"
+             icon="add" label="Добави оценка" outline @click="addEvaluationDialog()"/>
+      <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER]) && semester !== Semester.YEARLY"
              color="primary"
              icon="add_circle_outline"
              label="Добави оценки за повече ученици"
@@ -24,6 +25,7 @@
              label="Оформи успех"
              outline
              @click="addNewGrades(true)"
+             v-if="currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])"
       />
     </template>
     <template v-slot:body-cell-grades="props">
@@ -90,7 +92,7 @@ import {Semester} from "../../model/SchoolPeriod";
 import {Evaluation, EvaluationType} from "../../model/Evaluation";
 import {useQuasar} from "quasar";
 import AddGradesDialog from "./add-grades-dialog.vue";
-import {StudentView} from "../../model/User";
+import {SchoolRole, StudentView} from "../../model/User";
 import {Subject} from "../../model/Subject";
 import {deleteEvaluation, saveEvaluation, saveEvaluations, updateEvaluation} from "../../services/RequestService";
 import {periodId, schoolId} from "../../model/constants";
@@ -98,7 +100,7 @@ import {SchoolLesson} from "../../model/SchoolLesson";
 import {commentPromiseDialog} from "../../utils";
 import EvaluationDialog from "../school-class/dialogs/evaluation-delete-update-dialog.vue";
 import EvaluationCreateDialog from "../school-class/dialogs/evaluation-create-dialog.vue";
-import {getCurrentUserAsUserView} from "../../services/LocalStorageService";
+import {currentUserHasAnyRole, getCurrentUserAsUserView} from "../../services/LocalStorageService";
 
 const props = defineProps<{
     evaluations: StudentWithEvaluationDTO[],
@@ -148,7 +150,7 @@ const updateEvaluationDialog = (evaluation: Evaluation) => {
             evaluation: evaluation,
             periodId: periodId.value,
             schoolId: schoolId.value,
-            readonly: false
+          readonly: currentUserHasAnyRole([SchoolRole.PARENT, SchoolRole.STUDENT])
         },
     }).onOk(async (payload) => {
         const updatedGrades = payload.item.evaluation as Evaluation

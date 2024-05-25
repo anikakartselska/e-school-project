@@ -5,7 +5,8 @@
         <div class="col-3"></div>
         <q-separator class="q-ma-sm" vertical/>
         <div class="col q-pb-sm">
-          <q-btn class="float-right q-ma-sm" color="primary" icon="edit" round @click="updateLesson"/>
+          <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])"
+                 class="float-right q-ma-sm" color="primary" icon="edit" round @click="updateLesson"/>
           <div class="text-h6 q-pb-lg q-pt-sm">
             Информация за урока
           </div>
@@ -32,7 +33,7 @@
           }}</span><br>
           Стая: <span class="text-primary">{{
             currentLesson?.room?.room
-            }}</span><br>
+          }}</span><br>
           Час на провеждане: <span class="text-primary">{{
             `${dateTimeToBulgarianLocaleString(currentLesson?.startTimeOfLesson)} - ${dateTimeToBulgarianLocaleString(currentLesson?.endTimeOfLesson)}`
           }}</span><br>
@@ -64,6 +65,8 @@ import {
 import {useQuasar} from "quasar";
 import SchoolLessonEditDialog from "./school-lesson-edit-dialog.vue";
 import {$ref} from "vue/macros";
+import {currentUserHasAnyRole} from "../../services/LocalStorageService";
+import {SchoolRole} from "../../model/User";
 
 const props = defineProps<{
   lesson: SchoolLesson

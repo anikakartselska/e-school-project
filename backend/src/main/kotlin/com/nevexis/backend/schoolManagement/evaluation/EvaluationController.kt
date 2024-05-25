@@ -31,7 +31,6 @@ class EvaluationController {
     ) = evaluationService.getAllEvaluationsForStudent(studentId, periodId, schoolId, schoolClassId)
 
 
-    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @PostMapping("/get-evaluation-for-subject-and-school-class")
     suspend fun getEvaluationForSubjectAndSchoolClass(
         @RequestParam subjectId: BigDecimal,

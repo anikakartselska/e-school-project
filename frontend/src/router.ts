@@ -1,6 +1,5 @@
 import MainPage from './pages/MainPage.vue'
 import Home from './pages/Home.vue'
-import Component from './pages/Component.vue'
 import {createRouter, createWebHistory} from "vue-router";
 import UsersPage from "./pages/user/users-page.vue";
 import UserPage from "./pages/user/user-page.vue";
@@ -11,7 +10,7 @@ import StudentSubjectsAndEvaluation from "./pages/per-student-evaluations/studen
 import LoginSingIn from "./pages/login-signin.vue";
 import LoginTab from "./pages/login-tab.vue";
 import SignInTab from "./pages/sign-in-tab.vue";
-import {userHasLoggedInSchoolAndPeriod, userIsLoggedIn} from "./services/LocalStorageService";
+import {currentUserHasAnyRole, userHasLoggedInSchoolAndPeriod, userIsLoggedIn} from "./services/LocalStorageService";
 import RequestsPage from "./pages/requests/requests-page.vue";
 import {periodId, schoolId} from "./model/constants";
 import UserRequestsTab from "./pages/requests/user-requests-tab.vue";
@@ -49,6 +48,8 @@ import SchoolStatisticsPage from "./pages/statistics/school-statistics-page.vue"
 import AdministrationScreen from "./pages/administration/administration-screen.vue";
 import SchoolClassYearlyResultsTab from "./pages/school-class/school-class-yearly-results-tab.vue";
 import StudentYearlyResults from "./pages/per-student-evaluations/student-yearly-results.vue";
+import {SchoolRole} from "./model/User";
+import SchoolLessonsPageForAllClasses from "./pages/administration/school-lessons-page-for-all-classes.vue";
 
 const routes = [
     {
@@ -75,7 +76,6 @@ const routes = [
         },
         children: [
             {path: '/home/:periodId(\\d+)/:schoolId(\\d+)', component: Home, props: true},
-            {path: '/component/:year(\\d+)/:month(\\d+)', component: Component, props: true},
             {
                 path: '/users/:periodId(\\d+)/:schoolId(\\d+)',
                 component: UsersPage,
@@ -108,13 +108,21 @@ const routes = [
                 path: '/school-statistics/:periodId(\\d+)/:schoolId(\\d+)',
                 name: 'school-statistics',
                 component: SchoolStatisticsPage,
-                props: true
+                props: true,
+                beforeEnter: (to, from, next) => {
+                    if (!currentUserHasAnyRole([SchoolRole.TEACHER, SchoolRole.ADMIN])) return next('/unauthorized')
+                    return next()
+                },
             },
             {
                 path: '/school-classes/:periodId(\\d+)/:schoolId(\\d+)',
                 name: 'school-classes',
                 component: SchoolClassesPage,
-                props: true
+                props: true,
+                beforeEnter: (to, from, next) => {
+                    if (!currentUserHasAnyRole([SchoolRole.TEACHER, SchoolRole.ADMIN])) return next('/unauthorized')
+                    return next()
+                }
             },
             {
                 path: '/administration-page/:periodId(\\d+)/:schoolId(\\d+)',
@@ -122,7 +130,7 @@ const routes = [
                 component: AdministrationScreen,
                 props: true,
                 beforeEnter: (to, from, next) => {
-                    if (!userHasLoggedInSchoolAndPeriod(to.params)) return next('/unauthorized')
+                    if (!userHasLoggedInSchoolAndPeriod(to.params) || !currentUserHasAnyRole([SchoolRole.ADMIN])) return next('/unauthorized')
                     return next()
                 },
             },
@@ -140,13 +148,21 @@ const routes = [
                 path: '/school-class-plan/:schoolId(\\d+)/:periodId(\\d+)/:schoolPlanId(\\d+)',
                 name: 'school-class-plan',
                 component: SchoolClassesPlanPage,
-                props: true
+                props: true,
+                beforeEnter: (to, from, next) => {
+                    if (!currentUserHasAnyRole([SchoolRole.TEACHER, SchoolRole.ADMIN])) return next('/unauthorized')
+                    return next()
+                }
             },
             {
                 path: '/school-classes-plans/:schoolId(\\d+)/:periodId(\\d+)',
                 name: 'school-class-plans',
                 component: SchoolClassesPlansPage,
-                props: true
+                props: true,
+                beforeEnter: (to, from, next) => {
+                    if (!currentUserHasAnyRole([SchoolRole.TEACHER, SchoolRole.ADMIN])) return next('/unauthorized')
+                    return next()
+                }
             },
             {
                 path: '/school-class/:periodId/:schoolId/:schoolClassId',
@@ -199,6 +215,10 @@ const routes = [
                         component: SchoolClassYearlyResultsTab
                     },
                 ],
+                beforeEnter: (to, from, next) => {
+                    if (!currentUserHasAnyRole([SchoolRole.TEACHER, SchoolRole.ADMIN])) return next('/unauthorized')
+                    return next()
+                }
             },
             {
                 path: '/calendar/:periodId(\\d+)/:schoolId(\\d+)',
@@ -210,13 +230,31 @@ const routes = [
                 path: '/teacher-lessons/:periodId(\\d+)/:schoolId(\\d+)/:teacherId(\\d+)',
                 component: TeacherLessonsPage,
                 name: 'teacher-lessons',
-                props: true
+                props: true,
+                beforeEnter: (to, from, next) => {
+                    if (!currentUserHasAnyRole([SchoolRole.TEACHER, SchoolRole.ADMIN])) return next('/unauthorized')
+                    return next()
+                }
             },
             {
                 path: '/program/:periodId(\\d+)/:schoolId(\\d+)',
                 component: ProgramPage,
                 name: 'program',
-                props: true
+                props: true,
+                beforeEnter: (to, from, next) => {
+                    if (!currentUserHasAnyRole([SchoolRole.TEACHER, SchoolRole.ADMIN])) return next('/unauthorized')
+                    return next()
+                }
+            },
+            {
+                path: '/school-lessons-page/:periodId(\\d+)/:schoolId(\\d+)',
+                component: SchoolLessonsPageForAllClasses,
+                name: 'school-lessons-page',
+                props: true,
+                beforeEnter: (to, from, next) => {
+                    if (!currentUserHasAnyRole([SchoolRole.TEACHER, SchoolRole.ADMIN])) return next('/unauthorized')
+                    return next()
+                }
             },
             {
                 path: '/school-class',
@@ -281,6 +319,10 @@ const routes = [
                         component: SubjectFeedbackTab
                     }
                 ],
+                beforeEnter: (to, from, next) => {
+                    if (!currentUserHasAnyRole([SchoolRole.TEACHER, SchoolRole.ADMIN])) return next('/unauthorized')
+                    return next()
+                }
             },
             {
                 path: '/school-lesson/:periodId(\\d+)/:schoolId(\\d+)/:schoolLessonId(\\d+)',
@@ -337,10 +379,10 @@ const routes = [
                         component: RoleRequestsTab
                     }
                 ],
-            },
-            {
-                path: '/component',
-                redirect: to => ({path: `/component/${new Date().getFullYear()}/${new Date().getMonth()}`}),
+                beforeEnter: (to, from, next) => {
+                    if (!currentUserHasAnyRole([SchoolRole.ADMIN])) return next('/unauthorized')
+                    return next()
+                }
             },
             {
                 path: '/requests',

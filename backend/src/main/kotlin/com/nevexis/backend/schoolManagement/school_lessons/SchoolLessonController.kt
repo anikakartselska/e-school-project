@@ -42,7 +42,7 @@ class SchoolLessonController {
         @RequestParam semester: Semester
     ) = schoolLessonService.deleteSchoolLessonsAndTheTablesRelatedToIt(schoolId, periodId, semester)
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @GetMapping("/existing-school-lessons-for-semester")
     suspend fun checkExistingSchoolLessonsForSemester(
         @RequestParam schoolId: BigDecimal,

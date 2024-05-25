@@ -10,13 +10,15 @@
           title="Отзиви"
   >
     <template v-if="semester !== Semester.YEARLY" v-slot:top-right>
-      <q-btn class="q-mr-sm" color="secondary" icon="add" label="Добави отзив" outline @click="addEvaluationDialog()"/>
-      <q-btn color="primary"
-             icon="add_circle_outline"
-             label="Добави отзиви за повече ученици"
-             outline
-             @click="addNewFeedbacks()"
-      />
+        <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])" class="q-mr-sm" color="secondary"
+               icon="add" label="Добави отзив" outline @click="addEvaluationDialog()"/>
+        <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])"
+               color="primary"
+               icon="add_circle_outline"
+               label="Добави отзиви за повече ученици"
+               outline
+               @click="addNewFeedbacks()"
+        />
     </template>
     <template v-slot:header-cell-total="props">
       <q-th>
@@ -80,7 +82,6 @@
     </template>
   </q-table>
 </template>
-
 <script lang="ts" setup>
 import {$ref} from "vue/macros";
 import {StudentWithEvaluationDTO} from "../../model/StudentWithEvaluationDTO";
@@ -88,7 +89,7 @@ import {countFeedbacksSum, feedbacksMap} from "../../services/helper-services/Ev
 import {Semester} from "../../model/SchoolPeriod";
 import {Evaluation, EvaluationType} from "../../model/Evaluation";
 import {Subject} from "../../model/Subject";
-import {StudentView} from "../../model/User";
+import {SchoolRole, StudentView} from "../../model/User";
 import {deleteEvaluation, saveEvaluation, saveEvaluations, updateEvaluation} from "../../services/RequestService";
 import {periodId, schoolId} from "../../model/constants";
 import {useQuasar} from "quasar";
@@ -97,7 +98,8 @@ import {SchoolLesson} from "../../model/SchoolLesson";
 import {commentPromiseDialog} from "../../utils";
 import EvaluationDialog from "../school-class/dialogs/evaluation-delete-update-dialog.vue";
 import EvaluationCreateDialog from "../school-class/dialogs/evaluation-create-dialog.vue";
-import {getCurrentUserAsUserView} from "../../services/LocalStorageService";
+import {currentUserHasAnyRole, getCurrentUserAsUserView} from "../../services/LocalStorageService";
+//http://localhost:3000/school-lesson/1/1/83337/events
 
 const props = defineProps<{
     evaluations: StudentWithEvaluationDTO[],
@@ -148,7 +150,7 @@ const updateEvaluationDialog = (evaluation: Evaluation) => {
             evaluation: evaluation,
             periodId: periodId.value,
             schoolId: schoolId.value,
-            readonly: false
+            readonly: currentUserHasAnyRole([SchoolRole.PARENT, SchoolRole.STUDENT])
         },
     }).onOk(async (payload) => {
         const updatedFeedbacks = payload.item.evaluation as Evaluation
@@ -229,12 +231,12 @@ const columns = [
         name: "feedbacks",
         align: "center",
         label: "Отзиви",
-  },
-  {
-    name: "total",
-    align: "center",
-    label: "Общо"
-  }
+    },
+    {
+        name: "total",
+        align: "center",
+        label: "Общо"
+    }
 ]
 const visibleColumns = [...columns].filter(it => props.semester !== Semester.YEARLY || it.name != 'feedbacks').map(it => it.name)
 

@@ -393,7 +393,7 @@ class EvaluationService : BaseService(), Calculation {
         studentId: BigDecimal,
         schoolId: BigDecimal,
         periodId: BigDecimal
-    ): BigDecimal {
+    ): BigDecimal? {
         val grades = db.select(EVALUATION.EVALUATION_VALUE).from(EVALUATION)
             .where(EVALUATION.SCHOOL_ID.eq(schoolId))
             .and(EVALUATION.SCHOOL_PERIOD_ID.eq(periodId))
@@ -410,13 +410,19 @@ class EvaluationService : BaseService(), Calculation {
                 }
             }
 
-        return (grades.sumOf { it.grade.value } / grades.size.toBigDecimal()).setScale(2, RoundingMode.HALF_UP)
+        return grades.size.toBigDecimal()
+            .takeIf { it.compareTo(BigDecimal.ZERO) != 0 }?.let { gradesCount ->
+                (grades.sumOf { it.grade.value } / gradesCount).setScale(
+                    2,
+                    RoundingMode.HALF_UP
+                )
+            }
     }
 
     fun calculateAverageGradeForSchoolAndPeriod(
         schoolId: BigDecimal,
         periodId: BigDecimal
-    ): BigDecimal {
+    ): BigDecimal? {
         val grades = db.select(EVALUATION.EVALUATION_VALUE).from(EVALUATION)
             .where(EVALUATION.SCHOOL_ID.eq(schoolId))
             .and(EVALUATION.SCHOOL_PERIOD_ID.eq(periodId))
@@ -432,7 +438,13 @@ class EvaluationService : BaseService(), Calculation {
                 }
             }
 
-        return (grades.sumOf { it.grade.value } / grades.size.toBigDecimal()).setScale(2, RoundingMode.HALF_UP)
+        return grades.size.toBigDecimal()
+            .takeIf { it.compareTo(BigDecimal.ZERO) != 0 }?.let { gradesCount ->
+                (grades.sumOf { it.grade.value } / gradesCount).setScale(
+                    2,
+                    RoundingMode.HALF_UP
+                )
+            }
     }
 
     fun getEvaluationsCountForStudent(
