@@ -3,58 +3,8 @@
         <div class="col-2"></div>
         <div class="col-8">
             <q-page class="page-content" padding>
-                <div class="row">
-                    <div class="text-h6">
-                        Седмична програма
-                    </div>
-                    <q-space/>
-                    <q-select v-model="selectedWeek"
-                              :option-label="(option:Week) => `Седмица ${option.weekNumber} (${formatToBulgarian(option.startDate)} - ${formatToBulgarian(option.endDate)})`"
-                              :options="weekOptions"
-                              label="Седмица"
-
-                    />
-                </div>
-                <q-separator/>
-                <div class="row">
-                    <div v-for="day in Object.keys(WorkingDays)" class="col-2 q-ma-sm">
-                        <div class=" text-center text-primary text-h6">
-                            {{ workingDaysTranslation.get(day) }}
-                        </div>
-                        <q-card v-for="lesson in schoolLessonsGroupedByDay.get(WorkingDays[day])"
-                                :class="schoolLessonClass(lesson)"
-                                class="q-mb-sm my-box cursor-pointer q-hoverable"
-                                style="height: 16vh" @click="reRouteToLessonPage(lesson.id)">
-                            <q-card-section>
-              <span v-if="lesson.status !== SchoolLessonStatus.NORMAL" class="text-primary text-bold">
-                  {{ translationOfSchoolLessonStatus[lesson.status] }}
-                  <br>
-              </span>
-                                Предмет:<span class="text-primary">
-                      {{
-                                lesson.subject.name
-                                }}</span><br>
-                                Учител:<span class="text-primary">
-                      {{ lesson.subject.teacher?.firstName }} {{ lesson.subject.teacher?.lastName }}</span>
-                                <br>
-                                Стая:<span class="text-primary">
-                      {{ lesson.room.room }}
-          </span>
-                                <br>
-                                Час на провеждане: <span class="text-primary">
-              {{ formatTime(lesson.startTimeOfLesson) }} - {{ formatTime(lesson.endTimeOfLesson) }}
-          </span>
-                            </q-card-section>
-                        </q-card>
-                        <q-card v-if="schoolLessonsGroupedByDay.get(WorkingDays[day]).length === 0"
-                                class="q-mb-sm my-box cursor-pointer q-hoverable"
-                                style="height: 16vh">
-                            <q-card-section>
-                                <span class="text-primary" v-html="defineDate(day)"/>
-                            </q-card-section>
-                        </q-card>
-                    </div>
-                </div>
+                <teacher-school-lesson-component :period-id="periodId" :school-id="schoolId" :show-title="true"
+                                                 :teacher-id="teacherId"/>
             </q-page>
     </div>
   </div>
@@ -66,17 +16,18 @@ import {
     fetchSchoolCalendarForSchoolAndPeriod,
     fetchSchoolLessonsForTeacherWeekSchoolAndPeriod
 } from "../../services/RequestService";
-import {formatTime, formatToBulgarian, formatWithDash, getDatesInRange, isDateInRange} from "../../utils";
-import {WorkingDays, workingDaysOrderString, workingDaysTranslation} from "../../model/PlannedSchoolLesson";
+import {formatWithDash, getDatesInRange, isDateInRange} from "../../utils";
+import {WorkingDays, workingDaysOrderString} from "../../model/PlannedSchoolLesson";
 import {watch} from "vue";
 import {$ref} from "vue/macros";
-import {SchoolLesson, SchoolLessonStatus, translationOfSchoolLessonStatus} from "../../model/SchoolLesson";
+import {SchoolLesson, SchoolLessonStatus} from "../../model/SchoolLesson";
 import {useRouter} from "vue-router";
 import {date} from "quasar";
+import TeacherSchoolLessonComponent from "./teacher-school-lesson-component.vue";
 
 const props = defineProps<{
-  periodId: number,
-  schoolId: number,
+    periodId: number,
+    schoolId: number,
   teacherId: number
 }>()
 
