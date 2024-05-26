@@ -78,6 +78,7 @@ import {
 import {$ref} from "vue/macros";
 import {cloneDeep} from "lodash-es";
 import {watch} from "vue";
+import {confirmActionPromiseDialog} from "../../../utils";
 
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
@@ -98,10 +99,11 @@ watch(() => updatedStudentToYearlyResult.yearlyResults.result, () => {
     updatedStudentToYearlyResult.yearlyResults.resultAfterTakingResitExams = null
   }
 })
-const submit = () => {
-  onDialogOK({
-    item: updatedStudentToYearlyResult
-  })
+const submit = async () => {
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+    onDialogOK({
+        item: updatedStudentToYearlyResult
+    })
 }
 </script>
 

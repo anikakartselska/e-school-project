@@ -80,7 +80,7 @@
 import {useDialogPluginComponent, useQuasar} from "quasar";
 import {$ref} from "vue/macros";
 import {Calendar, DailySchedule, RestDay} from "../../../model/Calendar";
-import {formatToBulgarian, getRangeOf} from "../../../utils";
+import {confirmActionPromiseDialog, formatToBulgarian, getRangeOf} from "../../../utils";
 import RestOrExamDayAddDialog from "./rest-or-exam-day-add-dialog.vue";
 import {cloneDeep} from "lodash-es";
 import InputDatePicker from "../../common/input-date-picker.vue";
@@ -124,10 +124,11 @@ const deleteRestDay = (index) => {
 const deleteExamDay = (index) => {
     updatedCalendar.examDays.splice(index, 1)
 }
-const submit = () => {
+const submit = async () => {
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
     onDialogOK({
-    item: updatedCalendar
-  })
+        item: updatedCalendar
+    })
 }
 
 const updateRestDay = async (index, restDay) => quasar.dialog({

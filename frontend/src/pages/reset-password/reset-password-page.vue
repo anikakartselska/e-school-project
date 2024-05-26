@@ -56,7 +56,6 @@ const resetPassword = async () => {
     await resetPasswordRequest(email).then(async e => {
                 isEmailSent = e.data
                 if (isEmailSent === true) {
-
                     await router.push({path: "/login"})
                 } else {
                     notifyForError("Грешка при изпращането на имейл", "Възникна проблем при изпращането на имейл за промяна на паролата. Опитайте отново!", true)

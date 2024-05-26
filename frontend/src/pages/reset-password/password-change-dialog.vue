@@ -46,7 +46,7 @@ const oldPassword = $ref('')
 const submit = async () => {
   onDialogOK(
           await changeUserPasswordWithOldPasswordProvided(newPassword, oldPassword).then(async e =>
-                  await loginAfterSelectedRole(getCurrentUser().role.id!!, periodId.value)
+                  await loginAfterSelectedRole(getCurrentUser().role.id!!, +periodId.value)
           )
   )
 }

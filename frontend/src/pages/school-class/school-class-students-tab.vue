@@ -58,6 +58,7 @@ import {useQuasar} from "quasar";
 import SingleFilePicker from "../common/single-file-picker.vue";
 import {SchoolClass} from "../../model/SchoolClass";
 import {Subject} from "../../model/Subject";
+import {confirmActionPromiseDialog} from "../../utils";
 
 const props = defineProps<{
   periodId: number,
@@ -80,11 +81,13 @@ const openUser = (row: UserView) => {
   })
 }
 const addStudentsWithExcel = async () => {
-  await uploadUsersExcelFile(studentsFile, props.periodId, props.schoolId, SchoolRole.STUDENT, props.schoolClass.id)
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+    await uploadUsersExcelFile(studentsFile, props.periodId, props.schoolId, SchoolRole.STUDENT, props.schoolClass.id)
 }
 const syncSchoolClassNumbersInClass = async () => {
-  await syncNumbersInClass(props.schoolClass.id, props.periodId).then(async e =>
-          studentsFromSchoolClass = await getAllStudentsFromSchoolClass(props.schoolClass.id, props.periodId))
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+    await syncNumbersInClass(props.schoolClass.id, props.periodId).then(async e =>
+            studentsFromSchoolClass = await getAllStudentsFromSchoolClass(props.schoolClass.id, props.periodId))
 }
 const columns = [
   {name: 'edit'},

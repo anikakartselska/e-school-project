@@ -100,6 +100,7 @@
 <script lang="ts" setup>
 import {getCurrentUser, getCurrentUserAsUserView} from "../../services/LocalStorageService";
 import {
+    confirmActionPromiseDialog,
     formatToBulgarian,
     getRequestStatusColorClass,
     translationOfGender,
@@ -114,7 +115,8 @@ const props = defineProps<{
   request: Request
 }>()
 
-const resolveRequest = (request, requestStatus) => {
+const resolveRequest = async (request, requestStatus) => {
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
     onDialogOK({
         item: {
             ...request, requestStatus: requestStatus, resolvedByUser: getCurrentUserAsUserView(),

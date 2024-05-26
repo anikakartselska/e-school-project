@@ -12,25 +12,27 @@
             rows-per-page-label="Редове на страница"
             virtual-scroll
     >
-        <template
-                v-if="(tab === AssignmentType.EVENT || lesson!=null) && currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])"
-                v-slot:top-right>
-            <div class="q-pr-xs">
-                <q-btn color="secondary" icon="add"
-                       outline rounded @click="addNewAssignment()">
-                </q-btn>
-            </div>
-        </template>
-        <template v-slot:body-cell-edit="props">
-            <q-td>
-                <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])" color="primary" dense flat icon="edit"
-                       @click="updateAssignment(props.row)">
-                </q-btn>
-                <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])" color="negative" dense flat icon="delete"
-                       @click="deleteAssignment(props.row)">
-                </q-btn>
-            </q-td>
-        </template>
+      <template
+              v-if="(tab === AssignmentType.EVENT || lesson!=null) && currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])"
+              v-slot:top-right>
+        <div class="q-pr-xs">
+          <q-btn color="secondary" icon="add"
+                 outline rounded @click="addNewAssignment()">
+          </q-btn>
+        </div>
+      </template>
+      <template v-slot:body-cell-edit="props">
+        <q-td>
+          <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])" color="primary" dense flat
+                 icon="edit"
+                 @click="updateAssignment(props.row)">
+          </q-btn>
+          <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])" color="negative" dense flat
+                 icon="delete"
+                 @click="deleteAssignment(props.row)">
+          </q-btn>
+        </q-td>
+      </template>
     </q-table>
   </q-card>
   <q-separator/>
@@ -58,7 +60,7 @@ import AssignmentsEditCreateDialog from "../dialogs/assignments-edit-create-dial
 import {SchoolLesson} from "../../../model/SchoolLesson";
 import {currentUserHasAnyRole, getCurrentUserAsUserView} from "../../../services/LocalStorageService";
 import {watch} from "vue";
-import {dateTimeToBulgarianLocaleString} from "../../../utils";
+import {confirmActionPromiseDialog, dateTimeToBulgarianLocaleString} from "../../../utils";
 import {SchoolRole} from "../../../model/User";
 
 const props = defineProps<{
@@ -68,7 +70,7 @@ const props = defineProps<{
   assignments: Assignments[]
   tab: AssignmentType,
   semester: Semester,
-    lesson: SchoolLesson | null
+  lesson: SchoolLesson | null
 }>()
 
 let assignmentsFilteredByAssignmentTypeAndSemester = $ref([...props.assignments].filter(it => it.assignmentType === props.tab && it.semester === props.semester))
@@ -78,14 +80,14 @@ const school = $ref(await fetchSchoolById(props.schoolId))
 const addNewAssignment = () => {
   let assignmentValue;
   if (props.tab == AssignmentType.HOMEWORK) {
-      assignmentValue = <HomeworkValue>{homeworkLesson: props.lesson}
+    assignmentValue = <HomeworkValue>{homeworkLesson: props.lesson}
   } else if (props.tab == AssignmentType.EVENT) {
     assignmentValue = <EventValue>{
       from: '',
       to: ''
     }
   } else {
-      assignmentValue = <ExaminationValue>{lesson: props.lesson}
+    assignmentValue = <ExaminationValue>{lesson: props.lesson}
   }
   const assignment = <Assignments>{
     createdBy: getCurrentUserAsUserView(),
@@ -93,7 +95,6 @@ const addNewAssignment = () => {
     assignmentType: props.tab,
     assignmentValue: assignmentValue
   }
-  console.log(assignment)
   quasar.dialog({
     component: AssignmentsEditCreateDialog,
     componentProps: {
@@ -134,6 +135,7 @@ const updateAssignment = async (assignment: Assignments) => {
 }
 
 const deleteAssignment = async (assignment: Assignments) => {
+  await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
   await deleteAssignments(assignment, props.schoolClass.id, props.schoolId, props.periodId).then(r =>
           assignmentsFilteredByAssignmentTypeAndSemester = assignmentsFilteredByAssignmentTypeAndSemester.filter(it =>
                   it.id != assignment.id

@@ -209,10 +209,11 @@ const submitForDelete = async () => {
   })
 }
 
-const submit = () => {
-  onDialogOK({
-    item: {evaluation: updatedEvaluation, delete: false}
-  })
+const submit = async () => {
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+    onDialogOK({
+        item: {evaluation: updatedEvaluation, delete: false}
+    })
 }
 </script>
 

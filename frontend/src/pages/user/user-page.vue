@@ -105,16 +105,16 @@
                               <q-select v-if="isCurrentUser"
                                         v-model="selectedPeriod"
                                         :option-label="(option:SchoolPeriod) => `${option.startYear}/${option.endYear}`"
-                              :options="allSchoolPeriods"
-                              dense
-                              label="Учебна година"/>
-                  </div>
+                                        :options="allSchoolPeriods"
+                                        dense
+                                        label="Учебна година"/>
+                          </div>
 
-                  <div class="col-5">
-                    <q-btn v-if="!isNotCurrentUserAndNotAdmin" class="float-right" color="primary"
-                           icon="add"
-                           label="Заяви нова роля"
-                           outline rounded
+                          <div class="col-5">
+                              <q-btn v-if="!isNotCurrentUserAndNotAdmin" class="float-right" color="primary"
+                                     icon="add"
+                                     label="Заяви нова роля"
+                                     outline rounded
                            @click="addNewRole()"/>
                   </div>
                 </div>
@@ -232,21 +232,21 @@
                           </q-field>
                         </div>
                       </q-card-section>
-                      <q-card-section v-if="role.role===SchoolRole.PARENT">
-                        <div class="text-h4">Ученик</div>
-                          <q-btn :disable="role.status!==RequestStatus.APPROVED"
-                                 :to="`/student-diary/${role.detailsForUser.child.role.detailsForUser.schoolClass.id}/${role.detailsForUser.child.id}/${props.periodId}/${props.schoolId}/grades`"
-                                 label="Дневник"/>
-                        <q-field label="Име" readonly stack-label>
-                          <template v-slot:default>
-                            <router-link
-                                    :to="`/user/${role.detailsForUser.child.id}/${props.periodId}/${props.schoolId}`"
-                                    active-class="text-negative" class="text-primary"
-                                    exact-active-class="text-negative">
-                              {{ role.detailsForUser.child.firstName }}
-                              {{ role.detailsForUser.child.middleName }}
-                              {{ role.detailsForUser.child.lastName }}
-                            </router-link>
+                        <q-card-section v-if="role.role===SchoolRole.PARENT">
+                            <div class="text-h4">Ученик</div>
+                            <q-btn :disable="role.status!==RequestStatus.APPROVED"
+                                   :to="`/student-diary/${role.detailsForUser.child.role.detailsForUser.schoolClass.id}/${role.detailsForUser.child.id}/${props.periodId}/${props.schoolId}/grades`"
+                                   label="Дневник"/>
+                            <q-field label="Име" readonly stack-label>
+                                <template v-slot:default>
+                                    <router-link
+                                            :to="`/user/${role.detailsForUser.child.id}/${props.periodId}/${props.schoolId}`"
+                                            active-class="text-negative" class="text-primary"
+                                            exact-active-class="text-negative">
+                                        {{ role.detailsForUser.child.firstName }}
+                                        {{ role.detailsForUser.child.middleName }}
+                                        {{ role.detailsForUser.child.lastName }}
+                                    </router-link>
                           </template>
                         </q-field>
                         <q-input v-model="role.detailsForUser.child.username" label="Потребителско име" readonly
@@ -288,6 +288,7 @@ import {DetailsForParent, DetailsForStudent, Gender, SchoolRole} from "../../mod
 import {onUnmounted, watch} from "vue";
 import {useRouter} from "vue-router";
 import {
+    confirmActionPromiseDialog,
     getRequestStatusColorClass,
     translationOfGender,
     translationOfRequestStatusForRole,
@@ -340,6 +341,7 @@ let imageUrl = $ref(profilePictureFile ? window.URL.createObjectURL(profilePictu
 
 
 const handleUpload = async () => {
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
   if (profilePictureFile) {
     imageUrl = window.URL.createObjectURL(profilePictureFile)
     await updateUserProfilePicture(profilePictureFile, user.id)
@@ -355,7 +357,8 @@ onUnmounted(() => {
 
 const update = async () => {
   const currentUserId = currentUser.id
-  await updateUser(user, currentUserId)
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+    await updateUser(user, currentUserId)
   databaseUser = cloneDeep(user)
   if (currentUserId == user.id) {
     updateOneRoleUserInLocalStorage(user)
@@ -376,9 +379,10 @@ const addNewRole = async () => quasar.dialog({
 }).onOk(async (payload) => {
   const schoolUserRole = payload.item as SchoolUserRole
   if (schoolUserRole.role == SchoolRole.PARENT) {
-    const detailsForParent = schoolUserRole.detailsForUser as DetailsForParent
-    schoolUserRole.detailsForUser = new DetailsForParent(await findStudentByPhoneNumberPeriodAndSchoolClass(detailsForParent.child?.phoneNumber, schoolUserRole.period.id, (detailsForParent.child?.role.detailsForUser as DetailsForStudent).schoolClass?.id))
-    user?.roles!!.push(schoolUserRole)
+      const detailsForParent = schoolUserRole.detailsForUser as DetailsForParent
+      schoolUserRole.detailsForUser = new DetailsForParent(await findStudentByPhoneNumberPeriodAndSchoolClass(detailsForParent.child?.phoneNumber, schoolUserRole.period.id, (detailsForParent.child?.role.detailsForUser as DetailsForStudent).schoolClass?.id)
+      )
+      user?.roles!!.push(schoolUserRole)
   } else {
     user?.roles!!.push(payload.item)
   }
@@ -432,10 +436,12 @@ const reset = () => {
 }
 
 const createRequestForStatusChange = async (status: RequestStatus) => {
-  await createUserChangeStatusRequest(user.id, status, props.periodId, props.schoolId, currentUser.id)
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+    await createUserChangeStatusRequest(user.id, status, props.periodId, props.schoolId, currentUser.id)
 }
 const createRequestForRoleStatusChange = async (role: SchoolUserRole, status: RequestStatus) => {
-  await createRoleChangeStatusRequest(role.id, status, props.periodId, props.schoolId, currentUser.id)
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+    await createRoleChangeStatusRequest(role.id, status, props.periodId, props.schoolId, currentUser.id)
 }
 const columns = [
   {name: 'edit'},

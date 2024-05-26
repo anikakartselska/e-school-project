@@ -13,11 +13,11 @@
       </q-card-section>
       <q-card-section>
         <q-form class="q-gutter-md" @submit="submit">
-          <q-input v-model="updatedSchool.schoolName" label="Име на училището" stack-label>
-            <template v-slot:prepend>
-              <q-icon name="edit"/>
-            </template>
-          </q-input>
+            <q-input v-model="updatedSchool.schoolName" label="Име на училището" stack-label>
+                <template v-slot:prepend>
+                    <q-icon name="edit"/>
+                </template>
+            </q-input>
             <q-input v-model="updatedSchool.city" label="Град" stack-label>
                 <template v-slot:prepend>
                     <q-icon name="edit"/>
@@ -58,6 +58,7 @@ import {useDialogPluginComponent, useQuasar} from "quasar";
 import {$ref} from "vue/macros";
 import {RoomToSubjects, roomToSubjectsText, School} from "../../../model/School";
 import RoomsEditCreateDialog from "./rooms-edit-create-dialog.vue";
+import {confirmActionPromiseDialog} from "../../../utils";
 
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
@@ -109,7 +110,8 @@ const updateRoom = (room: RoomToSubjects) => {
 const deleteRoom = (index: number) => {
     updatedSchool.rooms?.splice(index, 1)
 }
-const submit = () => {
+const submit = async () => {
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
     onDialogOK({
         item: updatedSchool
     })

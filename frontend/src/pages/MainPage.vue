@@ -84,16 +84,16 @@
           <q-toolbar>
             <q-avatar v-if="currentUserFile!=null"
                       text-color="white">
-              <q-img
-                      :src="imageUrl"
-              ></q-img>
+                <q-img
+                        :src="imageUrl"
+                ></q-img>
             </q-avatar>
-            <q-avatar v-else color="cyan-2" text-color="white">
-              {{ getCurrentUser().firstName[0] }}{{ getCurrentUser().lastName[0] }}
-            </q-avatar>
-            <q-toolbar-title>{{ currentUser.firstName }} {{ currentUser.lastName }}</q-toolbar-title>
+              <q-avatar v-else color="cyan-2" text-color="white">
+                  {{ getCurrentUser().firstName[0] }}{{ getCurrentUser().lastName[0] }}
+              </q-avatar>
+              <q-toolbar-title>{{ currentUser.firstName }} {{ currentUser.lastName }}</q-toolbar-title>
           </q-toolbar>
-          <hr/>
+            <hr/>
             <q-scroll-area style="height:100%;">
                 <q-list>
                     <div v-for="page in pages">
@@ -123,7 +123,8 @@
                         <q-list>
                             <q-item v-for="item in expansionItem.items"
                                     v-close-popup
-                                    :to="`/subject-diary/${item.schoolClass?.id}/${item.id}/${currentUser.role.period.id}/${currentUser.role.school.id}/grades`" clickable>
+                                    :to="`/subject-diary/${item.schoolClass?.id}/${item.id}/${currentUser.role.period.id}/${currentUser.role.school.id}/grades`"
+                                    clickable>
                                 <q-item-section>
                                     <q-item-label style="white-space: break-spaces;">
                                         {{ item.name }} - {{ item.schoolClass.name }}
@@ -178,7 +179,7 @@ import {
 import {onBeforeMount, watch} from "vue";
 import {constructSchoolUserRoleMessage, SchoolUserRole} from "../model/SchoolUserRole";
 import {SchoolPeriod} from "../model/SchoolPeriod";
-import {confirmActionPromiseDialogWithCancelButton} from "../utils";
+import {confirmActionPromiseDialog, confirmActionPromiseDialogWithCancelButton} from "../utils";
 import {AuthenticationResponse, Success} from "../model/AuthenticationResponse";
 import {periodId, schoolId} from "../model/constants";
 import {useQuasar} from "quasar";
@@ -190,6 +191,7 @@ import {SubjectWithSchoolClassInformation} from "../model/Subject";
 const router = useRouter();
 const quasar = useQuasar()
 const onLogoutClick = async () => {
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
     await logout().then(async r => {
         clearUserStorage()
         await router.push('/login')

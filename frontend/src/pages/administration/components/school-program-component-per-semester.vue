@@ -76,6 +76,7 @@ import {watch} from "vue";
 import {$ref} from "vue/macros";
 import {currentUserHasAnyRole} from "../../../services/LocalStorageService";
 import {SchoolRole} from "../../../model/User";
+import {confirmActionPromiseDialog} from "../../../utils";
 
 const props = defineProps<{
     periodId: number,
@@ -89,6 +90,7 @@ const plannedLessonsGroupedByDay = $ref(new Map<WorkingDays, PlannedSchoolLesson
 let hasPlannedLessons = $ref(await checkExistingPlannedSchoolLessonsForSemester(props.schoolId, props.periodId, props.semester))
 let hasLessons = $ref(await checkExistingSchoolLessonsForSemester(props.schoolId, props.periodId, props.semester))
 const generateProgram = async () => {
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
     await generatePlannedSchoolLessonsForSchool(props.schoolId, props.periodId, props.semester).then(
             r => {
                 schoolPlannedLessons = r
@@ -98,6 +100,7 @@ const generateProgram = async () => {
 }
 
 const generateSchoolLessonsForAllClasses = async () => {
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?", "Генерирането на седмичните разписи няма да ви позволи да правите цялостни промени по програмата, учебния план за годината и промяната на смените на класовете.")
     await generateSchoolLessons(props.schoolId, props.periodId, props.semester).then(
             r => {
                 hasLessons = true

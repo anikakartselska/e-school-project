@@ -51,6 +51,7 @@ import {absenceMap, getAbsenceBackgroundColor} from "../../services/helper-servi
 import {AbsenceValue, Evaluation} from "../../model/Evaluation";
 import {StudentView} from "../../model/User";
 import {Subject} from "../../model/Subject";
+import {confirmActionPromiseDialog} from "../../utils";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
 const quasar = useQuasar()
@@ -69,10 +70,11 @@ const studentEvaluations = $ref([...props.evaluations].map(it => {
   }
 }))
 
-const submit = () => {
-  onDialogOK({
-    item: studentEvaluations
-  })
+const submit = async () => {
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+    onDialogOK({
+        item: studentEvaluations
+    })
 }
 
 const excuseAbsence = (absence: Evaluation, student: StudentView) => {

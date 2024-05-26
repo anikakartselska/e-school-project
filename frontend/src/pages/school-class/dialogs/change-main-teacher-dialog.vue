@@ -32,6 +32,7 @@
 import {useDialogPluginComponent, useQuasar} from "quasar";
 import {UserView} from "../../../model/User";
 import {$ref} from "vue/macros";
+import {confirmActionPromiseDialog} from "../../../utils";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
 const quasar = useQuasar()
@@ -45,7 +46,8 @@ const props = defineProps<{
 
 const teacher = $ref(props.mainTeacher)
 
-const submit = () => {
+const submit = async () => {
+  await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
   onDialogOK({
     item: teacher
   })

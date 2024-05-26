@@ -91,7 +91,12 @@
 
 <script lang="ts" setup>
 import {getCurrentUserAsUserView} from "../../services/LocalStorageService";
-import {formatToBulgarian, getRequestStatusColorClass, translationOfRequestStatus} from "../../utils";
+import {
+    confirmActionPromiseDialog,
+    formatToBulgarian,
+    getRequestStatusColorClass,
+    translationOfRequestStatus
+} from "../../utils";
 import {useDialogPluginComponent} from "quasar";
 import {constructSchoolUserRoleMessage} from "../../model/SchoolUserRole";
 
@@ -102,13 +107,14 @@ const props = defineProps<{
 
 const userRequests = [...props.requests]
 
-const resolveRequest = (request, requestStatus) => {
-  onDialogOK({
-    item: {
-      ...request, requestStatus: requestStatus, resolvedByUser: getCurrentUserAsUserView(),
-      resolvedDate: new Date()
-    }
-  })
+const resolveRequest = async (request, requestStatus) => {
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+    onDialogOK({
+        item: {
+            ...request, requestStatus: requestStatus, resolvedByUser: getCurrentUserAsUserView(),
+            resolvedDate: new Date()
+        }
+    })
 }
 </script>
 

@@ -117,7 +117,7 @@ import {$ref} from "vue/macros";
 import {useDialogPluginComponent, useQuasar} from "quasar";
 import {Assignments, AssignmentType} from "../../../model/Assignments";
 import {cloneDeep} from "lodash-es";
-import {dateTimeToBulgarianLocaleString} from "../../../utils";
+import {confirmActionPromiseDialog, dateTimeToBulgarianLocaleString} from "../../../utils";
 import {RoomToSubjects, roomToSubjectsText} from "../../../model/School";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
@@ -133,22 +133,23 @@ const props = defineProps<{
 const updatedAssignment = $ref(cloneDeep(props.assignments))
 const dateFrom = $ref(updatedAssignment.assignmentValue.from ? updatedAssignment.assignmentValue.from : '')
 const dateTo = $ref(updatedAssignment.assignmentValue.to ? updatedAssignment.assignmentValue.to : '')
-const submit = () => {
-  let assignmentValue;
-  if (updatedAssignment.assignmentType == AssignmentType.HOMEWORK) {
-    assignmentValue = {...updatedAssignment.assignmentValue, to: new Date(dateTo).toISOString().slice(0, 19)}
-  } else if (updatedAssignment.assignmentType == AssignmentType.EVENT) {
-    assignmentValue = {
-      ...updatedAssignment.assignmentValue,
-      to: new Date(dateTo).toISOString().slice(0, 19),
-      from: new Date(dateFrom).toISOString().slice(0, 19)
+const submit = async () => {
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+    let assignmentValue;
+    if (updatedAssignment.assignmentType == AssignmentType.HOMEWORK) {
+        assignmentValue = {...updatedAssignment.assignmentValue, to: new Date(dateTo).toISOString().slice(0, 19)}
+    } else if (updatedAssignment.assignmentType == AssignmentType.EVENT) {
+        assignmentValue = {
+            ...updatedAssignment.assignmentValue,
+            to: new Date(dateTo).toISOString().slice(0, 19),
+            from: new Date(dateFrom).toISOString().slice(0, 19)
+        }
+    } else {
+        assignmentValue = updatedAssignment.assignmentValue
     }
-  } else {
-    assignmentValue = updatedAssignment.assignmentValue
-  }
-  onDialogOK({
-    item: {...updatedAssignment, assignmentValue: assignmentValue}
-  })
+    onDialogOK({
+        item: {...updatedAssignment, assignmentValue: assignmentValue}
+    })
 }
 </script>
 

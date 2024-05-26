@@ -89,7 +89,7 @@ import {useRouter} from "vue-router";
 import {uploadUsersExcelFile} from "../../services/RequestService";
 import {periodId, schoolId} from "../../model/constants";
 import {SchoolRole, UserView} from "../../model/User";
-import {confirmActionPromiseDialogWithCancelButton} from "../../utils";
+import {confirmActionPromiseDialog, confirmActionPromiseDialogWithCancelButton} from "../../utils";
 import SingleFilePicker from "../common/single-file-picker.vue";
 import {$ref} from "vue/macros";
 import {RequestStatus} from "../../model/RequestStatus";
@@ -106,6 +106,7 @@ let parentsFile = $ref(null)
 const router = useRouter()
 let newlyAddedUsers = $ref(<UserView[]>[])
 const uploadExcelFile = async (schoolRole: SchoolRole, file: File) => {
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
     await uploadUsersExcelFile(file, periodId.value, schoolId.value, schoolRole).then(async response => {
         if (response.status == 200) {
             newlyAddedUsers = response.data
@@ -156,17 +157,17 @@ const columns = [
     {
         name: "lastName",
         align: "left",
-    label: "Фамилия",
-    field: (row: UserView) => row.lastName,
-    sortable: true
-  },
-  {
-    name: "username",
-    align: "left",
-    label: "Потребителско име",
-      field: (row: UserView) => row.username,
-      sortable: true
-  },
+        label: "Фамилия",
+        field: (row: UserView) => row.lastName,
+        sortable: true
+    },
+    {
+        name: "username",
+        align: "left",
+        label: "Потребителско име",
+        field: (row: UserView) => row.username,
+        sortable: true
+    },
     {
         name: "email",
         align: "left",

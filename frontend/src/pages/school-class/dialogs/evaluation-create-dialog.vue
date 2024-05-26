@@ -126,15 +126,16 @@
             </q-select>
           </div>
           <q-card-actions align="right">
-            <q-btn :disable="existingFinalGrade && (newEvaluation.evaluationType===EvaluationType.GRADE && newEvaluation.evaluationValue.finalGrade===true)" color="primary" label="Готово" type="a"
-                   @click="submit">
-              <q-tooltip v-if="existingFinalGrade">
-                Ученикът вече има оформена {{
-                  newEvaluation.semester === Semester.YEARLY ? 'годишна оценка' : 'срочна оценка'
-                }} по избрания предмет
-              </q-tooltip>
-            </q-btn>
-            <q-btn class="q-ml-sm" color="primary" flat label="Отказ" @click="onDialogCancel"/>
+              <q-btn :disable="existingFinalGrade && (newEvaluation.evaluationType===EvaluationType.GRADE && newEvaluation.evaluationValue.finalGrade===true)"
+                     color="primary" label="Готово" type="a"
+                     @click="submit">
+                  <q-tooltip v-if="existingFinalGrade">
+                      Ученикът вече има оформена {{
+                      newEvaluation.semester === Semester.YEARLY ? 'годишна оценка' : 'срочна оценка'
+                      }} по избрания предмет
+                  </q-tooltip>
+              </q-btn>
+              <q-btn class="q-ml-sm" color="primary" flat label="Отказ" @click="onDialogCancel"/>
           </q-card-actions>
         </q-form>
       </q-card-section>
@@ -148,7 +149,7 @@ import {$computed, $ref} from "vue/macros";
 import {useDialogPluginComponent, useQuasar} from "quasar";
 import {Evaluation, EvaluationType, Feedback, FeedbackValue, GradeValue} from "../../../model/Evaluation";
 import {cloneDeep} from "lodash-es";
-import {translationOfEvaluationValue, translationOfSemester} from "../../../utils";
+import {confirmActionPromiseDialog, translationOfEvaluationValue, translationOfSemester} from "../../../utils";
 import {
     absenceMap,
     feedbacksMap,
@@ -223,10 +224,11 @@ const editAbsence = () => {
   })
 }
 
-const submit = () => {
-  onDialogOK({
-    item: {evaluation: newEvaluation}
-  })
+const submit = async () => {
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+    onDialogOK({
+        item: {evaluation: newEvaluation}
+    })
 }
 </script>
 

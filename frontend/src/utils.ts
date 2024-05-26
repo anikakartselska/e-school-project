@@ -49,10 +49,10 @@ export const translationOfWorkingDays = {
 export const getRangeOf = (start, stop, step) => Array.from({length: ((stop - start) / step) + 1}, (_, i) => start + (i * step))
 
 
-export const confirmActionPromiseDialog = (title: string, message: string) => new Promise<void>((resolve) => {
+export const confirmActionPromiseDialog = (title: string, message: string | null = null) => new Promise<void>((resolve) => {
     Dialog.create({
         title: title,
-        message: message,
+        message: message ? message : '',
         ok: {
             label: "OK",
             color: 'primary'

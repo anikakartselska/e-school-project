@@ -38,6 +38,7 @@ import {$ref} from "vue/macros";
 import {useDialogPluginComponent, useQuasar} from "quasar";
 import {SchoolClass} from "../../../model/SchoolClass";
 import {SchoolPlanForClasses} from "../../../model/SchoolPlanForClasses";
+import {confirmActionPromiseDialog} from "../../../utils";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
 const quasar = useQuasar()
@@ -54,10 +55,11 @@ const newOrUpdatedSchoolClassPlan: SchoolPlanForClasses = $ref(props.schoolClass
     subjectAndClassesCount: []
 })
 const schoolClassesOptions = [...props.schoolClassesWithoutPrograms].concat(props.schoolClassPlan?.schoolClassesWithTheSchoolPlan ? props.schoolClassPlan?.schoolClassesWithTheSchoolPlan : [])
-const submit = () => {
-  onDialogOK({
-    item: newOrUpdatedSchoolClassPlan
-  })
+const submit = async () => {
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+    onDialogOK({
+        item: newOrUpdatedSchoolClassPlan
+    })
 }
 </script>
 

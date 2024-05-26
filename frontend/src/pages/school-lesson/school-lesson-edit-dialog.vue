@@ -67,7 +67,12 @@
 import {useDialogPluginComponent, useQuasar} from "quasar";
 import {SchoolLesson, SchoolLessonStatus, translationOfSchoolLessonStatus} from "../../model/SchoolLesson";
 import {$ref} from "vue/macros";
-import {dateTimeToBulgarianLocaleString, translationOfSemester, translationOfWorkingDays} from "../../utils";
+import {
+    confirmActionPromiseDialog,
+    dateTimeToBulgarianLocaleString,
+    translationOfSemester,
+    translationOfWorkingDays
+} from "../../utils";
 import {UserView} from "../../model/User";
 import {roomToSubjectsText} from "../../model/School";
 
@@ -83,10 +88,11 @@ const props = defineProps<{
 
 const updatedSchoolLesson = $ref({...props.schoolLesson})
 
-const submit = () => {
-  onDialogOK({
-    item: updatedSchoolLesson
-  })
+const submit = async () => {
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+    onDialogOK({
+        item: updatedSchoolLesson
+    })
 }
 </script>
 

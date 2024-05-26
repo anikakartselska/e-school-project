@@ -76,6 +76,7 @@ import SubjectAndClassesCountCreateUpdateDialog from "./dialogs/subject-and-clas
 import {cloneDeep} from "lodash-es";
 import {currentUserHasAnyRole} from "../../services/LocalStorageService";
 import {SchoolRole} from "../../model/User";
+import {confirmActionPromiseDialog} from "../../utils";
 
 
 const props = defineProps<{
@@ -96,9 +97,10 @@ const reset = () => {
 }
 
 const save = async () => {
-  await mergeSchoolPlansForClasses(plan, props.schoolId, props.periodId).then(r => {
-    planFromDatabase = plan
-  })
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+    await mergeSchoolPlansForClasses(plan, props.schoolId, props.periodId).then(r => {
+        planFromDatabase = plan
+    })
 }
 
 const updateSchoolPlan = async (schoolPlanForClasses: SchoolPlanForClasses) =>

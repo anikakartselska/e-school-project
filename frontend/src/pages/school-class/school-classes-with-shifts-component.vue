@@ -129,6 +129,7 @@ import {getSchoolClassesFromSchool, saveSchoolClass} from "../../services/Reques
 import {SchoolClass, Shift} from "../../model/SchoolClass";
 import {useQuasar} from "quasar";
 import {Semester} from "../../model/SchoolPeriod";
+import {confirmActionPromiseDialog} from "../../utils";
 
 const props = defineProps<{
   periodId: number,
@@ -145,6 +146,7 @@ const openSchoolClasses = () => {
 }
 
 const changeShift = async (selectedSchoolClass: SchoolClass, selectedShift: Shift, semester: Semester) => {
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
   if (semester == Semester.FIRST) {
     selectedSchoolClass.shifts.firstSemester = selectedShift
   } else {

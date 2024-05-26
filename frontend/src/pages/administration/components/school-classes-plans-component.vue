@@ -52,6 +52,7 @@ import {SchoolPlanForClasses} from "../../../model/SchoolPlanForClasses";
 import SchoolPlanAddDialog from "../dialogs/school-plan-add-dialog.vue";
 import {currentUserHasAnyRole} from "../../../services/LocalStorageService";
 import {SchoolRole} from "../../../model/User";
+import {confirmActionPromiseDialog} from "../../../utils";
 
 const props = defineProps<{
   schoolId: number,
@@ -105,12 +106,14 @@ const updateSchoolPlan = async (schoolPlanForClasses: SchoolPlanForClasses) =>
 
         })
 
-const deleteSchoolPlan = async (schoolPlanForClasses: SchoolPlanForClasses) =>
-        await deleteSchoolPlansForClasses(schoolPlanForClasses, props.schoolId, props.periodId).then(
-                r => {
-                  schoolPlans = schoolPlans.filter(it => it.id != schoolPlanForClasses.id)
-                }
-        )
+const deleteSchoolPlan = async (schoolPlanForClasses: SchoolPlanForClasses) => {
+  await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+  await deleteSchoolPlansForClasses(schoolPlanForClasses, props.schoolId, props.periodId).then(
+      r => {
+        schoolPlans = schoolPlans.filter(it => it.id != schoolPlanForClasses.id)
+      }
+  )
+}
 
 const filter = $ref('')
 const columns = [
