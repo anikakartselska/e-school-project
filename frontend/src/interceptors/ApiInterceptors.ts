@@ -15,7 +15,21 @@ export const setupApiInterceptorsTo = (axiosInstances: AxiosInstance[], quasar: 
     });
 };
 
-const excludedUrlsFromNotifications = ['/stream/get-actions-with-filters-and-pagination', '/user/update-current-user-preferences']
+const excludedUrlsFromNotifications = [
+    '/authenticate',
+    '/logout',
+    '/authenticate-after-selected-school',
+    '/get-student-subjects-with-evaluation',
+    '/get-evaluation-for-subject-and-school-class',
+    '/get-user-profile-picture',
+    '/fetch-all-student-subject-evaluations-from-school-class',
+    '/get-plan-for-school-class',
+    '/update-calendar',
+    '/fetch-available-rooms-for-school-lesson',
+    '/fetch-available-teachers-for-school-lesson',
+    '/fetch-statistics-for-student',
+    '/check-started-school-year',
+]
 
 const onRequest = (quasar: QVueGlobals) => (config: AxiosRequestConfig): AxiosRequestConfig => {
     if (config.method != 'get' && config.url && !excludedUrlsFromNotifications.includes(config.url)) {
