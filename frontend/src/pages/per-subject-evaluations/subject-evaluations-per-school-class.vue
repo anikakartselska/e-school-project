@@ -74,7 +74,7 @@ const props = defineProps<{
     periodId: number,
     schoolId: number
 }>()
-const schoolClass = $ref(await getSchoolClassById(props.schoolClassId, props.periodId))
+let schoolClass = $ref(await getSchoolClassById(props.schoolClassId, props.periodId))
 let subject = $ref(await fetchSubjectById(props.subjectId, props.periodId, props.schoolId))
 let studentWithEvaluationDTO = $ref(await getEvaluationForSubjectAndSchoolClass(props.subjectId, props.periodId, props.schoolId, props.schoolClassId))
 watch(() => [props.subjectId], async () => {
