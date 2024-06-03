@@ -29,7 +29,6 @@
             title="Лична информация"
     >
       <div v-if="user.id != null" class="text-negative">Потребител с посочения телефонен номер вече съществува</div>
-      {{ user }}
       <q-input v-model="user.firstName" :readonly="user.id != null" class="q-pa-sm" filled
                label="Име"/>
       <q-input v-model="user.middleName" :readonly="user.id != null" class="q-pa-sm" filled
@@ -115,18 +114,19 @@ import {useQuasar} from "quasar";
 import {useRouter} from "vue-router";
 import {$computed, $ref} from "vue/macros";
 import {
-    createRequestFromUser,
-    createUser,
-    findStudentByPhoneNumberPeriodAndSchoolClass,
-    findUserWithAllItsRolesByPhoneNumber,
-    getAllSchoolClasses,
-    getAllSchoolPeriodsWithTheSchoolsTheyAreStarted,
-    getAllSchools,
-    getAllSubjects
+  createRequestFromUser,
+  createUser,
+  findStudentByPhoneNumberPeriodAndSchoolClass,
+  findUserWithAllItsRolesByPhoneNumber,
+  getAllSchoolClasses,
+  getAllSchoolPeriodsWithTheSchoolsTheyAreStarted,
+  getAllSchools,
+  getAllSubjects
 } from "../../services/RequestService";
 import AddRoleDialog from "../add-role-dialog.vue";
 import {confirmActionPromiseDialogWithCancelButton, translationOfGender} from "../../utils";
 import {getCurrentUser} from "../../services/LocalStorageService";
+import {RequestStatus} from "../../model/RequestStatus";
 
 const props = defineProps<{
   inDialog?: boolean;
@@ -144,6 +144,7 @@ const quasar = useQuasar()
 let user = $ref<Partial<User>>({
   ...props.newUser,
   roles: <SchoolUserRole[]>[],
+  status: RequestStatus.PENDING
 })
 const enableGoingToSchoolInformationStep = $computed(() => {
   return user.firstName &&

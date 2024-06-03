@@ -55,7 +55,7 @@ class ImportService : BaseService() {
             transaction.dsl()
         ).also { users ->
             requestService.createRequests(users, userId, transaction.dsl())
-        }.map { userSecurityService.mapUserToUserView(it) }
+        }.map { userSecurityService.mapUserToUserView(it.copy(id = userId.toInt())) }
     }
 
     private fun mapExcelToListOfUsers(

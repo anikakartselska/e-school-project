@@ -2,7 +2,7 @@ import {api, auth} from "../boot/axios";
 import {OneRoleUser, StudentView, TeacherView, User, UserView} from "../model/User";
 import {SubjectWithEvaluationDTO} from "../model/SubjectWithEvaluationDTO";
 import {Subject, SubjectWithSchoolClassInformation} from "../model/Subject";
-import axios, {AxiosResponse} from "axios";
+import {AxiosResponse} from "axios";
 import {SchoolClass} from "../model/SchoolClass";
 import {School} from "../model/School";
 import {SchoolUserRole} from "../model/SchoolUserRole";
@@ -20,19 +20,14 @@ import {SchoolStatistics} from "../model/SchoolStatistics";
 import {StudentToYearlyResult, YearlyResults} from "../model/YearlyResults";
 
 export const login = async (email: string, password: string): Promise<AxiosResponse> =>
-        await axios.post<string>(`/authenticate`, {username: email, password}, {
-            baseURL: "/auth",
-        })
+        await auth.post<string>(`/authenticate`, {username: email, password})
 export const logout = async () =>
-        await axios.post(`/logout`, null, {
-            baseURL: "/auth",
-        })
+        await auth.post(`/logout`, null)
 
 
 export const loginAfterSelectedRole = async (roleId: number, periodId: number): Promise<AxiosResponse> =>
         await auth.post<string>(`/authenticate-after-selected-school`, null, {
-            params: {roleId: roleId, periodId: periodId},
-            baseURL: "/auth",
+            params: {roleId: roleId, periodId: periodId}
         })
 
 export const getAllUsersBySchoolIdAndPeriodId = async (schoolId, periodId): Promise<UserView[]> =>
@@ -128,9 +123,7 @@ export const findUserWithAllItsRolesByPhoneNumber = async (phoneNumber): Promise
         }).then(p => p.data)
 
 export const createRequestFromUser = async (user): Promise<any> =>
-        await auth.post<string>(`/create-requests`, user, {
-            baseURL: "/auth",
-        })
+        await auth.post<string>(`/create-requests`, user)
 
 
 export const getUserRequestsBySchoolAndPeriod = async (periodId, schoolId, userId: number | null = null): Promise<Request[]> =>
@@ -275,8 +268,7 @@ export const resetPasswordRequest = async (email): Promise<AxiosResponse<boolean
             params: {
                 email: email
             },
-            headers: {'Content-Type': 'application/json'},
-            baseURL: "/auth",
+            headers: {'Content-Type': 'application/json'}
         })
 export const updatePassword = async (newPassword,
                                      passwordResetToken): Promise<any> =>
@@ -285,8 +277,7 @@ export const updatePassword = async (newPassword,
                 newPassword: newPassword,
                 passwordResetToken: passwordResetToken
             },
-            headers: {'Content-Type': 'application/json'},
-            baseURL: "/auth",
+            headers: {'Content-Type': 'application/json'}
         })
 
 export const changeUserPasswordWithOldPasswordProvided = async (newPassword, oldPassword): Promise<any> =>

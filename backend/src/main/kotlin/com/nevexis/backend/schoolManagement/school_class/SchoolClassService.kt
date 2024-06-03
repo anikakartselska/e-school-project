@@ -125,7 +125,7 @@ class SchoolClassService : BaseService() {
         schoolClassRecordSelectOnConditionStep(dsl).orderBy(SCHOOL_CLASS.NAME)
             .fetch().map {
                 mapRecordToInternalModel(it)
-            }
+            }.distinctBy { it.id }
 
     fun getSchoolClassesWithSchoolPlanId(schoolPlanId: BigDecimal, dsl: DSLContext = db): List<SchoolClass> =
         schoolClassRecordSelectOnConditionStep(dsl)

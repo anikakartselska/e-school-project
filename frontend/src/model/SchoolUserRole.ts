@@ -20,7 +20,7 @@ export const constructSchoolUserRoleMessageWithSchoolAndPeriodInformation = (sch
 }
 export const constructSchoolUserRoleMessage = (schoolUserRole: SchoolUserRole) => {
     const detailsMessage = constructDetailsMessage(schoolUserRole)
-    return `${translationOfRoles[schoolUserRole.role]} ${detailsMessage} `
+    return `${translationOfRoles[schoolUserRole.role]} ${detailsMessage} в "${schoolUserRole.school.schoolName}"`
 }
 export const constructDetailsMessage = (schoolUserRole: SchoolUserRole) => {
     let detailsMessage = ''

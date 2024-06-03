@@ -22,7 +22,7 @@ class ImportController {
         @RequestParam periodId: BigDecimal,
         @RequestParam schoolId: BigDecimal,
         @RequestParam schoolRole: SchoolRole,
-        @RequestParam schoolClassId: BigDecimal,
+        @RequestParam schoolClassId: BigDecimal? = null,
         principal: Principal,
     ) = importService.createRequestsFromUsersExcel(
         file,

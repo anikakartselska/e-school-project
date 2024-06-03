@@ -70,7 +70,7 @@ class SchoolRolesService : BaseService() {
                 transaction.dsl().batchStore(schoolRolePeriodRecords.map { it.first }).execute()
 
                 schoolUserRoles.mapIndexed { index, schoolUserRole ->
-                    schoolUserRole.copy(id = schoolRoleRecords[index].id?.toInt())
+                    schoolUserRole.copy(id = schoolRoleRecords[index].id?.toInt(), userId = userId.toInt())
                 }.apply {
                     userDetailsService.insertUserDetailsForSchoolUserRoles(this, transaction.dsl())
                 }

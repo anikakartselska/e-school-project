@@ -282,7 +282,7 @@ class EvaluationService : BaseService(), Calculation {
             periodId
         )
         evaluationRecord.insert().also {
-            evaluationNotificationService.sendEmailForEvaluationsCreation(listOf(evaluation), periodId, schoolId)
+            evaluationNotificationService.sendEmailForEvaluationsCreation(listOf(evaluationWithId), periodId, schoolId)
         }
         return evaluationWithId
     }

@@ -67,7 +67,8 @@ class AuthenticationController {
         exchange.response.addCookie(generateCookie("", "refreshToken"))// reset cookie
 
         return userSecurityService.findActiveUserByUsername(request.username)
-            ?.takeIf { userDetails -> passwordEncoder.matches(request.password, userDetails.password) }
+            ?.takeIf {
+                    userDetails -> passwordEncoder.matches(request.password, userDetails.password) }
             ?.let { userDetails ->
                 val token = jwtService.generateToken(userDetails)
                 val refreshToken = jwtService.generateRefreshToken(userDetails)
