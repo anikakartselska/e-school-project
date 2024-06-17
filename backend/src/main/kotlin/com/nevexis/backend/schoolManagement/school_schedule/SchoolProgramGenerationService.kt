@@ -132,14 +132,7 @@ class SchoolProgramGenerationService : BaseService() {
                 1
             }
         }.sum()
-//        schoolLessonsGroupedBySchoolClassAndSubject.mapValues { (_, lessons) -> lessons.size }
-//            .map { (key, value) ->
-//                if (key.first.plan[key.second] == value) {
-//                    0
-//                } else {
-//                    1
-//                }
-//            }.sum()
+
         val teacherTeachingSubjectOfTheSameClass =
             schoolLessonsGroupedBySchoolClassAndSubject.mapValues { (_, lessons) ->
                 if (lessons.map { it.teacher }.distinct().size == 1) {
@@ -162,27 +155,11 @@ class SchoolProgramGenerationService : BaseService() {
         val repeatableSchoolClassLessons = schoolLessonsGroupedBySchoolClassAndTime.map { (_, values) ->
             values.size - 1
         }.sum()
-        val notConsecutiveClasses = schoolLessonsGroupedBySchoolClassAndDay.map { (_, values) ->
-            val workingHours = values.map { it.workingHour.hour }
-            if (!workingHours.contains(1)) {
-                1
-            } else {
-                if (isConsecutive(workingHours)) {
-                    0
-                } else {
-                    1
-                }
-            }
-        }.sum()
 
         val numberOfConflicts =
             countOfClasses + repeatableRooms + repeatableSchoolClassLessons + repeatableTeacherClasses + teacherTeachingSubjectOfTheSameClass + countOfClassesPerDay
-//             + // + notConsecutiveClasses +
-        val fitness = 1 / (numberOfConflicts + 1.0)
-        if (fitness > 0.3) {
-//                println()
-        }
-        return fitness
+
+        return 1 / (numberOfConflicts + 1.0)
     }
 
     private fun populate(
@@ -262,15 +239,6 @@ class SchoolProgramGenerationService : BaseService() {
         }.maxBy { it.fitness }
     }
 
-    private fun isConsecutive(numbers: List<Int>): Boolean {
-        val sortedList = numbers.sorted()
-        for (i in 1 until sortedList.size) {
-            if (sortedList[i] != sortedList[i - 1] + 1) {
-                return false
-            }
-        }
-        return true
-    }
 
     private fun customNextInt(from: Int, until: Int): Int {
         return if (from == until) {

@@ -25,7 +25,7 @@ class UserSecurityService : UserBaseService() {
             db.selectFrom(PASSWORD_RESET_TOKEN).where(PASSWORD_RESET_TOKEN.TOKEN.eq(passwordResetToken))
                 .fetchAny()
         if (passwordResetTokenRecord?.expiryDate?.isBefore(LocalDateTime.now()) == true) {
-            throw SMSError("Грешка при промяна на паролата", "Токенър за промяна на паролата е изтекъл")
+            throw SMSError("Грешка при промяна на паролата", "Токенът за промяна на паролата е изтекъл")
         }
         db.selectFrom(USER).where(USER.ID.eq(passwordResetTokenRecord?.userId!!))
             .fetchAny()?.apply {

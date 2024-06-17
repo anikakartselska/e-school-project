@@ -19,8 +19,8 @@ import {StudentStatistics} from "../model/StudentStatistics";
 import {SchoolStatistics} from "../model/SchoolStatistics";
 import {StudentToYearlyResult, YearlyResults} from "../model/YearlyResults";
 
-export const login = async (email: string, password: string): Promise<AxiosResponse> =>
-        await auth.post<string>(`/authenticate`, {username: email, password})
+export const login = async (username: string, password: string): Promise<AxiosResponse> =>
+        await auth.post<string>(`/authenticate`, {username: username, password})
 export const logout = async () =>
         await auth.post(`/logout`, null)
 

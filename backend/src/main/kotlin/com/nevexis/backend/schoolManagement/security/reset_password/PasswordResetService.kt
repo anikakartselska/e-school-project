@@ -9,6 +9,7 @@ import com.nevexis.backend.schoolManagement.users.user_security.UserSecurity
 import com.nevexis.backend.schoolManagement.users.user_security.UserSecurityService
 import com.nevexis.`demo-project`.jooq.tables.records.PasswordResetTokenRecord
 import com.nevexis.`demo-project`.jooq.tables.references.PASSWORD_RESET_TOKEN
+import com.nevexis.`demo-project`.jooq.tables.references.USER
 import org.jooq.impl.DSL
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -68,6 +69,19 @@ class PasswordResetService : BaseService() {
                 expiryDate = it.expiryDate!!
             )
         }
+    }
+
+    fun updateUserPassword(newPassword: String, passwordResetToken: String) {
+        val passwordResetTokenRecord =
+            db.selectFrom(PASSWORD_RESET_TOKEN).where(PASSWORD_RESET_TOKEN.TOKEN.eq(passwordResetToken))
+                .fetchAny()
+        if (passwordResetTokenRecord?.expiryDate?.isBefore(LocalDateTime.now()) == true) {
+            throw SMSError("Грешка при промяна на паролата", "Токенът за промяна на паролата е изтекъл")
+        }
+        db.selectFrom(USER).where(USER.ID.eq(passwordResetTokenRecord?.userId!!))
+            .fetchAny()?.apply {
+                password = passwordEncoder.encode(newPassword)
+            }?.update()
     }
 
     fun getRequestSeqNextVal(): BigDecimal =
