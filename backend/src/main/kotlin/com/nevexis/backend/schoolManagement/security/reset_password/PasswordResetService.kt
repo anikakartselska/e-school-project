@@ -12,6 +12,8 @@ import com.nevexis.`demo-project`.jooq.tables.references.PASSWORD_RESET_TOKEN
 import com.nevexis.`demo-project`.jooq.tables.references.USER
 import org.jooq.impl.DSL
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Lazy
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -27,6 +29,10 @@ class PasswordResetService : BaseService() {
 
     @Autowired
     private lateinit var notificationService: NotificationService
+
+    @Autowired
+    @Lazy
+    lateinit var passwordEncoder: PasswordEncoder
 
     fun resetPassword(
         email: String
