@@ -15,5 +15,5 @@ class ServerUtils(@Value("\${security.require-ssl}") private val httpOverSsl: Bo
 
     fun getHostname(): String = InetAddress.getLocalHost().hostAddress
 
-    fun getServerUrlWithoutProtocol() = "${if (httpOverSsl) "https:" else "http:"}//${getHostname()}:${getPort()}"
+    fun getServerUrlWithoutProtocol() = "${if (httpOverSsl) "https:" else "http:"}//localhost:3000"
 }

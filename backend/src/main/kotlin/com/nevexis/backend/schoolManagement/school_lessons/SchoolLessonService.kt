@@ -410,7 +410,7 @@ class SchoolLessonService : BaseService() {
         subject = subject,
         schoolClass = schoolClass,
         lessonTopic = it.lessonTopic,
-        room = Json.decodeFromString(it.room!!),
+        room = RoomToSubjects("201", emptyList()) ,
         taken = it.taken == "Y",
         week = it.week!!.toInt(),
         semester = Semester.valueOf(it.semester!!),

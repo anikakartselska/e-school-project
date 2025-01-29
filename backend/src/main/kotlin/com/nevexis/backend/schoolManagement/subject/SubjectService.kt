@@ -51,6 +51,9 @@ class SubjectService : BaseService() {
             .on(SCHOOL_USER.USER_ID.eq(USER.ID))
             .leftJoin(SCHOOL_USER_PERIOD)
             .on(SCHOOL_USER_PERIOD.SCHOOL_USER_ID.eq(SCHOOL_USER.ID))
+            .where(USER.ID.eq(teacherId))
+            .and(SCHOOL_USER_PERIOD.PERIOD_ID.eq(periodId))
+            .and(SCHOOL_USER.SCHOOL_ID.eq(schoolId))
             .fetch().map { record ->
                 record.into(SubjectRecord::class.java)
                     .into(SubjectWithSchoolClassInformation::class.java).copy(
@@ -92,7 +95,8 @@ class SubjectService : BaseService() {
             this.subjectId = subjectRecord.id
         })
     }.let { pairs ->
-        dsl.batchStore(pairs.map { listOf(it.first, it.second) }.flatten()).execute()
+        dsl.batchStore(pairs.map { it.first }).execute()
+        dsl.batchStore(pairs.map { it.second }).execute()
         pairs.map { it.first }
     }
 

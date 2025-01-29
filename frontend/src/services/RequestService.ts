@@ -706,3 +706,10 @@ export const fetchYearlyResultsForStudentPeriodAndSchool = async (schoolId,
             }
         }).then(p => p.data)
 
+export const testtUpload = async (testUpload: Blob | null = null): Promise<AxiosResponse<any>> => {
+    const bodyFormData = new FormData()
+    bodyFormData.append('testUpload', JSON.stringify(testUpload))
+    return await api.post<any>(`/test-upload`, bodyFormData, {
+        headers: {"Content-Type": "multipart/form-data"}
+    })
+}

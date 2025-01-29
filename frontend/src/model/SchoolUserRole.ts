@@ -39,7 +39,7 @@ export const constructDetailsMessage = (schoolUserRole: SchoolUserRole) => {
             break;
         }
         case SchoolRole.STUDENT: {
-            detailsMessage = ` - в ${(schoolUserRole.detailsForUser as DetailsForStudent).schoolClass?.name}`
+            detailsMessage = ` - в ${(schoolUserRole.detailsForUser as DetailsForStudent)?.schoolClass?.name}`
             break
         }
     }

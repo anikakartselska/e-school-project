@@ -69,6 +69,15 @@ class SchoolClassController {
     )
 
     @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
+    @PostMapping("/test-upload")
+    suspend fun testUpload(
+        @RequestPart(required = false) testUpload: ByteArray? = null,
+        principal: Principal
+    ) = schoolClassService.saveFile(
+        testUpload
+    )
+
+    @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @PostMapping("/sync-numbers-in-class")
     suspend fun syncNumbersInClass(@RequestParam schoolClassId: BigDecimal, @RequestParam periodId: BigDecimal) =
         schoolClassService.synchronizeNumbersInClass(schoolClassId, periodId)

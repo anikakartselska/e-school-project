@@ -22,7 +22,6 @@ export const translationOfResultType = {
 }
 
 export const getResultTypeColorClass = (resultType: ResultType | undefined) => {
-    debugger
     switch (resultType) {
         case ResultType.FINISHES:
             return `bg-secondary`;

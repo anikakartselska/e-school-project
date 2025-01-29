@@ -68,7 +68,6 @@ const formatToDate = (ev) => {
   if (ev == null || ev == '') {
     return null
   }
-  debugger
   return date.extractDate(ev, 'DD.MM.YYYY HH:mm:ss').toISOString();
 }
 

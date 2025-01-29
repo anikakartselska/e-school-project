@@ -32,7 +32,13 @@ class NotificationServiceMailServerImpl(private var mailServerConfig: MailServer
         val logger = KotlinLogging.logger {}
 
         return kotlin.runCatching {
-            val mailSender = getMailSender(mailServerConfig)
+            val mailSender = getMailSender(
+                MailServerConfig(
+                    host = "smtp.freesmtpservers.com",
+                    port = 25,
+                    sender = "sms"
+                )
+            )
             val mimeMessage = mailSender.createMimeMessage()
             val helper = MimeMessageHelper(mimeMessage, true, "utf-8")
             val message = constructHtml(templateType, context).also {

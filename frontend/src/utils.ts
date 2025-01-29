@@ -80,7 +80,7 @@ export const formatToDate = (ev) => {
     if (ev == null || ev == '') {
         return null
     }
-    debugger
+
     return date.formatDate(ev, "YYYY-MM-DD");
 }
 

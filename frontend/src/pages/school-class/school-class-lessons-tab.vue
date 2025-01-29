@@ -97,7 +97,6 @@ const defineDate = (dayOfWeek) => {
     let startDate = new Date(selectedWeek.startDate)
     startDate.setDate(startDate.getDate() + workingDaysOrderString.get(dayOfWeek)!! - 1)
     const selectedDate = date.formatDate(new Date(startDate), 'YYYY/MM/DD')
-    debugger
     let title: string | null = ''
     if (selectedDate == null) {
         title = null

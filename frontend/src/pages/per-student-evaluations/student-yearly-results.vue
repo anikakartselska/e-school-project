@@ -40,7 +40,6 @@ const quasar = useQuasar()
 
 const yearlyResults = $ref<YearlyResults | null>(await fetchYearlyResultsForStudentPeriodAndSchool(props.schoolId, props.periodId, props.studentId))
 
-debugger
 </script>
 
 <style scoped>

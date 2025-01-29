@@ -39,6 +39,13 @@
         <table>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>FILES</table_name>
+            <table_type>BASE TABLE</table_type>
+            <comment></comment>
+        </table>
+        <table>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
             <table_name>PARENT_STUDENT</table_name>
             <table_type>BASE TABLE</table_type>
             <comment></comment>
@@ -702,6 +709,71 @@
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
             <ordinal_position>12</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>FILES</table_name>
+            <column_name>ID</column_name>
+            <data_type>numeric</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>1</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>FILES</table_name>
+            <column_name>FILE_CONTENT</column_name>
+            <data_type>clob</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>2</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>FILES</table_name>
+            <column_name>FILE_NAME</column_name>
+            <data_type>varchar</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>3</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>FILES</table_name>
+            <column_name>CREATED_BY</column_name>
+            <data_type>numeric</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>4</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>FILES</table_name>
+            <column_name>CREATED_ON</column_name>
+            <data_type>timestamp</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>6</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>5</ordinal_position>
             <is_nullable>true</is_nullable>
             <comment></comment>
         </column>
@@ -2120,6 +2192,16 @@
         <table_constraint>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>PK_FILES</constraint_name>
+            <constraint_type>PRIMARY KEY</constraint_type>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>FILES</table_name>
+            <enforced>true</enforced>
+        </table_constraint>
+        <table_constraint>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
             <constraint_name>PK_PARENT_STUDENT</constraint_name>
             <constraint_type>PRIMARY KEY</constraint_type>
             <table_catalog></table_catalog>
@@ -2408,6 +2490,16 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>EVALUATION</table_name>
+        </key_column_usage>
+        <key_column_usage>
+            <column_name>ID</column_name>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>PK_FILES</constraint_name>
+            <ordinal_position>1</ordinal_position>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>FILES</table_name>
         </key_column_usage>
         <key_column_usage>
             <column_name>PARENT_SCHOOL_USER_ROLE_ID</column_name>

@@ -4,6 +4,7 @@
       <div class="col-1"/>
       <div class="text-h4 q-ml-md q-mb-md text-primary">Статистики</div>
     </div>
+      <single-file-picker v-model="testt" label="test"></single-file-picker>
     <div class="row">
       <div class="col-1"/>
       <q-card
@@ -145,16 +146,17 @@
 
 <script lang="ts" setup>
 import {fetchStatisticsForSchool} from "../../services/RequestService";
-import {$computed} from "vue/macros";
+import {$computed, $ref} from "vue/macros";
 import {Pair} from "../../model/Pair";
 import {SchoolClass} from "../../model/SchoolClass";
 import {StudentView} from "../../model/User";
+import SingleFilePicker from "../common/single-file-picker.vue";
 
 const props = defineProps<{
   periodId: number
   schoolId: number
 }>()
-
+const testt = $ref<File | null>(null)
 
 const statistics = await fetchStatisticsForSchool(props.schoolId, props.periodId)
 
