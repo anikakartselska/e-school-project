@@ -5,8 +5,9 @@ import java.time.LocalDateTime
 
 data class SmsFile(
     val id: Int? = null,
-    val fileContent: ByteArray,
+    val fileContent: ByteArray? = null,
     val fileName: String,
     val createdBy: UserView,
+    val note: String? = null,
     val createdOn: LocalDateTime? = null
 )

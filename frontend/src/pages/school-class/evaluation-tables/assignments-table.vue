@@ -23,14 +23,21 @@
       </template>
       <template v-slot:body-cell-edit="props">
         <q-td>
-          <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])" color="primary" dense flat
-                 icon="edit"
-                 @click="updateAssignment(props.row)">
-          </q-btn>
-          <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])" color="negative" dense flat
-                 icon="delete"
-                 @click="deleteAssignment(props.row)">
-          </q-btn>
+            <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])" color="primary" dense flat
+                   icon="edit"
+                   @click="updateAssignment(props.row)">
+            </q-btn>
+            <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])" color="negative" dense flat
+                   icon="delete"
+                   @click="deleteAssignment(props.row)">
+            </q-btn>
+            <q-btn color="secondary" dense flat
+                   icon="backup_table"
+                   @click="openFilesDialog(props.row)">
+                <q-tooltip>
+                    Прикачени файлове
+                </q-tooltip>
+            </q-btn>
         </q-td>
       </template>
     </q-table>
@@ -54,7 +61,12 @@ import {
     ExaminationValue,
     HomeworkValue
 } from "../../../model/AssignmentValue";
-import {deleteAssignments, fetchSchoolById, mergeAssignments} from "../../../services/RequestService";
+import {
+    deleteAssignments,
+    fetchAllFilesWithFilterWithoutFileContent,
+    fetchSchoolById,
+    mergeAssignments
+} from "../../../services/RequestService";
 import {useQuasar} from "quasar";
 import AssignmentsEditCreateDialog from "../dialogs/assignments-edit-create-dialog.vue";
 import {SchoolLesson} from "../../../model/SchoolLesson";
@@ -62,6 +74,7 @@ import {currentUserHasAnyRole, getCurrentUserAsUserView} from "../../../services
 import {watch} from "vue";
 import {confirmActionPromiseDialog, dateTimeToBulgarianLocaleString} from "../../../utils";
 import {SchoolRole} from "../../../model/User";
+import AssignmentFilesDialog from "../dialogs/assignment-files-dialog.vue";
 
 const props = defineProps<{
   periodId: number
@@ -135,23 +148,33 @@ const updateAssignment = async (assignment: Assignments) => {
 }
 
 const deleteAssignment = async (assignment: Assignments) => {
-  await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
-  await deleteAssignments(assignment, props.schoolClass.id, props.schoolId, props.periodId).then(r =>
-          assignmentsFilteredByAssignmentTypeAndSemester = assignmentsFilteredByAssignmentTypeAndSemester.filter(it =>
-                  it.id != assignment.id
-          )
-  )
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+    await deleteAssignments(assignment, props.schoolClass.id, props.schoolId, props.periodId).then(r =>
+            assignmentsFilteredByAssignmentTypeAndSemester = assignmentsFilteredByAssignmentTypeAndSemester.filter(it =>
+                    it.id != assignment.id
+            )
+    )
+}
+
+const openFilesDialog = async (assignment: Assignments) => {
+    quasar.dialog({
+        component: AssignmentFilesDialog,
+        componentProps: {
+            smsFiles: await fetchAllFilesWithFilterWithoutFileContent(null, assignment.id, null),
+            assignmentId: assignment.id
+        },
+    })
 }
 
 const columns = $computed(() => [
-  {
-    name: 'edit',
-    headerClasses: 'q-table--col-auto-width'
-  },
-  {
-    name: "createdBy",
-    label: "Създадено от",
-    align: "left",
+    {
+        name: 'edit',
+        headerClasses: 'q-table--col-auto-width'
+    },
+    {
+        name: "createdBy",
+        label: "Създадено от",
+        align: "left",
     field: (row: Assignments) => `${row.createdBy.firstName} ${row.createdBy.lastName}`,
     sortable: true
   },

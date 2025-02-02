@@ -340,7 +340,11 @@ class UserService : UserBaseService() {
             .where(PARENT_ROLE_PERIOD.STATUS.eq(RequestStatus.APPROVED.name))
             .and(PARENT_ROLE_PERIOD.PERIOD_ID.eq(periodId))
             .and(PARENT_USER_ROLE.SCHOOL_ID.eq(schoolId))
-            .and(USER.ID.`in`(studentIds)).fetch().associate {
+            .apply {
+                if (studentIds.isNotEmpty()) {
+                    USER.ID.`in`(studentIds)
+                }
+            }.fetch().associate {
                 it.get(USER.ID, BigDecimal::class.java) to it.get(PARENT_USER.EMAIL)!!
             }
     }

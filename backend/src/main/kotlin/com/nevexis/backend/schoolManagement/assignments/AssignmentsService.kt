@@ -123,7 +123,7 @@ class AssignmentsService : BaseService() {
                 .let {
                     if (schoolLessonId != null) {
                         it.and(
-                            ASSIGNMENTS.ASSIGNMENT_VALUE.like("%esson\":{\"id\":\"${schoolLessonId}%")
+                            ASSIGNMENTS.ASSIGNMENT_VALUE.like("%esson\":{\"id\":${schoolLessonId},%")
                                 .or(ASSIGNMENTS.ASSIGNMENT_TYPE.eq(AssignmentType.EVENT.name))
                         )
                     } else {

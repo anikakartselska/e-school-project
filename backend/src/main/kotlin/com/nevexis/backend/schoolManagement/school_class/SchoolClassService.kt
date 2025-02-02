@@ -273,8 +273,5 @@ class SchoolClassService : BaseService() {
         db.select(DSL.field("SCHOOL_CLASS_SEQ.nextval")).from("DUAL")
             .fetchOne()!!.map { it.into(BigDecimal::class.java) }
 
-    fun saveFile(testUpload: ByteArray?): Any {
-        TODO("Not yet implemented")
-    }
 
 }

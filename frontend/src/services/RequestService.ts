@@ -18,7 +18,48 @@ import {Assignments} from "../model/Assignments";
 import {StudentStatistics} from "../model/StudentStatistics";
 import {SchoolStatistics} from "../model/SchoolStatistics";
 import {StudentToYearlyResult, YearlyResults} from "../model/YearlyResults";
+import {SmsFile} from "../model/SmsFile";
+import JSZip from "jszip";
 
+export const unzipFile = (fileData: any): Promise<File[]> => {
+    return JSZip.loadAsync(fileData).then((zip: JSZip) => {
+        const filePromises: Promise<File>[] = [];
+
+        zip.forEach((relativePath: string, zipEntry: JSZip.JSZipObject) => {
+            if (!zipEntry.dir) {
+                const filePromise = zipEntry.async("blob").then((content: Blob) => {
+                    return new File([content], zipEntry.name);
+                });
+                filePromises.push(filePromise);
+            }
+        });
+
+        return Promise.all(filePromises);
+    });
+}
+export const downloadFileFromBlobResponse = async (response: AxiosResponse, unZipIfZip: boolean = false): Promise<File[]> => {
+    const fileName = response.headers['content-disposition']
+            ?.split("filename=")[1]
+            ?.replace(/['"]+/g, '')
+    const files: File[] = fileName.includes('.zip') && unZipIfZip ? await unzipFile(response.data) : [new File([response.data], fileName)]
+
+    files.forEach(file => {
+        const link = document.createElement('a')
+        // @ts-ignore
+        link.href = window.URL.createObjectURL(new Blob([file]))
+        link.download = file.name
+        link.click()
+        link.remove()
+    })
+    return files
+}
+
+export const getFile = async (response: AxiosResponse): Promise<File> => {
+    const fileName = response.headers['content-disposition']
+            ?.split("filename=")[1]
+            ?.replace(/['"]+/g, '')
+    return new File([response.data], fileName)
+}
 export const login = async (username: string, password: string): Promise<AxiosResponse> =>
         await auth.post<string>(`/authenticate`, {username: username, password})
 export const logout = async () =>
@@ -706,10 +747,75 @@ export const fetchYearlyResultsForStudentPeriodAndSchool = async (schoolId,
             }
         }).then(p => p.data)
 
-export const testtUpload = async (testUpload: Blob | null = null): Promise<AxiosResponse<any>> => {
+export const uploadFile = async (fileContent,
+                                 fileName,
+                                 createdById,
+                                 note: string | null = null,
+                                 evaluationId: number | null = null,
+                                 assignmentId: number | null = null,
+                                 studentSchoolClassId: number | null = null,
+                                 fileId: number | null = null,
+): Promise<AxiosResponse<SmsFile>> => {
     const bodyFormData = new FormData()
-    bodyFormData.append('testUpload', JSON.stringify(testUpload))
-    return await api.post<any>(`/test-upload`, bodyFormData, {
-        headers: {"Content-Type": "multipart/form-data"}
+    bodyFormData.append('fileContent', fileContent)
+    return await api.post<SmsFile>(`/upload-file`, bodyFormData, {
+        params: {
+            fileName,
+            createdById,
+            note,
+            evaluationId,
+            assignmentId,
+            studentSchoolClassId,
+            fileId
+        },
+        headers: {"Content-Type": "multipart/form-data"},
     })
 }
+
+export const fetchAllFilesWithFilterWithoutFileContent = async (evaluationId: number | null = null,
+                                                                assignmentId: number | null = null,
+                                                                studentSchoolClassId: number | null = null): Promise<SmsFile[]> =>
+        await api.get<SmsFile[]>('/get-all-files-with-filter-without-file-content', {
+            params: {
+                evaluationId: evaluationId,
+                assignmentId: assignmentId,
+                studentSchoolClassId: studentSchoolClassId
+            }
+        }).then(p => p.data)
+
+
+export const downloadFileById = async (
+        fileId,
+) => {
+    return await api.post<BlobPart>(`/get-file-by-id`,
+            null, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                params: {
+                    fileId: fileId,
+                },
+                responseType: 'blob'
+            }).then(response => downloadFileFromBlobResponse(response));
+}
+
+export const getFileWithoutDownload = async (
+        fileId,
+) => {
+    return await api.post<BlobPart>(`/get-file-by-id`,
+            null, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                params: {
+                    fileId: fileId,
+                },
+                responseType: 'blob'
+            }).then(response => getFile(response));
+}
+
+export const deleteFileById = async (fileId: number): Promise<any> =>
+        await api.post<any>(`/delete-file`, null, {
+            params: {fileId: fileId},
+            headers: {'Content-Type': 'application/json'}
+        })
