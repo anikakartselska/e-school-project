@@ -51,6 +51,12 @@
             </q-btn>
           </q-td>
         </template>
+        <template v-slot:body-cell-absences-files="props">
+          <q-td class="text-center">
+            <single-file-picker v-model="absenceFiles[props.rowIndex]" label="Извинителна бележка"
+                                remove-action-button/>
+          </q-td>
+        </template>
       </q-table>
       <q-card-actions align="right">
         <q-btn color="primary" label="Добави" @click="submit"/>
@@ -61,7 +67,7 @@
 </template>
 
 <script lang="ts" setup>
-import {date, useDialogPluginComponent, useQuasar} from "quasar";
+import {useDialogPluginComponent, useQuasar} from "quasar";
 import {StudentWithEvaluationDTO} from "../../model/StudentWithEvaluationDTO";
 import {$ref} from "vue/macros";
 import {
@@ -76,6 +82,7 @@ import {getCurrentUserAsUserView} from "../../services/LocalStorageService";
 import {Subject} from "../../model/Subject";
 import {Semester} from "../../model/SchoolPeriod";
 import {SchoolLesson} from "../../model/SchoolLesson";
+import SingleFilePicker from "../common/single-file-picker.vue";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
 const quasar = useQuasar()
@@ -96,10 +103,14 @@ const studentEvaluations = $ref([...props.evaluations].map(it => {
     absences: []
   }
 }))
+let absenceFiles = $ref<(File | null)[]>(new Array(studentEvaluations.length).fill(null));
 
 const submit = () => {
   onDialogOK({
-    item: studentEvaluations
+    item: {
+      studentEvaluations: studentEvaluations,
+      files: absenceFiles
+    }
   })
 }
 
@@ -157,6 +168,11 @@ const columns = [
     name: "added-absences",
     align: "center",
     label: "Добавени отсъствия",
+  },
+  {
+    name: "absences-files",
+    align: "center",
+    label: "Извинителни бележки",
   },
 ]
 </script>

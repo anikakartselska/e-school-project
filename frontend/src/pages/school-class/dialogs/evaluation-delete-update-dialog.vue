@@ -90,16 +90,22 @@
                    :label="absenceMap.get(updatedEvaluation.evaluationValue.absence)"
                    flat
                    rounded>
-              <q-badge v-if="!readonly" align="bottom" color="white" floating
-                       style="width:2px; height: 2px ">
-                <template v-slot:default>
-                  <div class="row">
-                    <q-btn class="bg-secondary absolute-left" icon="edit" round size="5px"
-                           @click="editAbsence()"/>
-                  </div>
-                </template>
-              </q-badge>
+                <q-badge v-if="!readonly" align="bottom" color="white" floating
+                         style="width:2px; height: 2px ">
+                    <template v-slot:default>
+                        <div class="row">
+                            <q-btn class="bg-secondary absolute-left" icon="edit" round size="5px"
+                                   @click="editAbsence()"/>
+                        </div>
+                    </template>
+                </q-badge>
             </q-btn>
+              <single-file-picker v-if="updatedEvaluation.evaluationValue?.excused"
+                                  v-model="absenceFile" :rules="[val=>val !== null && val !== '' || 'Задължително поле']"
+                                  label="Извинителна бележка"
+                                  reactive-rules
+                                  remove-action-buttonø
+              />
           </div>
           <div v-if="updatedEvaluation.evaluationType === EvaluationType.FEEDBACK">
             <q-select
@@ -172,6 +178,9 @@ import {Semester} from "../../../model/SchoolPeriod";
 import {periodId, schoolId} from "../../../model/constants";
 import GradesChooseComponent from "../evaluation-tables/grades-choose-component.vue";
 import AbsencesChooseComponent from "../evaluation-tables/absences-choose-component.vue";
+import SingleFilePicker from "../../common/single-file-picker.vue";
+import {onMounted} from "vue";
+import {getFileWithoutDownloadByEvaluationId} from "../../../services/RequestService";
 
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
@@ -182,9 +191,20 @@ const props = defineProps<{
     evaluation: Evaluation,
     periodId: number,
     schoolId: number,
-  readonly: boolean
+    readonly: boolean
 }>()
+let absenceFile = $ref<File | null>(null)
 
+onMounted(async () => {
+
+    await getFileWithoutDownloadByEvaluationId(props.evaluation.id).then(e => {
+        if (e) {
+            console.log(e)
+            absenceFile = e
+        }
+    })
+
+})
 const updatedEvaluation = $ref(cloneDeep(props.evaluation))
 
 const editGrade = () => {
@@ -212,7 +232,7 @@ const submitForDelete = async () => {
 const submit = async () => {
     await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
     onDialogOK({
-        item: {evaluation: updatedEvaluation, delete: false}
+        item: {evaluation: updatedEvaluation, delete: false, fileContent: absenceFile}
     })
 }
 </script>

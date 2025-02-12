@@ -46,6 +46,13 @@
         <table>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>FILES_EVALUATION</table_name>
+            <table_type>BASE TABLE</table_type>
+            <comment></comment>
+        </table>
+        <table>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
             <table_name>PARENT_STUDENT</table_name>
             <table_type>BASE TABLE</table_type>
             <comment></comment>
@@ -781,7 +788,7 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>FILES</table_name>
-            <column_name>EVALUATION_ID</column_name>
+            <column_name>ASSIGNMENT_ID</column_name>
             <data_type>numeric</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
@@ -794,7 +801,7 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>FILES</table_name>
-            <column_name>ASSIGNMENT_ID</column_name>
+            <column_name>STUDENT_SCHOOL_CLASS_ID</column_name>
             <data_type>numeric</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
@@ -807,8 +814,8 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>FILES</table_name>
-            <column_name>STUDENT_SCHOOL_CLASS_ID</column_name>
-            <data_type>numeric</data_type>
+            <column_name>NOTE</column_name>
+            <data_type>varchar</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
@@ -819,13 +826,26 @@
         <column>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
-            <table_name>FILES</table_name>
-            <column_name>NOTE</column_name>
-            <data_type>varchar</data_type>
+            <table_name>FILES_EVALUATION</table_name>
+            <column_name>FILES_ID</column_name>
+            <data_type>numeric</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
-            <ordinal_position>9</ordinal_position>
+            <ordinal_position>1</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>FILES_EVALUATION</table_name>
+            <column_name>EVALUATION_ID</column_name>
+            <data_type>numeric</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>2</ordinal_position>
             <is_nullable>true</is_nullable>
             <comment></comment>
         </column>
@@ -2254,6 +2274,16 @@
         <table_constraint>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>PK_FILES_EVALUATION</constraint_name>
+            <constraint_type>PRIMARY KEY</constraint_type>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>FILES_EVALUATION</table_name>
+            <enforced>true</enforced>
+        </table_constraint>
+        <table_constraint>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
             <constraint_name>PK_PARENT_STUDENT</constraint_name>
             <constraint_type>PRIMARY KEY</constraint_type>
             <table_catalog></table_catalog>
@@ -2464,6 +2494,16 @@
         <table_constraint>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>SYS_C0015875</constraint_name>
+            <constraint_type>FOREIGN KEY</constraint_type>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>FILES_EVALUATION</table_name>
+            <enforced>true</enforced>
+        </table_constraint>
+        <table_constraint>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
             <constraint_name>SYS_C0012430</constraint_name>
             <constraint_type>FOREIGN KEY</constraint_type>
             <table_catalog></table_catalog>
@@ -2552,6 +2592,26 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>FILES</table_name>
+        </key_column_usage>
+        <key_column_usage>
+            <column_name>FILES_ID</column_name>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>PK_FILES_EVALUATION</constraint_name>
+            <ordinal_position>1</ordinal_position>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>FILES_EVALUATION</table_name>
+        </key_column_usage>
+        <key_column_usage>
+            <column_name>EVALUATION_ID</column_name>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>PK_FILES_EVALUATION</constraint_name>
+            <ordinal_position>2</ordinal_position>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>FILES_EVALUATION</table_name>
         </key_column_usage>
         <key_column_usage>
             <column_name>PARENT_SCHOOL_USER_ROLE_ID</column_name>
@@ -2844,6 +2904,16 @@
             <table_name>USER</table_name>
         </key_column_usage>
         <key_column_usage>
+            <column_name>FILES_ID</column_name>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>SYS_C0015875</constraint_name>
+            <ordinal_position>1</ordinal_position>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>FILES_EVALUATION</table_name>
+        </key_column_usage>
+        <key_column_usage>
             <column_name>PARENT_SCHOOL_USER_ROLE_ID</column_name>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>
@@ -2895,6 +2965,14 @@
         </key_column_usage>
     </key_column_usages>
     <referential_constraints>
+        <referential_constraint>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>SYS_C0015875</constraint_name>
+            <unique_constraint_catalog></unique_constraint_catalog>
+            <unique_constraint_schema>DEMO_PROJECT</unique_constraint_schema>
+            <unique_constraint_name>PK_FILES</unique_constraint_name>
+        </referential_constraint>
         <referential_constraint>
             <constraint_catalog></constraint_catalog>
             <constraint_schema>DEMO_PROJECT</constraint_schema>

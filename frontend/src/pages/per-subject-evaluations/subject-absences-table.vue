@@ -110,7 +110,8 @@ import {
     saveEvaluation,
     saveEvaluations,
     updateEvaluation,
-    updateEvaluations
+    updateEvaluations,
+    uploadFileWithEvaluationIds
 } from "../../services/RequestService";
 import {periodId, schoolId} from "../../model/constants";
 import UpdateAbsencesDialog from "./update-absences-dialog.vue";
@@ -119,6 +120,7 @@ import {commentPromiseDialog} from "../../utils";
 import EvaluationDialog from "../school-class/dialogs/evaluation-delete-update-dialog.vue";
 import EvaluationCreateDialog from "../school-class/dialogs/evaluation-create-dialog.vue";
 import {currentUserHasAnyRole, getCurrentUserAsUserView} from "../../services/LocalStorageService";
+import {Pair} from "../../model/Pair";
 
 const props = defineProps<{
   evaluations: StudentWithEvaluationDTO[],
@@ -149,19 +151,35 @@ const addNewAbsences = async () => quasar.dialog({
     lesson: props.lesson
   },
 }).onOk(async (payload) => {
-  const comment = await commentPromiseDialog()
-  await saveEvaluations(payload.item, periodId.value, schoolId.value, comment).then(e => {
-            const newlyAddedAbsences = e.data
-            absences.forEach(studentEvaluations => {
-                      const newlyAddedAbsencesForCurrentStudent = newlyAddedAbsences.find(v => v.student.id == studentEvaluations.student.id)?.absences
-                      if (studentEvaluations.student.id == 10000) {
-                        studentEvaluations.absences = studentEvaluations.absences.concat(newlyAddedAbsences.map(it => it.absences).flat(1))
-                      }
-                      studentEvaluations.absences = studentEvaluations.absences.concat(newlyAddedAbsencesForCurrentStudent ? newlyAddedAbsencesForCurrentStudent : [])
+    const comment = await commentPromiseDialog()
+    await saveEvaluations(payload.item.studentEvaluations, periodId.value, schoolId.value, comment)
+            .then(async (e) => {
+                const newlyAddedAbsences = e.data;
+
+                absences.forEach(studentEvaluations => {
+                    const newlyAddedAbsencesForCurrentStudent =
+                            newlyAddedAbsences.find(v => v.student.id === studentEvaluations.student.id)?.absences ?? [];
+
+                    if (studentEvaluations.student.id === 10000) {
+                        studentEvaluations.absences = studentEvaluations.absences.concat(
+                                newlyAddedAbsences.map(it => it.absences).flat()
+                        );
                     }
-            )
-          }
-  )
+
+                    studentEvaluations.absences = studentEvaluations.absences.concat(newlyAddedAbsencesForCurrentStudent);
+                });
+
+                const files = payload.item.files;
+
+                await uploadFileWithEvaluationIds(
+                        files.filter(file => file !== null),
+                        files.map((file, index) => file
+                                ? {first: index, second: newlyAddedAbsences[index]?.absences.map(it => it.id) ?? []}
+                                : null
+                        ).filter(it => it !== null)
+                                .map((pair, index) => <Pair<number, number[]>>{first: index, second: pair.second})
+                );
+            });
 })
 
 const updateAbsences = async () => quasar.dialog({
@@ -171,21 +189,36 @@ const updateAbsences = async () => quasar.dialog({
     subject: props.subject
   },
 }).onOk(async (payload) => {
-  await updateEvaluations(payload.item, periodId.value, schoolId.value).then(e => {
-            const updatedAbsences = payload.item
-            const allAbsences = (<Evaluation[]>updatedAbsences.map(it => it.absences)).flat(1)
-            absences.forEach(studentEvaluations => {
-                      const updatedAbsencesForCurrentStudent = updatedAbsences.find(v => v.student.id == studentEvaluations.student.id)?.absences
-                      if (studentEvaluations.student.id == 10000) {
+    await updateEvaluations(payload.item.studentEvaluations, periodId.value, schoolId.value).then(async (e) => {
+        const updatedAbsences = payload.item.studentEvaluations
+        const allAbsences = (<Evaluation[]>updatedAbsences.map(it => it.absences)).flat(1)
+        absences.forEach(studentEvaluations => {
+                    const updatedAbsencesForCurrentStudent = updatedAbsences.find(v => v.student.id == studentEvaluations.student.id)?.absences
+                    if (studentEvaluations.student.id == 10000) {
                         studentEvaluations.absences = studentEvaluations.absences.map(absence =>
                                 allAbsences.find(oldAbsence => oldAbsence.id == absence.id) ? allAbsences.find(oldAbsence => oldAbsence.id == absence.id)!! : absence)
-                      }
-                      studentEvaluations.absences = studentEvaluations.absences.map(absence =>
-                              updatedAbsencesForCurrentStudent.find(it => it.id == absence.id) ? updatedAbsencesForCurrentStudent.find(it => it.id == absence.id) : absence)
-
                     }
-            )
-          }
+                    studentEvaluations.absences = studentEvaluations.absences.map(absence =>
+                            updatedAbsencesForCurrentStudent?.find(it => it.id == absence.id) ? updatedAbsencesForCurrentStudent.find(it => it.id == absence.id) : absence)
+
+                }
+        )
+
+        const files = payload.item.files;
+
+        await uploadFileWithEvaluationIds(
+                files.filter(file => file !== null),
+                files.map((file, index) => file
+                        ? {
+                            first: index,
+                            second: updatedAbsences[index]?.absences.filter(it => it.evaluationValue.excused).map(it => it.id) ?? []
+                        }
+                        : null
+                ).filter(it => it !== null)
+                        .map((pair, index) => <Pair<number, number[]>>{first: index, second: pair.second})
+        );
+
+    }
   )
 })
 const updateEvaluationDialog = (evaluation: Evaluation) => {
@@ -200,19 +233,23 @@ const updateEvaluationDialog = (evaluation: Evaluation) => {
   }).onOk(async (payload) => {
     const updatedAbsence = payload.item.evaluation as Evaluation
     if (payload.item.delete == false) {
-      await updateEvaluation(updatedAbsence, periodId.value, schoolId.value).then(e => {
-                absences.forEach(evaluation => {
-                  if (evaluation.student.id == updatedAbsence.student.id || evaluation.student.id == 10000) {
+        await updateEvaluation(updatedAbsence, periodId.value, schoolId.value).then(async e => {
+            absences.forEach(evaluation => {
+                if (evaluation.student.id == updatedAbsence.student.id || evaluation.student.id == 10000) {
                     evaluation.absences = evaluation.absences.map(it => {
-                      if (it.id == updatedAbsence.id) {
-                        return updatedAbsence
-                      } else {
-                        return it
-                      }
+                        if (it.id == updatedAbsence.id) {
+                            return updatedAbsence
+                        } else {
+                            return it
+                        }
                     })
-                  }
-                })
-              }
+                }
+            })
+            await uploadFileWithEvaluationIds([payload.item.fileContent], [<Pair<number, number[]>>{
+                first: 0,
+                second: [updatedAbsence.id]
+            }])
+        }
       )
     } else {
       await deleteEvaluation(updatedAbsence, periodId.value, schoolId.value).then(e => {
@@ -245,13 +282,17 @@ const addEvaluationDialog = () => {
     },
   }).onOk(async (payload) => {
     const createdAbsence = payload.item.evaluation as Evaluation
-    await saveEvaluation(createdAbsence, periodId.value, schoolId.value).then(newlyCreatedAbsence => {
-              absences.forEach(evaluation => {
-                if (evaluation.student.id == newlyCreatedAbsence.data.student.id || evaluation.student.id == 10000) {
+      await saveEvaluation(createdAbsence, periodId.value, schoolId.value).then(async newlyCreatedAbsence => {
+          absences.forEach(evaluation => {
+              if (evaluation.student.id == newlyCreatedAbsence.data.student.id || evaluation.student.id == 10000) {
                   evaluation.absences = [...evaluation.absences, newlyCreatedAbsence.data]
-                }
-              })
-            }
+              }
+          })
+          await uploadFileWithEvaluationIds([payload.item.fileContent], [<Pair<number, number[]>>{
+              first: 0,
+              second: [newlyCreatedAbsence.data.id]
+          }])
+      }
     )
   })
 }

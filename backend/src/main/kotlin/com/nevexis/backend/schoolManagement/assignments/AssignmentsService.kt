@@ -1,6 +1,7 @@
 package com.nevexis.backend.schoolManagement.assignments
 
 import com.nevexis.backend.schoolManagement.BaseService
+import com.nevexis.backend.schoolManagement.file_management.SmsFileService
 import com.nevexis.backend.schoolManagement.school_period.Semester
 import com.nevexis.backend.schoolManagement.users.UserService
 import com.nevexis.`demo-project`.jooq.tables.records.AssignmentsRecord
@@ -25,6 +26,9 @@ class AssignmentsService : BaseService() {
 
     @Autowired
     private lateinit var assignmentNotificationService: AssignmentNotificationService
+
+    @Autowired
+    private lateinit var smsFileService: SmsFileService
 
     fun saveUpdateAssignments(
         assignments: Assignments,
@@ -77,6 +81,8 @@ class AssignmentsService : BaseService() {
                     schoolId,
                     schoolClassId
                 )
+                smsFileService.deleteAllFiles(assignmentIds = listOf(assignments.id!!.toBigDecimal()))
+
             }
     }
 

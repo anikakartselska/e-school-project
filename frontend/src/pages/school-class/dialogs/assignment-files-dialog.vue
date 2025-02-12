@@ -70,7 +70,8 @@ defineEmits([...useDialogPluginComponent.emits])
 
 const props = defineProps<{
   smsFiles: SmsFile[],
-  assignmentId: number
+  assignmentId: number | null,
+  evaluationId: number | null
 }>()
 const currentUser = getCurrentUser()
 let files = $ref<SmsFile[]>(props.smsFiles)
@@ -81,7 +82,7 @@ const addFile = async () =>
             title: "Добави файл",
           },
         }).onOk(async (payload) => {
-          await uploadFile(payload.item.file, payload.item.file?.name, currentUser.id, payload.item.note, null, props.assignmentId).then(r =>
+          await uploadFile(payload.item.file, payload.item.file?.name, currentUser.id, payload.item.note, props.assignmentId).then(r =>
                   files.push(r.data)
           )
         })
@@ -102,7 +103,7 @@ const updateFile = async (file: SmsFile) =>
             fileContent: await getFileWithoutDownload(file.id!!)
           },
         }).onOk(async (payload) => {
-          await uploadFile(payload.item.file, payload.item.file?.name, currentUser.id, payload.item.note, null, props.assignmentId, null, file.id).then(r => {
+          await uploadFile(payload.item.file, payload.item.file?.name, currentUser.id, payload.item.note, props.assignmentId, null, file.id).then(r => {
                     files = files?.map((smsFile) => {
                       if (smsFile.id == file.id) {
                         return r.data

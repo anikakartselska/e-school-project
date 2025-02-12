@@ -34,6 +34,12 @@
             </q-btn>
           </q-td>
         </template>
+        <template v-slot:body-cell-absences-files="props">
+          <q-td class="text-center">
+            <single-file-picker v-model="absenceFiles[props.rowIndex]" label="Извинителна бележка"
+                                remove-action-button/>
+          </q-td>
+        </template>
       </q-table>
       <q-card-actions align="right">
         <q-btn color="primary" label="Извини маркираните отсъствия" @click="submit"/>
@@ -52,6 +58,7 @@ import {AbsenceValue, Evaluation} from "../../model/Evaluation";
 import {StudentView} from "../../model/User";
 import {Subject} from "../../model/Subject";
 import {confirmActionPromiseDialog} from "../../utils";
+import SingleFilePicker from "../common/single-file-picker.vue";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
 const quasar = useQuasar()
@@ -61,6 +68,8 @@ const props = defineProps<{
   subject: Subject,
   evaluations: StudentWithEvaluationDTO[]
 }>()
+
+let absenceFiles = $ref<(File | null)[]>(new Array(props.evaluations.length).fill(null));
 const studentEvaluations = $ref([...props.evaluations].map(it => {
   return {
     ...it,
@@ -71,10 +80,13 @@ const studentEvaluations = $ref([...props.evaluations].map(it => {
 }))
 
 const submit = async () => {
-    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
-    onDialogOK({
-        item: studentEvaluations
-    })
+  await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+  onDialogOK({
+    item: {
+      studentEvaluations: studentEvaluations,
+      files: absenceFiles
+    }
+  })
 }
 
 const excuseAbsence = (absence: Evaluation, student: StudentView) => {
@@ -118,9 +130,9 @@ const columns = [
     label: "Отсъствия",
   },
   {
-    name: "added-absences",
+    name: "absences-files",
     align: "center",
-    label: "Добавени отсъствия",
+    label: "Извинителни бележки",
   },
 ]
 </script>

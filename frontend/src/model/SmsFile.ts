@@ -6,7 +6,8 @@ export interface SmsFile {
     fileName: string,
     createdBy: UserView,
     note: string | null,
-    createdOn: Date | null
+    createdOn: Date | null,
+    fileContent: File | null
 }
 
 

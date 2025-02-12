@@ -3,10 +3,13 @@ package com.nevexis.backend.schoolManagement.file_management
 import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.users.UserService
+import com.nevexis.`demo-project`.jooq.tables.records.FilesEvaluationRecord
 import com.nevexis.`demo-project`.jooq.tables.records.FilesRecord
 import com.nevexis.`demo-project`.jooq.tables.records.UserRecord
 import com.nevexis.`demo-project`.jooq.tables.references.FILES
+import com.nevexis.`demo-project`.jooq.tables.references.FILES_EVALUATION
 import com.nevexis.`demo-project`.jooq.tables.references.USER
+import org.jooq.DSLContext
 import org.jooq.Record
 import org.jooq.impl.DSL
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,7 +29,6 @@ class SmsFileService : BaseService() {
         fileName: String,
         createdById: BigDecimal,
         note: String? = null,
-        evaluationId: BigDecimal? = null,
         assignmentId: BigDecimal? = null,
         studentSchoolClassId: BigDecimal? = null,
         fileId: BigDecimal? = null
@@ -40,7 +42,6 @@ class SmsFileService : BaseService() {
                 this.note = note
                 createdBy = createdById
                 createdOn = LocalDateTime.now()
-                this.evaluationId = evaluationId
                 this.assignmentId = assignmentId
                 this.studentSchoolClassId = studentSchoolClassId
             }
@@ -64,16 +65,48 @@ class SmsFileService : BaseService() {
         }
     }
 
+    fun saveFileForEvaluations(
+        extractedFiles: Map<Pair<String, List<Int>>, ByteArray>,
+        createdById: BigDecimal
+    ) {
+        db.transaction { transaction ->
+            val allEvaluationIds = extractedFiles.keys.map { it.second }.flatten().map { it.toBigDecimal() }
+
+            deleteAllFilesForEvaluations(allEvaluationIds, transaction.dsl())
+
+            val recordsToInsert = extractedFiles.map { (fileNameToEvaluationIds, fileContent) ->
+                val fileSeqNextVal = getFilesSeqNextVal()
+
+                val newFileRecord = transaction.dsl().newRecord(FILES).apply {
+                    id = fileSeqNextVal
+                    this.fileContent = byteArrayToBase64String(fileContent)
+                    this.fileName = fileNameToEvaluationIds.first
+                    this.note = "Извинителна бележка"
+                    createdBy = createdById
+                    createdOn = LocalDateTime.now()
+                }
+
+
+                newFileRecord to fileNameToEvaluationIds.second.map {
+                    transaction.dsl().newRecord(FILES_EVALUATION)
+                        .apply {
+                            this.filesId = fileSeqNextVal
+                            this.evaluationId = it.toBigDecimal()
+                        }
+                }
+            }
+
+            transaction.dsl().batchInsert(recordsToInsert.map { it.first }).execute()
+            transaction.dsl().batchInsert(recordsToInsert.map { it.second }.flatten()).execute()
+        }
+    }
+
     fun getAllFiles(
-        evaluationId: BigDecimal? = null,
         assignmentId: BigDecimal? = null,
         studentSchoolClassId: BigDecimal? = null
     ): List<SmsFile> {
         return selectFilesConditionStep().where()
             .apply {
-                if (evaluationId != null) {
-                    and(FILES.EVALUATION_ID.eq(evaluationId))
-                }
                 if (assignmentId != null) {
                     and(FILES.ASSIGNMENT_ID.eq(assignmentId))
                 }
@@ -90,6 +123,15 @@ class SmsFileService : BaseService() {
             .where(FILES.ID.eq(fileId))
             .fetchAny()?.map { mapToInternalModel(it) }
             ?: throw SMSError("Несъществуващ файл", "Файлът, който се опитвате да достъпите не съществува.")
+
+    }
+
+    fun getFileByEvaluationId(
+        evaluationId: BigDecimal
+    ): SmsFile? {
+        return selectFilesConditionStepForEvaluations()
+            .where(FILES_EVALUATION.EVALUATION_ID.eq(evaluationId))
+            .fetchAny()?.map { mapToInternalModel(it) }
 
     }
 
@@ -111,7 +153,6 @@ class SmsFileService : BaseService() {
 
     fun mapToRecord(
         smsFile: SmsFile,
-        evaluationId: BigDecimal? = null,
         assignmentId: BigDecimal? = null,
         studentSchoolClassId: BigDecimal? = null
     ): FilesRecord {
@@ -122,7 +163,6 @@ class SmsFileService : BaseService() {
             note = smsFile.note
             createdBy = smsFile.createdBy.id.toBigDecimal()
             createdOn = smsFile.createdOn
-            this.evaluationId = evaluationId
             this.assignmentId = assignmentId
             this.studentSchoolClassId = studentSchoolClassId
         }
@@ -131,11 +171,19 @@ class SmsFileService : BaseService() {
 
     fun selectFilesConditionStep() = db.select(
         FILES.asterisk(),
-        USER.asterisk()
+        USER.asterisk(),
     )
         .from(FILES)
         .leftJoin(USER)
         .on(USER.ID.eq(FILES.CREATED_BY))
+
+    fun selectFilesConditionStepForEvaluations(dslContext: DSLContext = db) =
+        dslContext.select(FILES.asterisk(), FILES_EVALUATION.asterisk(), USER.asterisk())
+            .from(FILES)
+            .leftJoin(FILES_EVALUATION)
+            .on(FILES.ID.eq(FILES_EVALUATION.FILES_ID))
+            .leftJoin(USER)
+            .on(USER.ID.eq(FILES.CREATED_BY))
 
     fun byteArrayToBase64String(byteArray: ByteArray?): String {
         return Base64.getEncoder().encodeToString(byteArray)
@@ -154,5 +202,55 @@ class SmsFileService : BaseService() {
         db.deleteFrom(FILES)
             .where(FILES.ID.eq(fileId))
             .execute()
+    }
+
+    fun deleteAllFiles(
+        assignmentIds: List<BigDecimal>? = null,
+        studentSchoolClassIds: List<BigDecimal>? = null
+    ) {
+        val files = db.selectFrom(FILES).where()
+            .apply {
+                if (!assignmentIds.isNullOrEmpty()) {
+                    and(FILES.ASSIGNMENT_ID.`in`(assignmentIds))
+                }
+                if (!studentSchoolClassIds.isNullOrEmpty()) {
+                    and(FILES.STUDENT_SCHOOL_CLASS_ID.`in`(studentSchoolClassIds))
+                }
+            }.fetch()
+
+        db.batchDelete(files).execute()
+    }
+
+    fun deleteAllFilesForEvaluations(
+        evaluationIds: List<BigDecimal>,
+        dslContext: DSLContext
+    ) {
+        dslContext.transaction { transaction ->
+            val records = selectFilesConditionStepForEvaluations(transaction.dsl())
+                .where(FILES_EVALUATION.EVALUATION_ID.`in`(evaluationIds))
+                .fetch()
+
+            val fileRecords = records.map { it.into(FilesRecord::class.java) }
+            val filesEvaluationRecords = records.map { it.into(FilesEvaluationRecord::class.java) }
+
+            transaction.dsl().batchDelete(filesEvaluationRecords).execute()
+
+            val existingFileEvaluations =
+                if (fileRecords.isNotEmpty()) {
+                    transaction.dsl().selectFrom(FILES_EVALUATION)
+                        .where(FILES_EVALUATION.EVALUATION_ID.`in`(fileRecords.map { it.id }))
+                        .fetch()
+                        .groupBy { it.filesId }
+                } else {
+                    emptyMap()
+                }
+
+            fileRecords.filter { existingFileEvaluations[it.id] == null }.apply {
+                if (this.isNotEmpty()) {
+                    transaction.dsl().batchDelete(this).execute()
+                }
+            }
+        }
+
     }
 }

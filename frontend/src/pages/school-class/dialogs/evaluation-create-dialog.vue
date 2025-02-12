@@ -90,6 +90,12 @@
             <span v-if="!newEvaluation.evaluationValue">
               <q-btn color="primary" icon="add" round size="sm" @click="editAbsence()"/>
             </span>
+            <single-file-picker v-if="newEvaluation.evaluationValue?.excused"
+                                v-model="absenceFile" :rules="[val=>val !== null && val !== '' || 'Задължително поле']"
+                                label="Извинителна бележка"
+                                reactive-rules
+                                remove-action-button
+            />
           </div>
           <div v-if="newEvaluation.evaluationType === EvaluationType.FEEDBACK">
             <q-select
@@ -126,16 +132,16 @@
             </q-select>
           </div>
           <q-card-actions align="right">
-              <q-btn :disable="existingFinalGrade && (newEvaluation.evaluationType===EvaluationType.GRADE && newEvaluation.evaluationValue.finalGrade===true)"
-                     color="primary" label="Готово" type="a"
-                     @click="submit">
-                  <q-tooltip v-if="existingFinalGrade">
-                      Ученикът вече има оформена {{
-                      newEvaluation.semester === Semester.YEARLY ? 'годишна оценка' : 'срочна оценка'
-                      }} по избрания предмет
-                  </q-tooltip>
-              </q-btn>
-              <q-btn class="q-ml-sm" color="primary" flat label="Отказ" @click="onDialogCancel"/>
+            <q-btn :disable="existingFinalGrade && (newEvaluation.evaluationType===EvaluationType.GRADE && newEvaluation.evaluationValue.finalGrade===true)"
+                   color="primary" label="Готово" type="a"
+                   @click="submit">
+              <q-tooltip v-if="existingFinalGrade">
+                Ученикът вече има оформена {{
+                  newEvaluation.semester === Semester.YEARLY ? 'годишна оценка' : 'срочна оценка'
+                }} по избрания предмет
+              </q-tooltip>
+            </q-btn>
+            <q-btn class="q-ml-sm" color="primary" flat label="Отказ" @click="onDialogCancel"/>
           </q-card-actions>
         </q-form>
       </q-card-section>
@@ -165,6 +171,7 @@ import GradesChooseComponent from "../evaluation-tables/grades-choose-component.
 import AbsencesChooseComponent from "../evaluation-tables/absences-choose-component.vue";
 import {StudentView} from "../../../model/User";
 import {Subject} from "../../../model/Subject";
+import SingleFilePicker from "../../common/single-file-picker.vue";
 
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
@@ -183,7 +190,7 @@ const props = defineProps<{
 }>()
 
 const newEvaluation = $ref(cloneDeep(props.evaluation))
-
+const absenceFile = $ref<File | null>(null)
 if (newEvaluation.evaluationType == EvaluationType.FEEDBACK) {
   newEvaluation.evaluationValue = <FeedbackValue>{}
 }
@@ -225,10 +232,14 @@ const editAbsence = () => {
 }
 
 const submit = async () => {
-    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
-    onDialogOK({
-        item: {evaluation: newEvaluation}
-    })
+  await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+  onDialogOK({
+    item: {
+      evaluation: newEvaluation,
+      fileContent: absenceFile,
+      note: absenceFile ? 'Извинителна бележка' : null
+    }
+  })
 }
 </script>
 

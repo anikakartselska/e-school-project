@@ -20,6 +20,8 @@ import {SchoolStatistics} from "../model/SchoolStatistics";
 import {StudentToYearlyResult, YearlyResults} from "../model/YearlyResults";
 import {SmsFile} from "../model/SmsFile";
 import JSZip from "jszip";
+import {createZipFromFiles} from "./helper-services/ZipService";
+import {Pair} from "../model/Pair";
 
 export const unzipFile = (fileData: any): Promise<File[]> => {
     return JSZip.loadAsync(fileData).then((zip: JSZip) => {
@@ -54,11 +56,12 @@ export const downloadFileFromBlobResponse = async (response: AxiosResponse, unZi
     return files
 }
 
-export const getFile = async (response: AxiosResponse): Promise<File> => {
+export const getFile = async (response: AxiosResponse): Promise<File | null> => {
     const fileName = response.headers['content-disposition']
             ?.split("filename=")[1]
             ?.replace(/['"]+/g, '')
-    return new File([response.data], fileName)
+    debugger
+    return response.data.size !== 0 ? new File([response.data], fileName) : null
 }
 export const login = async (username: string, password: string): Promise<AxiosResponse> =>
         await auth.post<string>(`/authenticate`, {username: username, password})
@@ -751,7 +754,6 @@ export const uploadFile = async (fileContent,
                                  fileName,
                                  createdById,
                                  note: string | null = null,
-                                 evaluationId: number | null = null,
                                  assignmentId: number | null = null,
                                  studentSchoolClassId: number | null = null,
                                  fileId: number | null = null,
@@ -763,7 +765,6 @@ export const uploadFile = async (fileContent,
             fileName,
             createdById,
             note,
-            evaluationId,
             assignmentId,
             studentSchoolClassId,
             fileId
@@ -772,12 +773,25 @@ export const uploadFile = async (fileContent,
     })
 }
 
-export const fetchAllFilesWithFilterWithoutFileContent = async (evaluationId: number | null = null,
-                                                                assignmentId: number | null = null,
+export const uploadFileWithEvaluationIds = async (files: File[], fileIndexToEvaluationIds: Pair<number, number[]>[]):
+        Promise<AxiosResponse<SmsFile>> => {
+
+
+    const fileContent = await createZipFromFiles(files)
+    const bodyFormData = new FormData()
+    bodyFormData.append('zipBytes', fileContent)
+    return await api.post<SmsFile>(`/upload-evaluation-files`, bodyFormData, {
+        params: {
+            fileIndexToEvaluationIds: JSON.stringify(fileIndexToEvaluationIds)
+        },
+        headers: {"Content-Type": "multipart/form-data"},
+    })
+}
+
+export const fetchAllFilesWithFilterWithoutFileContent = async (assignmentId: number | null = null,
                                                                 studentSchoolClassId: number | null = null): Promise<SmsFile[]> =>
         await api.get<SmsFile[]>('/get-all-files-with-filter-without-file-content', {
             params: {
-                evaluationId: evaluationId,
                 assignmentId: assignmentId,
                 studentSchoolClassId: studentSchoolClassId
             }
@@ -809,6 +823,21 @@ export const getFileWithoutDownload = async (
                 },
                 params: {
                     fileId: fileId,
+                },
+                responseType: 'blob'
+            }).then(response => getFile(response));
+}
+
+export const getFileWithoutDownloadByEvaluationId = async (
+        evaluationId,
+) => {
+    return await api.post<BlobPart | null>(`/get-file-by-evaluation-id`,
+            null, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                params: {
+                    evaluationId: evaluationId,
                 },
                 responseType: 'blob'
             }).then(response => getFile(response));
