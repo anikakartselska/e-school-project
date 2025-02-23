@@ -25,32 +25,32 @@
                dense flat
                @click="getSchoolPeriods()"
                icon="switch_account">
-            <q-menu>
-                <div class="row no-wrap q-pa-md">
-                    <div class="column">
-                        <div class="text-h6 q-mb-md">Смяна на роля</div>
-                        <q-select v-model="selectedPeriod"
-                                  :option-label="(option:SchoolPeriod) => `${option.startYear}/${option.endYear}`"
-                                  :options="schoolPeriods"
-                                  label="Учебна година"/>
-                        <q-select v-model="selectedRole" :disable="selectedPeriod==null"
-                                  :option-label="option => constructSchoolUserRoleMessage(option)"
-                                  :options="userRolesFilteredBySelectedPeriod"
-                                  label="Роля"/>
-                        <q-item>
-                            <q-item-section>
-                                <q-btn color="primary" dense flat label="Промени роля" @click="changeUserRole()"/>
-                            </q-item-section>
-                        </q-item>
-                        <q-separator/>
-                        <q-item>
-                            <q-item-section>
-                                <q-btn color="primary" dense flat label="Промени парола" @click="resetUserPassword()"/>
-                            </q-item-section>
-                        </q-item>
-                    </div>
-                </div>
-            </q-menu>
+          <q-menu>
+            <div class="row no-wrap q-pa-md">
+              <div class="column">
+                <div class="text-h6 q-mb-md">Смяна на роля</div>
+                <q-select v-model="selectedPeriod"
+                          :option-label="(option:SchoolPeriod) => `${option.startYear}/${option.endYear}`"
+                          :options="schoolPeriods"
+                          label="Учебна година"/>
+                <q-select v-model="selectedRole" :disable="selectedPeriod==null"
+                          :option-label="option => constructSchoolUserRoleMessage(option)"
+                          :options="userRolesFilteredBySelectedPeriod"
+                          label="Роля"/>
+                <q-item>
+                  <q-item-section>
+                    <q-btn color="primary" dense flat label="Промени роля" @click="changeUserRole()"/>
+                  </q-item-section>
+                </q-item>
+                <q-separator/>
+                <q-item>
+                  <q-item-section>
+                    <q-btn color="primary" dense flat label="Промени парола" @click="resetUserPassword()"/>
+                  </q-item-section>
+                </q-item>
+              </div>
+            </div>
+          </q-menu>
         </q-btn>
         <q-btn
                 :icon="$q.dark.isActive ? 'nights_stay' : 'wb_sunny'"
@@ -59,7 +59,42 @@
                 round
                 @click="$q.dark.toggle()"
         />
-        <q-btn class="q-mr-xs" dense flat icon="search" round/>
+        <q-btn dense flat icon="notifications" @click="getLastFiveNotifications()">
+          <q-badge v-if="!notificationsChecked" align="bottom" color="primary" floating rounded/>
+          <q-menu>
+            <div class="text-h6 q-my-sm q-mx-md">Известия
+              <q-btn class="float-right" color="primary" flat to="/rvm/activity-stream">
+                Виж всички
+              </q-btn>
+            </div>
+            <q-separator/>
+            <q-scroll-area v-if="notifications.length>0"
+                           :style="{'width':'49vh','max-height':'50vh','height':`${notifications.length*9}vh`}">
+              <q-list separator style="width: 49vh">
+                <q-item v-for="notification in notifications" v-ripple>
+                  <q-item-section>
+                    <q-item-label>
+                      {{ notification.action }}
+                    </q-item-label>
+                  </q-item-section>
+                  <q-item-section side top>
+                    <q-item-label caption>
+                      {{
+                        dateTimeToBulgarianLocaleString(notification.executedTime)
+                      }}
+                    </q-item-label>
+                    <q-icon color="primary" name="icon"/>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-scroll-area>
+            <div v-else style="width: 40vh">
+              <div class="q-ma-sm" style="text-align: center;color: #727272;font-size: 2vh">
+                Няма известия
+              </div>
+            </div>
+          </q-menu>
+        </q-btn>
         <q-btn
                 flat
                 round
@@ -84,57 +119,57 @@
           <q-toolbar>
             <q-avatar v-if="currentUserFile!=null"
                       text-color="white">
-                <q-img
-                        :src="imageUrl"
-                ></q-img>
+              <q-img
+                      :src="imageUrl"
+              ></q-img>
             </q-avatar>
-              <q-avatar v-else color="cyan-2" text-color="white">
-                  {{ getCurrentUser().firstName[0] }}{{ getCurrentUser().lastName[0] }}
-              </q-avatar>
-              <q-toolbar-title>{{ currentUser.firstName }} {{ currentUser.lastName }}</q-toolbar-title>
+            <q-avatar v-else color="cyan-2" text-color="white">
+              {{ getCurrentUser().firstName[0] }}{{ getCurrentUser().lastName[0] }}
+            </q-avatar>
+            <q-toolbar-title>{{ currentUser.firstName }} {{ currentUser.lastName }}</q-toolbar-title>
           </q-toolbar>
-            <hr/>
-            <q-scroll-area style="height:100%;">
+          <hr/>
+          <q-scroll-area style="height:100%;">
+            <q-list>
+              <div v-for="page in pages">
+                <q-item v-if="page.show"
+                        v-ripple
+                        :to="page.to"
+                        active-class="tab-active"
+                        class="navigation-item q-ma-sm"
+                        clickable
+                        exact
+                >
+                  <q-item-section avatar>
+                    <q-icon :name="page.icon"/>
+                  </q-item-section>
+                  <q-item-section>
+                    {{ page.label }}
+                  </q-item-section>
+                </q-item>
+              </div>
+              <q-expansion-item v-for="expansionItem in expansionItemsList"
+                                v-if="currentUser.role.role === SchoolRole.TEACHER"
+                                :content-inset-level="1"
+                                :icon="expansionItem.icon"
+                                :label="expansionItem.label"
+                                class="q-pl-sm"
+              >
                 <q-list>
-                    <div v-for="page in pages">
-                        <q-item v-if="page.show"
-                                v-ripple
-                                :to="page.to"
-                                active-class="tab-active"
-                                class="navigation-item q-ma-sm"
-                                clickable
-                                exact
-                        >
-                            <q-item-section avatar>
-                                <q-icon :name="page.icon"/>
-                            </q-item-section>
-                            <q-item-section>
-                                {{ page.label }}
-                            </q-item-section>
-                        </q-item>
-                    </div>
-                    <q-expansion-item v-for="expansionItem in expansionItemsList"
-                                      v-if="currentUser.role.role === SchoolRole.TEACHER"
-                                      :content-inset-level="1"
-                                      :icon="expansionItem.icon"
-                                      :label="expansionItem.label"
-                                      class="q-pl-sm"
-                    >
-                        <q-list>
-                            <q-item v-for="item in expansionItem.items"
-                                    v-close-popup
-                                    :to="`/subject-diary/${item.schoolClass?.id}/${item.id}/${currentUser.role.period.id}/${currentUser.role.school.id}/grades`"
-                                    clickable>
-                                <q-item-section>
-                                    <q-item-label style="white-space: break-spaces;">
-                                        {{ item.name }} - {{ item.schoolClass.name }}
-                                    </q-item-label>
-                                </q-item-section>
-                            </q-item>
-                        </q-list>
-                    </q-expansion-item>
+                  <q-item v-for="item in expansionItem.items"
+                          v-close-popup
+                          :to="`/subject-diary/${item.schoolClass?.id}/${item.id}/${currentUser.role.period.id}/${currentUser.role.school.id}/grades`"
+                          clickable>
+                    <q-item-section>
+                      <q-item-label style="white-space: break-spaces;">
+                        {{ item.name }} - {{ item.schoolClass.name }}
+                      </q-item-label>
+                    </q-item-section>
+                  </q-item>
                 </q-list>
-            </q-scroll-area>
+              </q-expansion-item>
+            </q-list>
+          </q-scroll-area>
         </div>
       </div>
     </q-drawer>
@@ -163,23 +198,28 @@
 import {useRouter} from "vue-router";
 import {$computed, $ref} from "vue/macros";
 import {
-    clearUserStorage,
-    currentUserHasAnyRole,
-    getCurrentUser,
-    updateUserInLocalStorage
+  clearUserStorage,
+  currentUserHasAnyRole,
+  getCurrentUser,
+  updateUserInLocalStorage
 } from "../services/LocalStorageService";
 import {
-    fetchAllSubjectsTaughtByTeacher,
-    getAllSchoolPeriods,
-    getAllUserRoles,
-    getUserProfilePicture,
-    loginAfterSelectedRole,
-    logout
+  fetchAllSubjectsTaughtByTeacher,
+  getAllSchoolPeriods,
+  getAllUserRoles,
+  getLastFiveActionsForUser,
+  getUserProfilePicture,
+  loginAfterSelectedRole,
+  logout
 } from "../services/RequestService";
-import {onBeforeMount, watch} from "vue";
+import {onBeforeMount, onBeforeUnmount, watch} from "vue";
 import {constructSchoolUserRoleMessage, SchoolUserRole} from "../model/SchoolUserRole";
 import {SchoolPeriod} from "../model/SchoolPeriod";
-import {confirmActionPromiseDialog, confirmActionPromiseDialogWithCancelButton} from "../utils";
+import {
+  confirmActionPromiseDialog,
+  confirmActionPromiseDialogWithCancelButton,
+  dateTimeToBulgarianLocaleString
+} from "../utils";
 import {AuthenticationResponse, Success} from "../model/AuthenticationResponse";
 import {periodId, schoolId} from "../model/constants";
 import {useQuasar} from "quasar";
@@ -187,15 +227,17 @@ import PasswordChangeDialog from "./reset-password/password-change-dialog.vue";
 import {School} from "../model/School";
 import {DetailsForParent, DetailsForStudent, SchoolRole} from "../model/User";
 import {SubjectWithSchoolClassInformation} from "../model/Subject";
+import {actionsEventSource, setupActionsEventSource} from "../services/EventSourceService";
+import {Actions} from "../model/Actions";
 
 const router = useRouter();
 const quasar = useQuasar()
 const onLogoutClick = async () => {
-    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
-    await logout().then(async r => {
-        clearUserStorage()
-        await router.push('/login')
-    })
+  await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+  await logout().then(async r => {
+    clearUserStorage()
+    await router.push('/login')
+  })
 }
 
 let currentUser = $ref(getCurrentUser());
@@ -205,26 +247,61 @@ let school = $ref<School | null>(null)
 let userRoles = $ref(<SchoolUserRole[]>[]);
 let schoolPeriods = $ref(<SchoolPeriod[]>[]);
 let subjectWithSchoolClassInformation = $ref(<SubjectWithSchoolClassInformation[]>[])
+let notificationsChecked = $ref(true)
+let notifications = $ref<Actions[]>([])
+
 onBeforeMount(async () => {
   currentUser = getCurrentUser()
   await load()
   imageUrl = currentUserFile ? window.URL.createObjectURL(currentUserFile) : ''
 
+
+  setupActionsEventSource()
+  console.log(actionsEventSource)
+  actionsEventSource.addEventListener('message', (actionMessage: MessageEvent) => {
+    console.log("hereeee¶")
+    const newAction = <Actions>JSON.parse(actionMessage.data)
+    // if (newAction.executedBy.id !== getCurrentUser().id) {
+    quasar.notify({
+      position: "top-right",
+      progress: true,
+      timeout: 5000,
+      icon: 'notifications',
+      iconColor: 'white',
+      message: newAction.action,
+      color: 'primary',
+    })
+    notificationsChecked = false;
+    notifications.unshift(newAction)
+    // }
+  }, false)
+  console.log(actionsEventSource)
 })
 
+onBeforeUnmount(() => {
+  actionsEventSource.close();
+})
+
+const getLastFiveNotifications = async () => {
+  if (notifications.length == 0) {
+    notifications = await getLastFiveActionsForUser()
+  }
+  notificationsChecked = true;
+};
+
 const load = async () => {
-    userRoles = await getAllUserRoles(currentUser.id)
-    schoolPeriods = await getAllSchoolPeriods()
-    userRolesFilteredBySelectedPeriod = userRoles.filter(role => role.period.id == selectedPeriod?.id)
-    currentUserFile = await getUserProfilePicture(currentUser.id)
-    school = currentUser.role.school
-    if (currentUser.role.role === SchoolRole.TEACHER) {
-        subjectWithSchoolClassInformation = await fetchAllSubjectsTaughtByTeacher(currentUser.id, periodId.value, schoolId.value)
-    }
+  userRoles = await getAllUserRoles(currentUser.id)
+  schoolPeriods = await getAllSchoolPeriods()
+  userRolesFilteredBySelectedPeriod = userRoles.filter(role => role.period.id == selectedPeriod?.id)
+  currentUserFile = await getUserProfilePicture(currentUser.id)
+  school = currentUser.role.school
+  if (currentUser.role.role === SchoolRole.TEACHER) {
+    subjectWithSchoolClassInformation = await fetchAllSubjectsTaughtByTeacher(currentUser.id, periodId.value, schoolId.value)
+  }
 }
 const getSchoolPeriods = async () => {
-    userRoles = await getAllUserRoles(currentUser.id)
-    schoolPeriods = await getAllSchoolPeriods()
+  userRoles = await getAllUserRoles(currentUser.id)
+  schoolPeriods = await getAllSchoolPeriods()
 }
 
 let userRolesFilteredBySelectedPeriod = $ref<SchoolUserRole[]>([])
@@ -238,27 +315,27 @@ watch(() => selectedPeriod, () => {
 const changeUserRole = async () => {
   await confirmActionPromiseDialogWithCancelButton("Смяна на роля", `Сигурни ли сте, че искате да влезнете в приложението като ${constructSchoolUserRoleMessage(selectedRole)}`)
   await loginAfterSelectedRole(selectedRole?.id!!, selectedPeriod?.id!!).then(async r => {
-              const authResponse: AuthenticationResponse = <Success>r.data
-              updateUserInLocalStorage(authResponse.user)
-              currentUser = getCurrentUser()
-              school = currentUser.role.school
-              schoolId.value = school.id.toString()
-              periodId.value = currentUser.role.period.id.toString()
-              if (currentUser.role.role === SchoolRole.TEACHER) {
-                  subjectWithSchoolClassInformation = await fetchAllSubjectsTaughtByTeacher(currentUser.id, periodId.value, schoolId.value)
-              } else {
-                  subjectWithSchoolClassInformation = []
-              }
-              await router.push({path: '/'})
+            const authResponse: AuthenticationResponse = <Success>r.data
+            updateUserInLocalStorage(authResponse.user)
+            currentUser = getCurrentUser()
+            school = currentUser.role.school
+            schoolId.value = school.id.toString()
+            periodId.value = currentUser.role.period.id.toString()
+            if (currentUser.role.role === SchoolRole.TEACHER) {
+              subjectWithSchoolClassInformation = await fetchAllSubjectsTaughtByTeacher(currentUser.id, periodId.value, schoolId.value)
+            } else {
+              subjectWithSchoolClassInformation = []
+            }
+            await router.push({path: '/'})
           }
   )
 }
 const resetUserPassword = () => {
-    quasar.dialog({
-        component: PasswordChangeDialog,
-    }).onOk(async (payload) => {
+  quasar.dialog({
+    component: PasswordChangeDialog,
+  }).onOk(async (payload) => {
 
-    })
+  })
 }
 
 const left = $ref(true)
@@ -267,70 +344,70 @@ const expansionItemsList = $computed(() =>
         [{label: 'Предмети', icon: "reorder", items: subjectWithSchoolClassInformation}]
 )
 const pages = $computed(() => [
-    {
-        to: `/user/${currentUser.id}/${periodId.value}/${schoolId.value}`,
-        label: "Лична информация",
-        show: true,
-        icon: 'person'
-    },
-    {
-        to: `/student-diary/${((currentUser.role.detailsForUser as DetailsForParent)?.child?.role.detailsForUser as DetailsForStudent)?.schoolClass?.id}/${(currentUser.role.detailsForUser as DetailsForParent)?.child?.id}/${periodId.value}/${schoolId.value}/grades`,
-        label: "Дневник",
-        show: currentUserHasAnyRole([SchoolRole.PARENT]),
-        icon: 'menu_book'
-    },
-    {
-        to: `/teacher-lessons/${periodId.value}/${schoolId.value}/${currentUser.id}`,
-        label: "Моята програма",
-        show: currentUserHasAnyRole([SchoolRole.TEACHER]),
-        icon: 'event_note'
-    },
-    {
-        to: `/student-diary/${(currentUser.role.detailsForUser as DetailsForStudent)?.schoolClass?.id}/${currentUser.id}/${periodId.value}/${schoolId.value}/grades`,
-        label: "Дневник",
-        show: currentUserHasAnyRole([SchoolRole.STUDENT]),
-        icon: 'menu_book'
-    },
-    {
-        to: `/administration-page/${periodId.value}/${schoolId.value}`,
-        label: "Администрация",
-        show: currentUserHasAnyRole([SchoolRole.ADMIN]),
-        icon: 'admin_panel_settings'
-    },
-    {to: `/school-page/${schoolId.value}`, label: "Училище", show: true, icon: 'account_balance'},
-    {to: `/users/${periodId.value}/${schoolId.value}/all`, label: "Потребители", show: true, icon: 'people'},
-    {
-        to: `/requests/${periodId.value}/${schoolId.value}/user-requests`,
-        label: "Заявки",
-        show: currentUserHasAnyRole([SchoolRole.ADMIN]),
-        icon: 'checklist'
-    },
-    {
-        to: `/school-classes/${periodId.value}/${schoolId.value}`,
-        label: "Класове",
-        show: currentUserHasAnyRole([SchoolRole.ADMIN, SchoolRole.TEACHER]),
-        icon: 'school'
-    },
-    {
-        to: `/school-classes-plans/${schoolId.value}/${periodId.value}`,
-        label: "Учебни планове",
-        show: currentUserHasAnyRole([SchoolRole.ADMIN, SchoolRole.TEACHER]
-        ),
-        icon: 'description'
-    },
-    {to: `/calendar`, label: "Учебен Календар", show: true, icon: 'calendar_month'},
-    {
-        to: `/program`,
-        label: "Учебна програма",
-        show: currentUserHasAnyRole([SchoolRole.ADMIN, SchoolRole.TEACHER]),
-        icon: 'date_range'
-    },
-    {
-        to: `/school-lessons-page/${periodId.value}/${schoolId.value}`,
-        label: "Седмични разписи",
-        show: currentUserHasAnyRole([SchoolRole.ADMIN, SchoolRole.TEACHER]),
-        icon: 'event_note'
-    },
+  {
+    to: `/user/${currentUser.id}/${periodId.value}/${schoolId.value}`,
+    label: "Лична информация",
+    show: true,
+    icon: 'person'
+  },
+  {
+    to: `/student-diary/${((currentUser.role.detailsForUser as DetailsForParent)?.child?.role.detailsForUser as DetailsForStudent)?.schoolClass?.id}/${(currentUser.role.detailsForUser as DetailsForParent)?.child?.id}/${periodId.value}/${schoolId.value}/grades`,
+    label: "Дневник",
+    show: currentUserHasAnyRole([SchoolRole.PARENT]),
+    icon: 'menu_book'
+  },
+  {
+    to: `/teacher-lessons/${periodId.value}/${schoolId.value}/${currentUser.id}`,
+    label: "Моята програма",
+    show: currentUserHasAnyRole([SchoolRole.TEACHER]),
+    icon: 'event_note'
+  },
+  {
+    to: `/student-diary/${(currentUser.role.detailsForUser as DetailsForStudent)?.schoolClass?.id}/${currentUser.id}/${periodId.value}/${schoolId.value}/grades`,
+    label: "Дневник",
+    show: currentUserHasAnyRole([SchoolRole.STUDENT]),
+    icon: 'menu_book'
+  },
+  {
+    to: `/administration-page/${periodId.value}/${schoolId.value}`,
+    label: "Администрация",
+    show: currentUserHasAnyRole([SchoolRole.ADMIN]),
+    icon: 'admin_panel_settings'
+  },
+  {to: `/school-page/${schoolId.value}`, label: "Училище", show: true, icon: 'account_balance'},
+  {to: `/users/${periodId.value}/${schoolId.value}/all`, label: "Потребители", show: true, icon: 'people'},
+  {
+    to: `/requests/${periodId.value}/${schoolId.value}/user-requests`,
+    label: "Заявки",
+    show: currentUserHasAnyRole([SchoolRole.ADMIN]),
+    icon: 'checklist'
+  },
+  {
+    to: `/school-classes/${periodId.value}/${schoolId.value}`,
+    label: "Класове",
+    show: currentUserHasAnyRole([SchoolRole.ADMIN, SchoolRole.TEACHER]),
+    icon: 'school'
+  },
+  {
+    to: `/school-classes-plans/${schoolId.value}/${periodId.value}`,
+    label: "Учебни планове",
+    show: currentUserHasAnyRole([SchoolRole.ADMIN, SchoolRole.TEACHER]
+    ),
+    icon: 'description'
+  },
+  {to: `/calendar`, label: "Учебен Календар", show: true, icon: 'calendar_month'},
+  {
+    to: `/program`,
+    label: "Учебна програма",
+    show: currentUserHasAnyRole([SchoolRole.ADMIN, SchoolRole.TEACHER]),
+    icon: 'date_range'
+  },
+  {
+    to: `/school-lessons-page/${periodId.value}/${schoolId.value}`,
+    label: "Седмични разписи",
+    show: currentUserHasAnyRole([SchoolRole.ADMIN, SchoolRole.TEACHER]),
+    icon: 'event_note'
+  },
 
 ])
 

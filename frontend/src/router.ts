@@ -50,6 +50,7 @@ import SchoolClassYearlyResultsTab from "./pages/school-class/school-class-yearl
 import StudentYearlyResults from "./pages/per-student-evaluations/student-yearly-results.vue";
 import {SchoolRole} from "./model/User";
 import SchoolLessonsPageForAllClasses from "./pages/administration/school-lessons-page-for-all-classes.vue";
+import ActivityStreamPage from "./pages/activity-stream/activity-stream-page.vue";
 
 const routes = [
     {
@@ -138,6 +139,16 @@ const routes = [
                 path: '/school-page/:schoolId(\\d+)',
                 name: 'school-page',
                 component: SchoolPage,
+                props: true,
+                beforeEnter: (to, from, next) => {
+                    if (!userHasLoggedInSchoolAndPeriod(to.params)) return next('/unauthorized')
+                    return next()
+                },
+            },
+            {
+                path: '/activity-stream/:schoolId(\\d+)/:periodId(\\d+)',
+                name: 'activity-stream',
+                component: ActivityStreamPage,
                 props: true,
                 beforeEnter: (to, from, next) => {
                     if (!userHasLoggedInSchoolAndPeriod(to.params)) return next('/unauthorized')

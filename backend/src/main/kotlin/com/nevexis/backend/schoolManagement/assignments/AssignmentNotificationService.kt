@@ -1,5 +1,8 @@
 package com.nevexis.backend.schoolManagement.assignments
 
+import com.nevexis.backend.schoolManagement.actions.ActionType
+import com.nevexis.backend.schoolManagement.actions.ActionsContentService
+import com.nevexis.backend.schoolManagement.actions.ActivityStreamService
 import com.nevexis.backend.schoolManagement.email.NotificationService
 import com.nevexis.backend.schoolManagement.email.TemplateType
 import com.nevexis.backend.schoolManagement.users.UserService
@@ -16,6 +19,12 @@ class AssignmentNotificationService {
     @Autowired
     private lateinit var userService: UserService
 
+    @Autowired
+    private lateinit var activityStreamService: ActivityStreamService
+
+    @Autowired
+    private lateinit var actionsContentService: ActionsContentService
+
     fun sendEmailForAssignmentCreation(
         assignment: Assignments,
         periodId: BigDecimal,
@@ -23,12 +32,18 @@ class AssignmentNotificationService {
         schoolClassId: BigDecimal
     ) {
         val studentsFromSchoolClass = userService.getAllStudentsInSchoolClass(schoolClassId, periodId)
-        val parentsEmails = userService.getParentEmailsFromListOfStudentIds(
+        val parentInformation = userService.getParentEmailsFromListOfStudentIds(
             studentsFromSchoolClass.map { it.id.toBigDecimal() },
             periodId,
             schoolId
-        ).values.toList()
+        ).values
+
+        val parentsEmails = parentInformation.map { it.second!! }.toList()
         val studentsEmails = studentsFromSchoolClass.map { it.email }
+        val parentIds = parentInformation.map { it.first!! }.toList()
+
+        val studentIds = studentsFromSchoolClass.map { it.id.toBigDecimal() }
+
 
         notificationService.sendNotification(
             studentsEmails.plus(parentsEmails),
@@ -39,6 +54,17 @@ class AssignmentNotificationService {
             },
             TemplateType.ASSIGNMENT_CREATE,
             getContextForAssignmentCreate(assignment)
+        )
+
+        activityStreamService.createAction(
+            periodId = periodId,
+            schoolId = schoolId,
+            userId = assignment.createdBy.id.toBigDecimal(),
+            forUserIds = studentIds.plus(parentIds),
+            action = actionsContentService.constructActionsMessage(
+                ActionType.ASSIGNMENT_CREATE,
+                actionsContentService.getContextForAssignmentCreate(assignment)
+            )
         )
     }
 
@@ -51,12 +77,16 @@ class AssignmentNotificationService {
         schoolClassId: BigDecimal
     ) {
         val studentsFromSchoolClass = userService.getAllStudentsInSchoolClass(schoolClassId, periodId)
-        val parentsEmails = userService.getParentEmailsFromListOfStudentIds(
+        val parentInformation = userService.getParentEmailsFromListOfStudentIds(
             studentsFromSchoolClass.map { it.id.toBigDecimal() },
             periodId,
             schoolId
-        ).values.toList()
+        ).values.toList().distinct()
+
+        val parentsEmails = parentInformation.map { it.second!! }
+        val parentIds = parentInformation.map { it.first!! }
         val studentsEmails = studentsFromSchoolClass.map { it.email }
+        val studentIds = studentsFromSchoolClass.map { it.id.toBigDecimal() }
 
         notificationService.sendNotification(
             studentsEmails.plus(parentsEmails),
@@ -68,6 +98,17 @@ class AssignmentNotificationService {
             TemplateType.ASSIGNMENT_UPDATE,
             getContextForAssignmentUpdate(assignment, oldAssignmentValue, oldAssignmentText)
         )
+
+        activityStreamService.createAction(
+            periodId = periodId,
+            schoolId = schoolId,
+            userId = assignment.createdBy.id.toBigDecimal(),
+            forUserIds = studentIds.plus(parentIds),
+            action = actionsContentService.constructActionsMessage(
+                ActionType.ASSIGNMENT_UPDATE,
+                actionsContentService.getContextForAssignmentUpdate(assignment, oldAssignmentValue, oldAssignmentText)
+            )
+        )
     }
 
     fun sendEmailForAssignmentDelete(
@@ -77,12 +118,16 @@ class AssignmentNotificationService {
         schoolClassId: BigDecimal
     ) {
         val studentsFromSchoolClass = userService.getAllStudentsInSchoolClass(schoolClassId, periodId)
-        val parentsEmails = userService.getParentEmailsFromListOfStudentIds(
+        val parentInformation = userService.getParentEmailsFromListOfStudentIds(
             studentsFromSchoolClass.map { it.id.toBigDecimal() },
             periodId,
             schoolId
         ).values.toList()
+
+        val parentsEmails = parentInformation.map { it.second!! }
+        val parentIds = parentInformation.map { it.first!! }
         val studentsEmails = studentsFromSchoolClass.map { it.email }
+        val studentIds = studentsFromSchoolClass.map { it.id.toBigDecimal() }
 
         notificationService.sendNotification(
             studentsEmails.plus(parentsEmails),
@@ -93,6 +138,17 @@ class AssignmentNotificationService {
             },
             TemplateType.ASSIGNMENT_DELETE,
             getContextForAssignmentDelete(assignment)
+        )
+
+        activityStreamService.createAction(
+            periodId = periodId,
+            schoolId = schoolId,
+            userId = assignment.createdBy.id.toBigDecimal(),
+            forUserIds = studentIds.plus(parentIds),
+            action = actionsContentService.constructActionsMessage(
+                ActionType.ASSIGNMENT_DELETE,
+                actionsContentService.getContextForAssignmentDelete(assignment)
+            )
         )
     }
 

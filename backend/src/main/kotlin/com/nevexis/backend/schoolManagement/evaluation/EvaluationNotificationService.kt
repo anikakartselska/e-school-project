@@ -1,5 +1,8 @@
 package com.nevexis.backend.schoolManagement.evaluation
 
+import com.nevexis.backend.schoolManagement.actions.ActionType
+import com.nevexis.backend.schoolManagement.actions.ActionsContentService
+import com.nevexis.backend.schoolManagement.actions.ActivityStreamService
 import com.nevexis.backend.schoolManagement.email.NotificationService
 import com.nevexis.backend.schoolManagement.email.TemplateType
 import com.nevexis.backend.schoolManagement.school_period.Semester
@@ -20,6 +23,12 @@ class EvaluationNotificationService {
 
     @Autowired
     private lateinit var userService: UserService
+
+    @Autowired
+    private lateinit var activityStreamService: ActivityStreamService
+
+    @Autowired
+    private lateinit var actionsContentService: ActionsContentService
     fun sendEmailForEvaluationsCreation(
         evaluations: List<Evaluation>,
         periodId: BigDecimal,
@@ -29,15 +38,27 @@ class EvaluationNotificationService {
 
         val studentIds = newEvaluationsGroupedByStudentId.keys.toList()
 
-        val studentIdToParentEmails = userService.getParentEmailsFromListOfStudentIds(studentIds, periodId, schoolId)
+        val studentIdToParentInformation =
+            userService.getParentEmailsFromListOfStudentIds(studentIds, periodId, schoolId)
         newEvaluationsGroupedByStudentId.forEach { (_, evaluations) ->
             evaluations.forEach { evaluation ->
-                studentIdToParentEmails[evaluation.student.id.toBigDecimal()]?.let { email ->
+                studentIdToParentInformation[evaluation.student.id.toBigDecimal()]?.let { (id, email) ->
                     notificationService.sendNotification(
-                        listOf(email, evaluation.student.email),
+                        listOf(email!!, evaluation.student.email),
                         "НОВО оценяване",
                         TemplateType.EVALUATION_CREATE,
                         getContextForEvaluationCreation(evaluation)
+                    )
+
+                    activityStreamService.createAction(
+                        periodId = periodId,
+                        schoolId = schoolId,
+                        userId = evaluation.createdBy.id.toBigDecimal(),
+                        forUserIds = listOf(id!!, evaluation.student.id.toBigDecimal()),
+                        action = actionsContentService.constructActionsMessage(
+                            ActionType.EVALUATION_CREATE,
+                            actionsContentService.getContextForEvaluationCreation(evaluation)
+                        )
                     )
                 }
             }
@@ -53,15 +74,29 @@ class EvaluationNotificationService {
 
         val studentIds = deletedEvaluationsGroupedByStudentId.keys.toList()
 
-        val studentIdToParentEmails = userService.getParentEmailsFromListOfStudentIds(studentIds, periodId, schoolId)
+        val studentIdToParentInformation =
+            userService.getParentEmailsFromListOfStudentIds(studentIds, periodId, schoolId)
         deletedEvaluationsGroupedByStudentId.forEach { (_, evaluations) ->
             evaluations.forEach { evaluation ->
-                studentIdToParentEmails[evaluation.student.id.toBigDecimal()]?.let { email ->
+                studentIdToParentInformation[evaluation.student.id.toBigDecimal()]?.let { (id, email) ->
                     notificationService.sendNotification(
-                        listOf(email, evaluation.student.email),
+                        listOf(email!!, evaluation.student.email),
                         "ИЗТРИТО оценяване",
                         TemplateType.EVALUATION_DELETE,
                         getContextForEvaluationDelete(evaluation)
+                    )
+
+                    activityStreamService.createAction(
+                        periodId = periodId,
+                        schoolId = schoolId,
+                        userId = evaluation.createdBy.id.toBigDecimal(),
+                        forUserIds = listOf(id!!, evaluation.student.id.toBigDecimal()),
+                        action = actionsContentService.constructActionsMessage(
+                            ActionType.EVALUATION_DELETE,
+                            actionsContentService.getContextForEvaluationDelete(
+                                evaluation
+                            )
+                        )
                     )
                 }
             }
@@ -77,17 +112,32 @@ class EvaluationNotificationService {
 
         val studentIds = newEvaluationsGroupedByStudentId.keys.toList().map { it.toBigDecimal() }
 
-        val studentIdToParentEmails = userService.getParentEmailsFromListOfStudentIds(studentIds, periodId, schoolId)
+        val studentIdToParentInformation =
+            userService.getParentEmailsFromListOfStudentIds(studentIds, periodId, schoolId)
         newEvaluationsGroupedByStudentId.forEach { (_, evaluations) ->
             evaluations.forEach { evaluation ->
-                studentIdToParentEmails[evaluation.first.student.id.toBigDecimal()]?.let { email ->
+                studentIdToParentInformation[evaluation.first.student.id.toBigDecimal()]?.let { (id, email) ->
                     notificationService.sendNotification(
-                        listOf(email, evaluation.first.student.email),
+                        listOf(email!!, evaluation.first.student.email),
                         "Редакция на оценяване",
                         TemplateType.EVALUATION_UPDATE,
                         getContextForEvaluationUpdate(
                             evaluation.first,
                             Json.decodeFromString(evaluation.second.evaluationValue!!)
+                        )
+                    )
+
+                    activityStreamService.createAction(
+                        periodId = periodId,
+                        schoolId = schoolId,
+                        userId = evaluation.first.createdBy.id.toBigDecimal(),
+                        forUserIds = listOf(id!!, evaluation.first.student.id.toBigDecimal()),
+                        action = actionsContentService.constructActionsMessage(
+                            ActionType.EVALUATION_UPDATE,
+                            actionsContentService.getContextForEvaluationUpdate(
+                                evaluation.first,
+                                Json.decodeFromString(evaluation.second.evaluationValue!!)
+                            )
                         )
                     )
                 }

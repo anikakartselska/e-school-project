@@ -222,3 +222,30 @@ export const commentPromiseDialog = (): Promise<string> => new Promise<string>((
             .onCancel(() => {
             })
 });
+export const checkIfMaxDate = (date: Date | string | null | undefined, dates: Date[]): boolean => {
+    if (!date) return false; // Handle null/undefined cases
+
+    const inputDate = new Date(date); // Ensure `date` is a Date object
+    if (isNaN(inputDate.getTime())) return false; // Check for invalid date
+
+    const test: number[] = dates
+            .map(it => it ? new Date(it).getTime() : NaN)
+            .filter(timestamp =>
+                    !isNaN(timestamp) && new Date(timestamp).toDateString() === inputDate.toDateString()
+            );
+
+    return test.length > 0 && inputDate.getTime() === Math.max(...test);
+};
+
+export function getDistinctDates(dates: (Date | string)[]): Date[] {
+    const uniqueDates = new Set(
+            dates
+                    .map(date => {
+                        const validDate = date instanceof Date ? date : new Date(date);
+                        return isNaN(validDate.getTime()) ? null : validDate.toISOString().split('T')[0];
+                    })
+                    .filter(dateStr => dateStr !== null) // Remove invalid dates
+    );
+
+    return Array.from(uniqueDates).map(dateStr => new Date(dateStr!));
+}

@@ -325,8 +325,8 @@ class UserService : UserBaseService() {
         studentIds: List<BigDecimal>,
         periodId: BigDecimal,
         schoolId: BigDecimal
-    ): Map<BigDecimal, String> {
-        return db.select(USER.ID, PARENT_USER.EMAIL).from(PARENT_USER)
+    ): Map<BigDecimal, Pair<BigDecimal?, String?>> {
+        return db.select(USER.ID, PARENT_USER.EMAIL, PARENT_USER.ID).from(PARENT_USER)
             .leftJoin(PARENT_USER_ROLE)
             .on(PARENT_USER_ROLE.USER_ID.eq(PARENT_USER.ID))
             .leftJoin(PARENT_ROLE_PERIOD)
@@ -345,7 +345,7 @@ class UserService : UserBaseService() {
                     USER.ID.`in`(studentIds)
                 }
             }.fetch().associate {
-                it.get(USER.ID, BigDecimal::class.java) to it.get(PARENT_USER.EMAIL)!!
+                it.get(USER.ID, BigDecimal::class.java) to Pair(it.get(PARENT_USER.ID), it.get(PARENT_USER.EMAIL))
             }
     }
 

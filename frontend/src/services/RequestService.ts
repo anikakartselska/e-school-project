@@ -22,6 +22,7 @@ import {SmsFile} from "../model/SmsFile";
 import JSZip from "jszip";
 import {createZipFromFiles} from "./helper-services/ZipService";
 import {Pair} from "../model/Pair";
+import {Actions, ActionsFetchingInformationDTO} from "../model/Actions";
 
 export const unzipFile = (fileData: any): Promise<File[]> => {
     return JSZip.loadAsync(fileData).then((zip: JSZip) => {
@@ -848,3 +849,18 @@ export const deleteFileById = async (fileId: number): Promise<any> =>
             params: {fileId: fileId},
             headers: {'Content-Type': 'application/json'}
         })
+
+export const getActionsWithFiltersAndPagination = async (actionsFetchingInformationDTO: ActionsFetchingInformationDTO): Promise<Actions[] | Awaited<any>> =>
+        await api.post<Actions[]>("/stream/get-actions-with-filters-and-pagination", actionsFetchingInformationDTO, {
+            params: {},
+            headers: {'Content-Type': 'application/json'},
+            // @ts-ignore
+            notificationMessages: <NotificationMessages>{
+                progressMessage: "Message",
+                successMessage: "Message",
+                errorMessage: "Message"
+            }
+        }).then(r => r.data)
+
+export const getLastFiveActionsForUser = async (): Promise<Actions[]> =>
+        await api.get<Actions[]>("/stream/get-last-five-actions-for-user").then(r => r.data)
