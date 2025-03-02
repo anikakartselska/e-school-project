@@ -51,6 +51,8 @@ import StudentYearlyResults from "./pages/per-student-evaluations/student-yearly
 import {SchoolRole} from "./model/User";
 import SchoolLessonsPageForAllClasses from "./pages/administration/school-lessons-page-for-all-classes.vue";
 import ActivityStreamPage from "./pages/activity-stream/activity-stream-page.vue";
+import ExamEditPage from "./pages/exams/questions-manage-page.vue";
+import ExamTakePage from "./pages/exams/exam-take-page.vue";
 
 const routes = [
     {
@@ -134,6 +136,22 @@ const routes = [
                     if (!userHasLoggedInSchoolAndPeriod(to.params) || !currentUserHasAnyRole([SchoolRole.ADMIN])) return next('/unauthorized')
                     return next()
                 },
+            },
+            {
+                path: '/exam-edit-page/:periodId(\\d+)/:schoolId(\\d+)/:examId(\\d)',
+                name: 'exam-edit-page',
+                component: ExamEditPage,
+                props: true,
+                beforeEnter: (to, from, next) => {
+                    if (!currentUserHasAnyRole([SchoolRole.TEACHER, SchoolRole.ADMIN])) return next('/unauthorized')
+                    return next()
+                }
+            },
+            {
+                path: '/exam-take-page/:periodId(\\d+)/:schoolId(\\d+)/:examId(\\d)',
+                name: 'exam-take-page',
+                component: ExamTakePage,
+                props: true
             },
             {
                 path: '/school-page/:schoolId(\\d+)',

@@ -249,3 +249,12 @@ export function getDistinctDates(dates: (Date | string)[]): Date[] {
 
     return Array.from(uniqueDates).map(dateStr => new Date(dateStr!));
 }
+
+export const generateUUID = (): string => {
+    let dt = new Date().getTime();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = (dt + Math.random() * 16) % 16 | 0;
+        dt = Math.floor(dt / 16);
+        return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+}

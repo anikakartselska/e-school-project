@@ -23,6 +23,8 @@ import JSZip from "jszip";
 import {createZipFromFiles} from "./helper-services/ZipService";
 import {Pair} from "../model/Pair";
 import {Actions, ActionsFetchingInformationDTO} from "../model/Actions";
+import {Exam} from "../model/Exam";
+import {ExamAnswers} from "../model/ExamAnswers";
 
 export const unzipFile = (fileData: any): Promise<File[]> => {
     return JSZip.loadAsync(fileData).then((zip: JSZip) => {
@@ -864,3 +866,46 @@ export const getActionsWithFiltersAndPagination = async (actionsFetchingInformat
 
 export const getLastFiveActionsForUser = async (): Promise<Actions[]> =>
         await api.get<Actions[]>("/stream/get-last-five-actions-for-user").then(r => r.data)
+
+export const mergeExam = async (exam,
+                                schoolId,
+                                periodId): Promise<Exam> =>
+        await api.post<Exam>('/save-update-exam', exam, {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId
+            },
+            headers: {'Content-Type': 'application/json'}
+        }).then(p => p.data)
+
+export const getExamById = async (examId): Promise<Exam> =>
+        await api.get<Exam>('/get-exam', {
+            params: {
+                examId: examId
+            }
+        }).then(p => p.data)
+export const deleteExamById = async (examId: number): Promise<any> =>
+        await api.post<any>(`/delete-exam`, null, {
+            params: {examId: examId},
+            headers: {'Content-Type': 'application/json'}
+        })
+
+export const mergeExamAnswers = async (examAnswers,
+                                       schoolId,
+                                       periodId, examId): Promise<ExamAnswers> =>
+        await api.post<ExamAnswers>('/save-update-exam-answers', examAnswers, {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId,
+                examId: examId
+            },
+            headers: {'Content-Type': 'application/json'}
+        }).then(p => p.data)
+
+export const getExamAnswersByExamIdAndSubmittedById = async (examId, submittedBy): Promise<ExamAnswers> =>
+        await api.get<ExamAnswers>('/get-exam-answers', {
+            params: {
+                examId: examId,
+                submittedBy: submittedBy
+            }
+        }).then(p => p.data)

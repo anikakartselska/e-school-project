@@ -1,0 +1,10 @@
+import {UserView} from "./User";
+import {Answers} from "./Answers";
+
+export interface ExamAnswers {
+    id: number | null
+    submittedBy: UserView,
+    submittedOn: Date | null,
+    answers: Answers | null,
+    graded: boolean | false
+}

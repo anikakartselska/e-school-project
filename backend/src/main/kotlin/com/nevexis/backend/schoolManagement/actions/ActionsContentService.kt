@@ -183,7 +183,13 @@ class ActionsContentService {
     ) = when (assignmentValue) {
         is AssignmentValue.EventValue -> "$text от ${assignmentValue.from.formatDateTimeWithDots()} до ${assignmentValue.to.formatDateTimeWithDots()}, място: ${assignmentValue.room} стая"
         is AssignmentValue.HomeworkValue -> "$text краен срок: ${assignmentValue.to.formatDateTimeWithDots()}, по: ${assignmentValue.homeworkLesson.subject.name}"
-        is AssignmentValue.ExaminationValue -> "$text от ${assignmentValue.lesson.startTimeOfLesson.formatDateTimeWithDots()} до ${assignmentValue.lesson.endTimeOfLesson.formatDateTimeWithDots()}, място: ${assignmentValue.lesson.room} стая, по: ${assignmentValue.lesson.subject.name}"
+        is AssignmentValue.ExaminationValue -> "$text от ${assignmentValue.lesson.startTimeOfLesson.formatDateTimeWithDots()} до ${assignmentValue.lesson.endTimeOfLesson.formatDateTimeWithDots()}, място: ${assignmentValue.lesson.room} стая, по: ${assignmentValue.lesson.subject.name}${
+            if (assignmentValue.exam != null) {
+                "с добавен изпитен материал"
+            } else {
+                ""
+            }
+        }"
     }
 
     fun LocalDateTime.formatDateTimeWithDots(): String {

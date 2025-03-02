@@ -14,18 +14,18 @@ data class Actions(
 ) {
     companion object {
         fun evaluationCreateNotificationText() =
-            "Ученикът <span id=\"studentName\">##studentName##</span>\n" +
-                    "        получи ##evaluation## <span id=\"evaluationValue\">##evaluationValue##</span> по предмет <span id=\"subjectName\">##subjectName##</span>\n" +
-                    "        от <span id=\"createdByName\">##createdBy##</span> с коментар: \"<span id=\"comment\">##comment##</span>\"."
+            "Ученикът ##studentName##\n" +
+                    "        получи ##evaluation## ##evaluationValue## по предмет ##subjectName##" +
+                    "        от ##createdBy## с коментар: ##comment##."
 
         fun evaluationUpdateNotificationText() =
-            "  ##evaluation2## на ученика <span>##studentName##</span> по предмет <span>##subjectName##</span> бе променено/а от ##evaluationValue## на ##newEvaluationValue##."
+            "##evaluation2## на ученика ##studentName## по предмет ##subjectName## бе променено/а от ##evaluationValue## на ##newEvaluationValue##."
 
         fun evaluationDeleteNotificationText() =
-            "##evaluation2## - ##evaluationValue## по предмет <span>##subjectName##</span> на ученика <span>##studentName##</span> бе изтрит/а."
+            "##evaluation2## - ##evaluationValue## по предмет ##subjectName## на ученика ##studentName## бе изтрит/а."
 
         fun assignmentCreateNotificationText() =
-            "<span>##createdBy##</span> създаде ##assignment## ##assignmentValue##."
+            "##createdBy## създаде ##assignment## ##assignmentValue##."
 
         fun assignmentUpdateNotificationText() =
             " ##assignment2## бе променено/а от ##assignmentValue## на ##newAssignmentValue##."

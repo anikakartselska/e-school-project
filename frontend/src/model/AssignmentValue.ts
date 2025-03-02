@@ -9,8 +9,11 @@ export type AssignmentValue = ExaminationValue | HomeworkValue | EventValue
 export class ExaminationValue {
     lesson: SchoolLesson
 
-    constructor(lesson: SchoolLesson) {
+    exam: number | null
+
+    constructor(lesson: SchoolLesson, exam: number | null) {
         this.lesson = lesson
+        this.exam = exam
     }
 }
 

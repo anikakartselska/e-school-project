@@ -37,15 +37,19 @@ class AssignmentsService : BaseService() {
         periodId: BigDecimal
     ): Assignments {
         val id = assignments.id?.toBigDecimal() ?: getAssignmentSeqNextVal()
+        val oldAssignment =
+            selectOnConditionStep().where(ASSIGNMENTS.ID.eq(assignments.id?.toBigDecimal())).fetchAny()
+                ?.into(AssignmentsRecord::class.java)
+
         val newOrUpdatedAssigment =
             assignments.copy(id = id.toInt(), createdOn = assignments.createdOn ?: LocalDateTime.now())
-        val assignmentRecord =
-            mapToAssignmentToAssignmentRecord(
-                newOrUpdatedAssigment,
-                schoolId,
-                periodId,
-                schoolClassId
-            ).also { it.store() }
+
+        mapToAssignmentToAssignmentRecord(
+            newOrUpdatedAssigment,
+            schoolId,
+            periodId,
+            schoolClassId
+        ).also { it.store() }
         if (assignments.id == null) {
             assignmentNotificationService.sendEmailForAssignmentCreation(
                 newOrUpdatedAssigment,
@@ -56,8 +60,8 @@ class AssignmentsService : BaseService() {
         } else {
             assignmentNotificationService.sendEmailForAssignmentUpdate(
                 newOrUpdatedAssigment,
-                Json.decodeFromString(assignmentRecord.assignmentValue!!),
-                assignmentRecord.text!!,
+                Json.decodeFromString(oldAssignment!!.assignmentValue!!),
+                oldAssignment.text!!,
                 periodId,
                 schoolId,
                 schoolClassId
@@ -115,13 +119,7 @@ class AssignmentsService : BaseService() {
         periodId: BigDecimal,
         schoolClassId: BigDecimal,
         schoolLessonId: BigDecimal? = null
-    ): List<Assignments> = db.select(
-        ASSIGNMENTS.asterisk(),
-        USER.asterisk()
-    )
-        .from(ASSIGNMENTS)
-        .leftJoin(USER)
-        .on(USER.ID.eq(ASSIGNMENTS.CREATED_BY))
+    ): List<Assignments> = selectOnConditionStep()
         .where(
             ASSIGNMENTS.SCHOOL_PERIOD_ID.eq(periodId)
                 .and(ASSIGNMENTS.SCHOOL_ID.eq(schoolId))
@@ -139,6 +137,14 @@ class AssignmentsService : BaseService() {
         ).fetch().map {
             mapToAssignmentModel(it)
         }
+
+    private fun selectOnConditionStep() = db.select(
+        ASSIGNMENTS.asterisk(),
+        USER.asterisk()
+    )
+        .from(ASSIGNMENTS)
+        .leftJoin(USER)
+        .on(USER.ID.eq(ASSIGNMENTS.CREATED_BY))
 
 
     private fun mapToAssignmentsToAssignmentRecords(
@@ -185,6 +191,22 @@ class AssignmentsService : BaseService() {
             assignmentType = AssignmentType.valueOf(it.assignmentType!!),
             assignmentValue = Json.decodeFromString(it.assignmentValue!!)
         )
+    }
+
+    fun removeAssignmentsExam(examId: BigDecimal) {
+        val updatedAssignments =
+            db.selectFrom(ASSIGNMENTS).where(ASSIGNMENTS.ASSIGNMENT_VALUE.contains("\"exam\":${examId}"))
+                .fetch().map {
+                    it.apply {
+                        assignmentValue =
+                            Json.encodeToString(
+                                (Json.decodeFromString(assignmentValue!!) as AssignmentValue.ExaminationValue).copy(
+                                    exam = null
+                                )
+                            )
+                    }
+                }
+        db.batchUpdate(updatedAssignments).execute()
     }
 
     fun getAssignmentSeqNextVal(): BigDecimal =

@@ -25,7 +25,8 @@ import java.time.LocalDateTime
 sealed class AssignmentValue {
     @Serializable
     data class ExaminationValue(
-        val lesson: SchoolLesson
+        val lesson: SchoolLesson,
+        val exam: Int? = null
     ) : AssignmentValue()
 
     @Serializable
