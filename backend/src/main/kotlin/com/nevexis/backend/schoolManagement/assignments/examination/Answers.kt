@@ -13,20 +13,20 @@ data class Answers(
 @Serializable(with = AnswerSerializer::class)
 sealed class Answer {
 
-    abstract val points: Int
+
     abstract val questionUUID: String
 
     @Serializable
     data class ChoiceQuestionAnswer(
-        val questionAnswers: List<String>,
-        override val points: Int,
+        val questionAnswers: List<String>? = null,
+        val points: Int? = null,
         override val questionUUID: String
     ) : Answer()
 
     @Serializable
     data class OpenQuestionAnswer(
-        val openQuestionAnswer: String,
-        override val points: Int,
+        val openQuestionAnswer: String? = null,
+        val points: Int? = null,
         override val questionUUID: String
     ) : Answer()
 

@@ -63,7 +63,6 @@
         <div class="col-3"></div>
       </div>
     </div>
-    {{ answers }}
   </q-page>
 </template>
 
@@ -82,6 +81,7 @@ import {getExamAnswersByExamIdAndSubmittedById, getExamById, mergeExamAnswers} f
 import {Answer, ChoiceQuestionAnswer, OpenQuestionAnswer} from "../../model/Answers";
 import {getCurrentUserAsUserView} from "../../services/LocalStorageService";
 import {ExamAnswers} from "../../model/ExamAnswers";
+import {confirmActionPromiseDialog} from "../../utils";
 
 const quasar = useQuasar()
 
@@ -93,7 +93,7 @@ const props = defineProps<{
 }>()
 const currentUser = getCurrentUserAsUserView()
 let examAnswer = $ref(await getExamAnswersByExamIdAndSubmittedById(props.examId, currentUser.id))
-const newExamAnswer = <ExamAnswers>{submittedBy: currentUser,}
+let newExamAnswer = <ExamAnswers>{submittedBy: currentUser,}
 const exam = $ref(await getExamById(props.examId))
 const questions = $ref<Question[]>(exam.questions?.questions ? shuffle(exam.questions?.questions) : [])
 const answers = $ref<Answer[]>(questions.map(quest => {
@@ -111,21 +111,40 @@ const examPoints = $computed(() => {
   return sum
 })
 
+
 const submitExam = async () => {
-  await mergeExamAnswers({...newExamAnswer, answers: {answers: answers}}, props.schoolId, props.periodId, props.examId)
-          .then(r => examAnswer = r)
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+    await mergeExamAnswers({
+        ...newExamAnswer,
+        answers: {answers: answers}
+    }, props.schoolId, props.periodId, props.examId)
+            .then(r => {
+                examAnswer = r
+                clearInterval(interval)
+            })
 }
 
+const saveExamProgress = async () => {
+    await mergeExamAnswers({
+        ...newExamAnswer,
+        answers: {answers: answers}
+    }, props.schoolId, props.periodId, props.examId)
+            .then(r => newExamAnswer = r)
+}
+const interval = setInterval(saveExamProgress, 60000)
+if (examAnswer) {
+    clearInterval(interval)
+}
 const transferToOptionsList = (possibleAnswersToIfCorrect: PossibleAnswersToIfCorrect[]) => {
-  return possibleAnswersToIfCorrect.map((opt, i) => {
-    return {label: opt.text, value: opt.uuid}
-  })
+    return possibleAnswersToIfCorrect.map((opt, i) => {
+        return {label: opt.text, value: opt.uuid}
+    })
 }
 
 
 const handleOneOption = (questionAnswers: string[], possibleAnswersToIfCorrect: PossibleAnswersToIfCorrect[], index: number) => {
-  const answersLength = possibleAnswersToIfCorrect.filter((opt) => opt.correct).length
-  debugger
+    const answersLength = possibleAnswersToIfCorrect.filter((opt) => opt.correct).length
+    debugger
   if (questionAnswers.length > answersLength) {
     answers[index].questionAnswers = answers[index].questionAnswers.slice(1, questionAnswers.length)
   }

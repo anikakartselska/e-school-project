@@ -26,10 +26,14 @@ class ExamAnswersService : BaseService() {
         examAnswers: ExamAnswers,
         schoolId: BigDecimal,
         periodId: BigDecimal,
-        examId: BigDecimal
+        examId: BigDecimal,
+        userId: BigDecimal
     ): ExamAnswers {
         return (db.selectFrom(EXAM_ANSWERS)
-            .where(EXAM_ANSWERS.ID.eq(examAnswers.id)).fetchAny() ?: db.newRecord(EXAM_ANSWERS))
+            .where(
+                EXAM_ANSWERS.ID.eq(examAnswers.id)
+                    .or(EXAM_ANSWERS.SUBMITTED_BY.eq(userId).and(EXAM_ANSWERS.EXAM_ID.eq(examId)))
+            ).fetchAny() ?: db.newRecord(EXAM_ANSWERS))
             .apply {
                 id = examAnswers.id ?: getExamAnswersSeq()
                 submittedBy = examAnswers.submittedBy.id.toBigDecimal()
@@ -43,6 +47,12 @@ class ExamAnswersService : BaseService() {
                 }
                 this.examId = examId
                 this.answers = examAnswers.answers?.let { Json.encodeToString(it) }
+                this.grade = examAnswers.grade
+                this.inputtedGrade = if (examAnswers.inputtedGrade) {
+                    "Y"
+                } else {
+                    "N"
+                }
             }.also {
                 it.store()
             }
@@ -56,8 +66,18 @@ class ExamAnswersService : BaseService() {
             EXAM_ANSWERS.EXAM_ID.eq(examId).and(EXAM_ANSWERS.SUBMITTED_BY.eq(submittedBy))
         ).fetchAny()?.let { mapToInternalModel(it) }
 
+    fun getExamAnswersForExam(examId: BigDecimal) =
+        getExamAnswersSelectConditionStep().where(
+            EXAM_ANSWERS.EXAM_ID.eq(examId)
+        ).fetch().map { mapToInternalModel(it) }
+
     fun deleteExamAnswersByExamId(examId: BigDecimal) =
         db.deleteFrom(EXAM_ANSWERS).where(EXAM_ANSWERS.EXAM_ID.eq(examId)).execute()
+
+    fun getExamAnswer(id: BigDecimal) =
+        getExamAnswersSelectConditionStep().where(
+            EXAM_ANSWERS.ID.eq(id)
+        ).fetchAny()?.map { mapToInternalModel(it) }
 
     private fun getExamAnswersSelectConditionStep() =
         db.select(EXAM_ANSWERS.asterisk(), USER.asterisk()).from(EXAM_ANSWERS).leftJoin(USER)
@@ -70,7 +90,9 @@ class ExamAnswersService : BaseService() {
             submittedBy = userService.mapToUserView(record.into(UserRecord::class.java), emptyList()),
             submittedOn = examAnswersRecord.submittedOn,
             answers = examAnswersRecord.answers?.let { Json.decodeFromString(it) },
-            graded = examAnswersRecord.graded == "Y"
+            graded = examAnswersRecord.graded == "Y",
+            grade = examAnswersRecord.grade,
+            inputtedGrade = examAnswersRecord.inputtedGrade == "Y"
         )
     }
 

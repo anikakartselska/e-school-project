@@ -6,12 +6,12 @@ export type Answer = ChoiceQuestionAnswer | OpenQuestionAnswer
 
 
 export class ChoiceQuestionAnswer {
-    questionAnswers: string[]
-    points: number
+    questionAnswers: string[] = []
+    points: number | null
     questionUUID: string
 
     constructor(questionAnswers: string[],
-                points: number,
+                points: number | null,
                 questionUUID: string
     ) {
         this.questionAnswers = questionAnswers
@@ -23,11 +23,11 @@ export class ChoiceQuestionAnswer {
 
 export class OpenQuestionAnswer {
     openQuestionAnswer: string | null
-    points: number
+    points: number | null
     questionUUID: string
 
     constructor(openQuestionAnswer: string | null,
-                points: number,
+                points: number | null,
                 questionUUID: string
     ) {
         this.openQuestionAnswer = openQuestionAnswer

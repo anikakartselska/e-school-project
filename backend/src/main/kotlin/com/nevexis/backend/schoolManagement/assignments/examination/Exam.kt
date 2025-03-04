@@ -19,7 +19,8 @@ data class Exam(
     val createdBy: UserView,
     val createdOn: LocalDateTime? = null,
     val examNote: String? = null,
-    val questions: Questions? = null
+    val questions: Questions? = null,
+    val gradingScale: GradingScale? = null
 )
 
 

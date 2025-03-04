@@ -25,6 +25,7 @@ import {Pair} from "../model/Pair";
 import {Actions, ActionsFetchingInformationDTO} from "../model/Actions";
 import {Exam} from "../model/Exam";
 import {ExamAnswers} from "../model/ExamAnswers";
+import {NotificationMessages} from "../model/NotificationMessages";
 
 export const unzipFile = (fileData: any): Promise<File[]> => {
     return JSZip.loadAsync(fileData).then((zip: JSZip) => {
@@ -899,7 +900,12 @@ export const mergeExamAnswers = async (examAnswers,
                 periodId: periodId,
                 examId: examId
             },
-            headers: {'Content-Type': 'application/json'}
+            headers: {'Content-Type': 'application/json'},
+            notificationMessages: <NotificationMessages>{
+                progressMessage: 'Запазване на промените...',
+                successMessage: 'Успешно запазени промени',
+                errorMessage: 'Възникна грешка при запазване на промените'
+            }
         }).then(p => p.data)
 
 export const getExamAnswersByExamIdAndSubmittedById = async (examId, submittedBy): Promise<ExamAnswers> =>
@@ -907,5 +913,20 @@ export const getExamAnswersByExamIdAndSubmittedById = async (examId, submittedBy
             params: {
                 examId: examId,
                 submittedBy: submittedBy
+            }
+        }).then(p => p.data)
+
+
+export const getExamAnswersForExamId = async (examId): Promise<ExamAnswers[]> =>
+        await api.get<ExamAnswers[]>('/get-exam-answers-by-exam', {
+            params: {
+                examId: examId
+            }
+        }).then(p => p.data)
+
+export const getExamAnswersById = async (id): Promise<ExamAnswers> =>
+        await api.get<ExamAnswers>('/get-exam-answers-by-id', {
+            params: {
+                id: id
             }
         }).then(p => p.data)

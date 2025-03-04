@@ -15,6 +15,10 @@
                      @click="questionCreate()"></q-btn>
               <q-btn class="q-mt-lg q-mr-xs" color="negative" label="Премахни изпита" size="sm"
                      @click="deleteExam()"></q-btn>
+              <q-btn class="q-mt-lg q-mr-xs" color="teal" label="Опити" size="sm"
+                     @click="openTakesPage()"></q-btn>
+              <q-btn class="q-mt-lg q-mr-xs" color="accent" label="Скала за оценяване" size="sm"
+                     @click="openGradingScalePage()"></q-btn>
             </div>
           </div>
           <q-separator></q-separator>
@@ -87,6 +91,8 @@ import {SchoolRole} from "../../model/User";
 import {confirmActionPromiseDialog} from "../../utils";
 import {deleteExamById, getExamById, mergeExam} from "../../services/RequestService";
 import {router} from "../../router";
+import GradingScaleCreateEdit from "./grading-scale-create-edit.vue";
+import {GradingScale} from "../../model/GradingScale";
 
 const quasar = useQuasar()
 
@@ -94,10 +100,11 @@ const quasar = useQuasar()
 const props = defineProps<{
   periodId: number
   schoolId: number,
-  examId: number
+  examId: number,
+  schoolClassId: number
 }>()
 
-const exam = $ref(await getExamById(props.examId))
+let exam = $ref(await getExamById(props.examId))
 const questions = $ref<Question[]>(exam.questions?.questions ? exam.questions?.questions : [])
 const questionCreate = () => {
   quasar.dialog({
@@ -110,7 +117,22 @@ const questionCreate = () => {
     questions.push(newQuestion)
   })
 }
+const openGradingScalePage = () => {
+  quasar.dialog({
+    component: GradingScaleCreateEdit,
+    componentProps: {
+      gradingScale: exam.gradingScale,
+      maximumPoints: examPoints
+    },
+  }).onOk(async (payload) => {
+    const gradingScale = payload.item as GradingScale
+    debugger
+    await mergeExam({...exam, gradingScale: <GradingScale>gradingScale}, props.schoolId, props.periodId).then(r =>
+            exam = r
+    )
 
+  })
+}
 const examPoints = $computed(() => {
   let sum = 0
   questions.forEach(questions => sum = sum + (questions.points ? Number(questions.points) : 0))
@@ -135,6 +157,10 @@ const deleteExam = async () => {
 const questionDelete = async (question: Question, questionIndex: number) => {
   await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
   questions.splice(questionIndex, 1)
+}
+
+const openTakesPage = async () => {
+  await router.push(`/exam-takes-page/${props.periodId}/${props.schoolId}/${props.examId}/${props.schoolClassId}`)
 }
 
 const saveUpdateExam = async () => {

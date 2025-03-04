@@ -53,6 +53,8 @@ import SchoolLessonsPageForAllClasses from "./pages/administration/school-lesson
 import ActivityStreamPage from "./pages/activity-stream/activity-stream-page.vue";
 import ExamEditPage from "./pages/exams/questions-manage-page.vue";
 import ExamTakePage from "./pages/exams/exam-take-page.vue";
+import ExamTakesPage from "./pages/exams/exam-takes-page.vue";
+import ExamGradePage from "./pages/exams/exam-grade-page.vue";
 
 const routes = [
     {
@@ -138,9 +140,29 @@ const routes = [
                 },
             },
             {
-                path: '/exam-edit-page/:periodId(\\d+)/:schoolId(\\d+)/:examId(\\d)',
+                path: '/exam-edit-page/:periodId(\\d+)/:schoolId(\\d+)/:examId(\\d)//:schoolClassId(\\d)',
                 name: 'exam-edit-page',
                 component: ExamEditPage,
+                props: true,
+                beforeEnter: (to, from, next) => {
+                    if (!currentUserHasAnyRole([SchoolRole.TEACHER, SchoolRole.ADMIN])) return next('/unauthorized')
+                    return next()
+                }
+            },
+            {
+                path: '/exam-takes-page/:periodId(\\d+)/:schoolId(\\d+)/:examId(\\d)//:schoolClassId(\\d)',
+                name: 'exam-takes-page',
+                component: ExamTakesPage,
+                props: true,
+                beforeEnter: (to, from, next) => {
+                    if (!currentUserHasAnyRole([SchoolRole.TEACHER, SchoolRole.ADMIN])) return next('/unauthorized')
+                    return next()
+                }
+            },
+            {
+                path: '/exam-grade-page/:periodId(\\d+)/:schoolId(\\d+)/:examId(\\d+)/:examAnswerId(\\d+)',
+                name: 'exam-grade-page',
+                component: ExamGradePage,
                 props: true,
                 beforeEnter: (to, from, next) => {
                     if (!currentUserHasAnyRole([SchoolRole.TEACHER, SchoolRole.ADMIN])) return next('/unauthorized')

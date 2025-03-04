@@ -6,5 +6,7 @@ export interface ExamAnswers {
     submittedBy: UserView,
     submittedOn: Date | null,
     answers: Answers | null,
-    graded: boolean | false
+    graded: boolean | false,
+    grade: number | null
+    inputtedGrade: boolean | false
 }

@@ -41,6 +41,7 @@ class ExamService : BaseService() {
                 this.schoolPeriodId = periodId
                 this.examNote = exam.examNote
                 this.questions = exam.questions?.let { Json.encodeToString(it) }
+                this.gradingScale = exam.gradingScale?.let { Json.encodeToString(it) }
             }.also {
                 it.store()
             }
@@ -76,7 +77,8 @@ class ExamService : BaseService() {
             createdBy = userService.mapToUserView(record.into(UserRecord::class.java), emptyList()),
             createdOn = examRecord.createdOn,
             examNote = examRecord.examNote,
-            questions = examRecord.questions?.let { Json.decodeFromString(it) }
+            questions = examRecord.questions?.let { Json.decodeFromString(it) },
+            gradingScale = examRecord.gradingScale?.let { Json.decodeFromString(it) }
         )
     }
 

@@ -5,22 +5,23 @@
 
 package com.nevexis.backend.schoolManagement.assignments.examination
 
-
-import com.nevexis.backend.schoolManagement.users.UserView
 import com.nevexis.backend.serializers.BigDecimalSerializer
 import com.nevexis.backend.serializers.LocalDateTimeSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import java.math.BigDecimal
-import java.time.LocalDateTime
 
 @Serializable
-data class ExamAnswers(
-    val id: BigDecimal? = null,
-    val submittedBy: UserView,
-    val submittedOn: LocalDateTime? = null,
-    val answers: Answers? = null,
-    val graded: Boolean = false,
-    val grade: BigDecimal? = null,
-    val inputtedGrade: Boolean = false,
+data class GradingScale(
+    val interval2: Interval,
+    val interval3: Interval,
+    val interval4: Interval,
+    val interval5: Interval,
+    val interval6: Interval,
+)
+
+@Serializable
+data class Interval(
+    val startingPoints: BigDecimal,
+    val endingPoints: BigDecimal
 )

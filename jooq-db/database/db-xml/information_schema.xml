@@ -945,6 +945,19 @@
         <column>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>EXAM</table_name>
+            <column_name>GRADING_SCALE</column_name>
+            <data_type>clob</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>8</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
             <table_name>EXAM_ANSWERS</table_name>
             <column_name>ID</column_name>
             <data_type>numeric</data_type>
@@ -1047,6 +1060,33 @@
             <numeric_scale>0</numeric_scale>
             <ordinal_position>8</ordinal_position>
             <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>EXAM_ANSWERS</table_name>
+            <column_name>GRADE</column_name>
+            <data_type>numeric</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>9</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>EXAM_ANSWERS</table_name>
+            <column_name>INPUTTED_GRADE</column_name>
+            <data_type>char</data_type>
+            <character_maximum_length>1</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>10</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <column_default>'''N'''</column_default>
             <comment></comment>
         </column>
         <column>
