@@ -8,6 +8,8 @@ import com.nevexis.backend.schoolManagement.users.user_security.UserSecurity
 import com.nevexis.`demo-project`.jooq.tables.records.SchoolUserPeriodRecord
 import com.nevexis.`demo-project`.jooq.tables.records.UserRecord
 import com.nevexis.`demo-project`.jooq.tables.references.*
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.jooq.DSLContext
 import org.jooq.Record
 import org.jooq.impl.DSL
@@ -118,7 +120,8 @@ class UserBaseService : BaseService() {
             lastName = lastName!!,
             username = username!!,
             role = userRole,
-            password = this.password!!
+            password = this.password!!,
+            preferences = this.preferences?.let { Json.decodeFromString(it) }
         )
     }
 

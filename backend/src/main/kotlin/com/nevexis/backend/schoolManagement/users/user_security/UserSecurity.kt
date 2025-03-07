@@ -12,5 +12,11 @@ data class UserSecurity(
     val lastName: String,
     val password: String?,
     val username: String,
-    val role: SchoolUserRole?
+    val role: SchoolUserRole?,
+    val preferences: UserPreferences? = null
+)
+
+@Serializable
+data class UserPreferences(
+    val enableDarkMode: Boolean = false
 )

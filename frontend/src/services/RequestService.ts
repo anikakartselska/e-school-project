@@ -1,5 +1,5 @@
 import {api, auth} from "../boot/axios";
-import {OneRoleUser, StudentView, TeacherView, User, UserView} from "../model/User";
+import {OneRoleUser, StudentView, TeacherView, User, UserPreferences, UserView} from "../model/User";
 import {SubjectWithEvaluationDTO} from "../model/SubjectWithEvaluationDTO";
 import {Subject, SubjectWithSchoolClassInformation} from "../model/Subject";
 import {AxiosResponse} from "axios";
@@ -384,6 +384,7 @@ export const saveEvaluations = async (evaluations, periodId, schoolId, comment):
             params: {periodId: periodId, schoolId: schoolId, comment: comment},
             headers: {'Content-Type': 'application/json'}
         })
+
 
 export const saveEvaluation = async (evaluation, periodId, schoolId): Promise<AxiosResponse<Evaluation>> => {
     //@ts-ignore
@@ -908,6 +909,17 @@ export const mergeExamAnswers = async (examAnswers,
             }
         }).then(p => p.data)
 
+export const inputGradesOnExamAnswers = async (listOfExamAnswers: ExamAnswers[],
+                                               schoolId,
+                                               periodId): Promise<ExamAnswers[]> =>
+        await api.post<ExamAnswers[]>('/input-grades-on-exam-answers', listOfExamAnswers, {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId,
+            },
+            headers: {'Content-Type': 'application/json'},
+        }).then(p => p.data)
+
 export const getExamAnswersByExamIdAndSubmittedById = async (examId, submittedBy): Promise<ExamAnswers> =>
         await api.get<ExamAnswers>('/get-exam-answers', {
             params: {
@@ -930,3 +942,8 @@ export const getExamAnswersById = async (id): Promise<ExamAnswers> =>
                 id: id
             }
         }).then(p => p.data)
+
+export const updateCurrentUserPreferences = async (userPreferences: UserPreferences) =>
+        await api.post<UserPreferences>(`/update-current-user-preferences`, userPreferences, {
+            headers: {'Content-Type': 'application/json'},
+        }).then(r => r.data)

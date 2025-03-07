@@ -1092,6 +1092,20 @@
         <column>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>EXAM_ANSWERS</table_name>
+            <column_name>SUBMITTED</column_name>
+            <data_type>char</data_type>
+            <character_maximum_length>1</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>11</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <column_default>'''N'''</column_default>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
             <table_name>FILES</table_name>
             <column_name>ID</column_name>
             <data_type>numeric</data_type>
@@ -2596,6 +2610,19 @@
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
             <ordinal_position>12</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>USER</table_name>
+            <column_name>PREFERENCES</column_name>
+            <data_type>varchar</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>13</ordinal_position>
             <is_nullable>true</is_nullable>
             <comment></comment>
         </column>

@@ -140,7 +140,7 @@ const routes = [
                 },
             },
             {
-                path: '/exam-edit-page/:periodId(\\d+)/:schoolId(\\d+)/:examId(\\d)//:schoolClassId(\\d)',
+                path: '/exam-edit-page/:periodId(\\d+)/:schoolId(\\d+)/:examId(\\d+)//:schoolClassId(\\d+)',
                 name: 'exam-edit-page',
                 component: ExamEditPage,
                 props: true,
@@ -150,7 +150,7 @@ const routes = [
                 }
             },
             {
-                path: '/exam-takes-page/:periodId(\\d+)/:schoolId(\\d+)/:examId(\\d)//:schoolClassId(\\d)',
+                path: '/exam-takes-page/:periodId(\\d+)/:schoolId(\\d+)/:examId(\\d+)//:schoolClassId(\\d+)',
                 name: 'exam-takes-page',
                 component: ExamTakesPage,
                 props: true,
@@ -170,7 +170,7 @@ const routes = [
                 }
             },
             {
-                path: '/exam-take-page/:periodId(\\d+)/:schoolId(\\d+)/:examId(\\d)',
+                path: '/exam-take-page/:periodId(\\d+)/:schoolId(\\d+)/:examId(\\d+)',
                 name: 'exam-take-page',
                 component: ExamTakePage,
                 props: true

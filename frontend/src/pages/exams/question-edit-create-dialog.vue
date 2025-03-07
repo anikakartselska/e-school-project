@@ -20,34 +20,34 @@
                     label="Тип на въпроса"
                     label-color="primary"/>
           <div v-if="questionType === QuestionType.OPEN_QUESTION">
-            <q-input v-model="updatedQuestion.questionTitle" label="Въпрос" stack-label>
+            <q-input v-model="updatedQuestion.questionTitle" autogrow label="Въпрос" stack-label>
               <template v-slot:prepend>
                 <q-icon name="edit"/>
               </template>
             </q-input>
-            <q-input v-model="updatedQuestion.questionDescription" label="Описание" stack-label>
+            <q-input v-model="updatedQuestion.questionDescription" autogrow label="Описание" stack-label>
               <template v-slot:prepend>
                 <q-icon name="edit"/>
               </template>
             </q-input>
-            <q-input v-model="updatedQuestion.points" label="Точки" stack-label type="number">
+            <q-input v-model="updatedQuestion.points" autogrow label="Точки" stack-label type="number">
               <template v-slot:prepend>
                 <q-icon name="edit"/>
               </template>
             </q-input>
           </div>
           <div v-if="questionType === QuestionType.CHOICE_QUESTION">
-            <q-input v-model="updatedQuestion.questionTitle" label="Въпрос" stack-label>
+            <q-input v-model="updatedQuestion.questionTitle" autogrow label="Въпрос" stack-label>
               <template v-slot:prepend>
                 <q-icon name="edit"/>
               </template>
             </q-input>
-            <q-input v-model="updatedQuestion.questionDescription" label="Описание" stack-label>
+            <q-input v-model="updatedQuestion.questionDescription" autogrow label="Описание" stack-label>
               <template v-slot:prepend>
                 <q-icon name="edit"/>
               </template>
             </q-input>
-            <q-input v-model="updatedQuestion.points" label="Точки" stack-label type="number">
+            <q-input v-model="updatedQuestion.points" autogrow label="Точки" stack-label type="number">
               <template v-slot:prepend>
                 <q-icon name="edit"/>
               </template>
@@ -61,7 +61,7 @@
             <div v-for="(choice,index) in updatedQuestion.possibleAnswersToIfCorrect">
               <div class="row">
                 <q-checkbox v-model="updatedQuestion.possibleAnswersToIfCorrect[index].correct"></q-checkbox>
-                <q-input v-model="updatedQuestion.possibleAnswersToIfCorrect[index].text" dense></q-input>
+                <q-input v-model="updatedQuestion.possibleAnswersToIfCorrect[index].text" autogrow dense></q-input>
                 <q-btn class="text-negative" dense flat icon="delete" round
                        @click="removeElement(index);"></q-btn>
               </div>

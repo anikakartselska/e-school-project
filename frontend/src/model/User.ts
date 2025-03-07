@@ -64,6 +64,11 @@ export interface UserSecurity {
     password: string | null,
     username: string,
     role: SchoolUserRole
+    preferences: UserPreferences
+}
+
+export interface UserPreferences {
+    enableDarkMode: boolean
 }
 
 export interface TeacherView {

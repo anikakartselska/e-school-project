@@ -131,7 +131,7 @@ class SchoolRolesService : BaseService() {
             }
             .fetch().map {
                 mapToModel(it)
-            }
+            }.distinct()
 
     fun getAllSchoolUserRolesForPeriodAndSchool(
         userId: BigDecimal,

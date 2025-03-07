@@ -55,6 +55,7 @@ class EvaluationController {
         @RequestParam comment: String
     ) = evaluationService.saveEvaluations(evaluations, periodId, schoolId, comment)
 
+
     @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @PostMapping("/save-evaluation")
     suspend fun saveEvaluation(

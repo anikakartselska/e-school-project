@@ -4,20 +4,27 @@
       <div class="col-3"></div>
       <div class="col-6">
         <q-card>
+          <q-btn class="text-primary" dense flat icon="chevron_left" @click="goBack">Назад</q-btn>
           <div class="row">
             <span class="q-pa-lg text-h5">{{ exam.examNote }}</span>
             <q-space></q-space>
-            <div>
-              <q-btn v-if="!examAnswer.graded" class="q-mt-lg q-mr-xs" color="secondary" label="Завърши проверката"
-                     size="sm" @click="submitExamCheck()"></q-btn>
+              <div>
+                  <q-btn v-if="!examAnswer.graded" class="q-mt-lg q-mr-xs" color="secondary" label="Завърши проверката"
+                         size="sm" @click="submitExamCheck()"></q-btn>
 
-              <q-btn v-if="examAnswer.graded" class="q-mt-lg q-mr-xs" color="secondary" label="Въведи оценка"
-                     size="sm" @click="submitExamCheck()"></q-btn>
-              <div v-if="examAnswer.graded" class="q-ml-lg text-bold text-primary">
-                Оценка ({{ examAnswer.grade }})
+                  <div v-if="examAnswer.graded && !examAnswer.inputtedGrade">
+                      <q-btn class="q-mt-lg q-mr-xs" color="secondary"
+                             label="Въведи оценка"
+                             size="sm" @click="inputGrade()"></q-btn>
+                      <div v-if="examAnswer.graded" class="q-ml-lg text-bold text-primary">
+                          Оценка ({{ examAnswer.grade }})
+                      </div>
+                  </div>
+                  <div v-if="examAnswer.graded && examAnswer.inputtedGrade"
+                       class="text-bold text-primary q-mr-lg q-mt-lg">
+                      Оценка ({{ examAnswer.grade }})
+                  </div>
               </div>
-
-            </div>
           </div>
           <q-separator></q-separator>
           <span class="q-pa-md text-negative">
@@ -29,13 +36,15 @@
           <div>
             <q-list v-for="(question,index) in questions">
               <div class="q-px-sm q-mt-sm row">
-                <div class="col-3 text-primary q-pr-lg">
-                  <q-input v-model="examAnswer.answers.answers[index].points" :disable="examAnswer.graded" :prefix="`Точки`"
-                           :rules="[val=>val !== null && val <= question.points || 'Невалидни точки']" :suffix="`/${question.points} макс`"
-                           dense
-                           type="number"
-                  ></q-input>
-                </div>
+                  <div class="col-3 text-primary q-pr-lg">
+                      <q-input v-model="examAnswer.answers.answers[index].points" :disable="examAnswer.graded"
+                               :prefix="`Точки`"
+                               :rules="[val=>val !== null && val <= question.points || 'Невалидни точки']"
+                               :suffix="`/${question.points} макс`"
+                               dense
+                               type="number"
+                      ></q-input>
+                  </div>
                 <div>
                   <div v-if="defineQuestionType(question) === QuestionType.OPEN_QUESTION">
                   <span class="text-bold">
@@ -95,9 +104,10 @@ import {useQuasar} from "quasar";
 import {getExamAnswersById, getExamById, mergeExamAnswers} from "../../services/RequestService";
 import {getCurrentUserAsUserView} from "../../services/LocalStorageService";
 import {confirmActionPromiseDialog, notifyForError} from "../../utils";
+import {useRouter} from "vue-router";
 
 const quasar = useQuasar()
-
+const router = useRouter()
 
 const props = defineProps<{
   periodId: number
@@ -111,11 +121,13 @@ const exam = $ref(await getExamById(props.examId))
 const examAnswerIds = examAnswer.answers?.answers ? <string[]>examAnswer.answers?.answers?.map(it => it.questionUUID) : <string[]>[]
 let questions = $ref<Question[]>((exam.questions?.questions ? exam.questions?.questions : []).sort((a, b) => examAnswerIds.indexOf(a.questionUUID) - examAnswerIds.indexOf(b.questionUUID)))
 
-
+const goBack = async () => {
+    await router.go(-1)
+}
 const examPoints = $computed(() => {
-  let sum = 0
-  questions.forEach(questions => sum = sum + (questions.points ? Number(questions.points) : 0))
-  return sum
+    let sum = 0
+    questions.forEach(questions => sum = sum + (questions.points ? Number(questions.points) : 0))
+    return sum
 })
 
 const currentTakeExamPoints = $computed(() => {
@@ -147,10 +159,17 @@ const submitExamCheck = async () => {
   }
 }
 
+const inputGrade = async () => {
+    await mergeExamAnswers({
+        ...examAnswer,
+        inputtedGrade: true
+    }, props.schoolId, props.periodId, props.examId)
+            .then(r => examAnswer = r)
+}
 const transferToOptionsList = (possibleAnswersToIfCorrect: PossibleAnswersToIfCorrect[]) => {
-  return possibleAnswersToIfCorrect.map((opt, i) => {
-    return {label: opt.text, value: opt.uuid}
-  })
+    return possibleAnswersToIfCorrect.map((opt, i) => {
+        return {label: opt.text, value: opt.uuid}
+    })
 }
 
 const gradeExam = () => {

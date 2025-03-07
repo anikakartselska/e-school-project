@@ -3,6 +3,10 @@ package com.nevexis.backend.schoolManagement.evaluation
 import com.nevexis.backend.compareToByMatchingPk
 import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.BaseService
+import com.nevexis.backend.schoolManagement.assignments.AssignmentValue
+import com.nevexis.backend.schoolManagement.assignments.AssignmentsService
+import com.nevexis.backend.schoolManagement.assignments.examination.ExamAnswers
+import com.nevexis.backend.schoolManagement.assignments.examination.ExamService
 import com.nevexis.backend.schoolManagement.school_class.SchoolClass
 import com.nevexis.backend.schoolManagement.school_class.SchoolClassService
 import com.nevexis.backend.schoolManagement.school_period.Semester
@@ -11,6 +15,7 @@ import com.nevexis.backend.schoolManagement.subject.Subject
 import com.nevexis.backend.schoolManagement.subject.SubjectService
 import com.nevexis.backend.schoolManagement.users.StudentView
 import com.nevexis.backend.schoolManagement.users.UserService
+import com.nevexis.backend.schoolManagement.users.UserView
 import com.nevexis.`demo-project`.jooq.tables.records.EvaluationRecord
 import com.nevexis.`demo-project`.jooq.tables.records.UserRecord
 import com.nevexis.`demo-project`.jooq.tables.references.EVALUATION
@@ -23,6 +28,7 @@ import org.jooq.Record
 import org.jooq.Result
 import org.jooq.impl.DSL
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -41,6 +47,14 @@ class EvaluationService : BaseService(), Calculation {
 
     @Autowired
     private lateinit var schoolClassService: SchoolClassService
+
+    @Autowired
+    @Lazy
+    private lateinit var examService: ExamService
+
+    @Autowired
+    @Lazy
+    private lateinit var assignmentService: AssignmentsService
 
     fun getAllStudentSubjectEvaluationsFromSchoolClass(
         schoolClass: SchoolClass,
@@ -341,7 +355,6 @@ class EvaluationService : BaseService(), Calculation {
         return evaluationsWithId
     }
 
-
     private fun mapToEvaluationsToEvaluationRecords(
         evaluations: List<Evaluation>,
         schoolId: BigDecimal,
@@ -385,6 +398,26 @@ class EvaluationService : BaseService(), Calculation {
             evaluationValue = Json.decodeFromString(it.evaluationValue!!),
             semester = Semester.valueOf(it.semester!!),
             createdBy = userService.mapToUserView(record.into(UserRecord::class.java), emptyList()),
+            comment = it.comment
+        )
+    }
+
+    private fun mapToEvaluationModel(
+        evaluationRecord: EvaluationRecord,
+        student: StudentView,
+        subject: Subject,
+        createdBy: UserView
+    ) = evaluationRecord.let {
+        Evaluation(
+            id = it.id!!.toInt(),
+            student = student,
+            subject = subject,
+            schoolLessonId = it.schoolLessonId?.toInt(),
+            evaluationDate = it.evaluationDate!!,
+            evaluationType = EvaluationType.valueOf(it.evaluationType!!),
+            evaluationValue = Json.decodeFromString(it.evaluationValue!!),
+            semester = Semester.valueOf(it.semester!!),
+            createdBy = createdBy,
             comment = it.comment
         )
     }
@@ -604,6 +637,64 @@ class EvaluationService : BaseService(), Calculation {
     fun getEvaluationSeqNextVal(): BigDecimal =
         db.select(DSL.field("EVALUATION_SEQ.nextval")).from("DUAL")
             .fetchOne()!!.map { it.into(BigDecimal::class.java) }
+
+    fun createEvaluationOnExamAnswers(
+        listExamAnswers: List<ExamAnswers>,
+        schoolId: BigDecimal,
+        schoolPeriodId: BigDecimal,
+        userId: BigDecimal
+    ) {
+        val exam = examService.getExam(listExamAnswers.first().examId.toBigDecimal()) ?: throw SMSError(
+            "Невалидни данни",
+            "Несъществуващ изпит"
+        )
+        val assignment = assignmentService.getAssignmentsForExam(
+            schoolId,
+            schoolPeriodId,
+            examId = exam.id!!,
+        )
+        listExamAnswers.map { examAnswers ->
+            db.newRecord(
+                EVALUATION
+            ).apply {
+                id = getEvaluationSeqNextVal()
+                subjectId =
+                    (assignment.assignmentValue as AssignmentValue.ExaminationValue).lesson.subject.id.toBigDecimal()
+                schoolLessonId =
+                    (assignment.assignmentValue).lesson.id.toBigDecimal()
+                evaluationDate = LocalDateTime.now()
+                evaluationType = EvaluationType.GRADE.name
+                this.evaluationValue = Json.encodeToString(
+                    EvaluationValue.GradeValue(
+                        grade = Grade.values().find { it.value == examAnswers.grade?.toBigDecimal() }!!
+                    )
+                )
+                this.schoolId = schoolId
+                this.schoolPeriodId = schoolPeriodId
+                this.userId = examAnswers.submittedBy.id.toBigDecimal()
+                semester = assignment.semester.name
+                createdBy = userId
+                comment = exam.examNote
+            }
+        }.also { evaluationRecords ->
+            val students = userService.getAllStudentsInSchoolClass(
+                schoolClassId = (assignment.assignmentValue as AssignmentValue.ExaminationValue).lesson.schoolClass.id!!.toBigDecimal(),
+                periodId = schoolPeriodId
+            ).associateBy { it.id.toBigDecimal() }
+            val subject = (assignment.assignmentValue as AssignmentValue.ExaminationValue).lesson.subject
+            val createdBy =
+                userService.getUserViewsById(evaluationRecords.first().createdBy!!, schoolId, schoolPeriodId)
+            val evaluations = evaluationRecords.map {
+                mapToEvaluationModel(it, students[it.userId!!]!!, subject, createdBy)
+            }
+
+            db.batchInsert(evaluationRecords).execute().also {
+                evaluationNotificationService.sendEmailForEvaluationsCreation(evaluations, schoolPeriodId, schoolId)
+            }
+        }
+
+
+    }
 }
 
 

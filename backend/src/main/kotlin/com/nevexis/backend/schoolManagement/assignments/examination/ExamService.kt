@@ -59,10 +59,9 @@ class ExamService : BaseService() {
 
 
     fun deleteExam(examId: BigDecimal) {
-        db.deleteFrom(EXAM).where(EXAM.ID.eq(examId)).execute().also {
-            assignmentsService.removeAssignmentsExam(examId)
-            examAnswersService.deleteExamAnswersByExamId(examId)
-        }
+        assignmentsService.removeAssignmentsExam(examId)
+        examAnswersService.deleteExamAnswersByExamId(examId)
+        db.deleteFrom(EXAM).where(EXAM.ID.eq(examId)).execute()
 
     }
 

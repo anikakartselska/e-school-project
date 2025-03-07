@@ -4,22 +4,19 @@
       <div class="col-3"></div>
       <div class="col-6">
         <q-card>
-          <div class="row">
-            <span class="q-pa-lg text-h5">{{ exam.examNote }}</span>
-
-            <q-space></q-space>
-            <div>
-              <q-btn class="q-mt-lg q-mr-xs" color="primary" label="Запази промените" size="sm"
-                     @click="saveUpdateExam()"></q-btn>
-              <q-btn class="q-mt-lg q-mr-xs" color="secondary" label="Добави нов въпрос" size="sm"
-                     @click="questionCreate()"></q-btn>
-              <q-btn class="q-mt-lg q-mr-xs" color="negative" label="Премахни изпита" size="sm"
-                     @click="deleteExam()"></q-btn>
-              <q-btn class="q-mt-lg q-mr-xs" color="teal" label="Опити" size="sm"
-                     @click="openTakesPage()"></q-btn>
-              <q-btn class="q-mt-lg q-mr-xs" color="accent" label="Скала за оценяване" size="sm"
-                     @click="openGradingScalePage()"></q-btn>
-            </div>
+          <q-btn class="text-primary" dense flat icon="chevron_left" @click="goBack">Назад</q-btn>
+          <div class="q-pa-lg text-h5">{{ exam.examNote }}</div>
+          <div class="q-pl-sm">
+            <q-btn class="q-mt-lg q-mr-xs" color="primary" label="Запази промените" size="sm"
+                   @click="saveUpdateExam()"></q-btn>
+            <q-btn class="q-mt-lg q-mr-xs" color="secondary" label="Добави нов въпрос" size="sm"
+                   @click="questionCreate()"></q-btn>
+            <q-btn class="q-mt-lg q-mr-xs" color="negative" label="Премахни изпита" size="sm"
+                   @click="deleteExam()"></q-btn>
+            <q-btn class="q-mt-lg q-mr-xs" color="teal" label="Опити" size="sm"
+                   @click="openTakesPage()"></q-btn>
+            <q-btn class="q-mt-lg q-mr-xs" color="accent" label="Скала за оценяване" size="sm"
+                   @click="openGradingScalePage()"></q-btn>
           </div>
           <q-separator></q-separator>
           <span class="q-pa-md text-negative">
@@ -39,11 +36,11 @@
               </div>
               <div>
                 <div v-if="defineQuestionType(question) === QuestionType.OPEN_QUESTION">
-                  <q-input v-model="question.questionTitle" :label="`${index+1}.Въпрос`" readonly stack-label>
+                  <q-input v-model="question.questionTitle" :label="`${index+1}.Въпрос`" autogrow readonly stack-label>
                   </q-input>
-                  <q-input v-model="question.questionDescription" label="Описание" readonly stack-label>
+                  <q-input v-model="question.questionDescription" autogrow label="Описание" readonly stack-label>
                   </q-input>
-                  <q-input v-model="question.points" label="Точки" readonly stack-label>
+                  <q-input v-model="question.points" autogrow label="Точки" readonly stack-label>
                   </q-input>
                   <div class="q-pt-sm" style="max-width: 300px">
                     <q-input
@@ -55,17 +52,18 @@
                   </div>
                 </div>
                 <div v-if="defineQuestionType(question)  === QuestionType.CHOICE_QUESTION">
-                  <q-input v-model="question.questionTitle" label="Въпрос" readonly stack-label>
+                  <q-input v-model="question.questionTitle" autogrow label="Въпрос" readonly stack-label>
                   </q-input>
-                  <q-input v-model="question.questionDescription" label="Описание" readonly stack-label>
+                  <q-input v-model="question.questionDescription" autogrow label="Описание" readonly stack-label>
                   </q-input>
-                  <q-input v-model="question.points" label="Точки" readonly stack-label>
+                  <q-input v-model="question.points" autogrow label="Точки" readonly stack-label>
                   </q-input>
                   <div v-for="(choice,index) in question.possibleAnswersToIfCorrect">
                     <div class="row">
                       <q-checkbox v-model="question.possibleAnswersToIfCorrect[index].correct"
                                   disable></q-checkbox>
-                      <q-input v-model="question.possibleAnswersToIfCorrect[index].text" dense readonly></q-input>
+                      <q-input v-model="question.possibleAnswersToIfCorrect[index].text" autogrow dense
+                               readonly></q-input>
                     </div>
                   </div>
                 </div>
@@ -168,6 +166,9 @@ const saveUpdateExam = async () => {
   await mergeExam({...exam, questions: {questions: questions}}, props.schoolId, props.periodId)
 }
 
+const goBack = async () => {
+  await router.go(-1)
+}
 
 </script>
 

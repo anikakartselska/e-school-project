@@ -4,22 +4,29 @@
       <div class="col-3"></div>
       <div class="col-6">
         <q-card>
+          <q-btn class="text-primary" dense flat icon="chevron_left" @click="goBack">Назад</q-btn>
           <div class="row">
             <span class="q-pa-lg text-h5">{{ exam.examNote }}</span>
             <q-space></q-space>
             <div>
-              <q-btn v-if="!examAnswer" class="q-mt-lg q-mr-xs" color="primary" label="Предай изпита"
-                     size="sm" @click="submitExam()"></q-btn>
+                <q-btn v-if="!examAnswer?.submitted" class="q-mt-lg q-mr-xs" color="primary" label="Предай изпита"
+                       size="sm" @click="submitExam()"></q-btn>
             </div>
           </div>
           <q-separator></q-separator>
-          <span v-if="!examAnswer" class="q-pa-md text-negative">
+            <span v-if="!examAnswer?.submitted" class="q-pa-md text-negative">
             Общ брой точки на теста: {{ examPoints }}
                 </span>
-          <div v-if="examAnswer" class="q-pa-md text-bold">
-            Вече сте предали вашият изпит<br>
-            Статуса на изпита е: {{ examAnswer.graded ? "ОЦЕНЕН" : "НЕОЦЕНЕН" }}
-          </div>
+            <div v-if="examAnswer?.submitted" class="q-pa-md text-bold">
+                Вече сте предали вашият изпит<br>
+                Статуса на изпита е: {{
+                examAnswer.graded ? examAnswer.inputtedGrade ? 'ОЦЕНЕН' : 'ПРОВЕРЕН' : "НЕПРОВЕРЕН"
+                }}<br>
+                Точки на изпита: {{
+                examAnswer.graded ? currentTakeExamPoints + '/' + examPoints : 'Изпита все още не е проверен'
+                }}<br>
+                Оценка: {{ examAnswer.grade ? examAnswer.grade : 'Няма въведена оценка' }}
+            </div>
           <div v-else>
             <q-list v-for="(question,index) in questions">
               <div class="q-px-sm q-mt-sm row">
@@ -82,41 +89,62 @@ import {Answer, ChoiceQuestionAnswer, OpenQuestionAnswer} from "../../model/Answ
 import {getCurrentUserAsUserView} from "../../services/LocalStorageService";
 import {ExamAnswers} from "../../model/ExamAnswers";
 import {confirmActionPromiseDialog} from "../../utils";
+import {router} from "../../router";
 
 const quasar = useQuasar()
 
 
 const props = defineProps<{
-  periodId: number
-  schoolId: number,
-  examId: number
+    periodId: number
+    schoolId: number,
+    examId: number
 }>()
 const currentUser = getCurrentUserAsUserView()
-let examAnswer = $ref(await getExamAnswersByExamIdAndSubmittedById(props.examId, currentUser.id))
-let newExamAnswer = <ExamAnswers>{submittedBy: currentUser,}
+const examAnswerFromDatabase = $ref(await getExamAnswersByExamIdAndSubmittedById(props.examId, currentUser.id))
+let examAnswer = $ref(examAnswerFromDatabase ? examAnswerFromDatabase : <ExamAnswers>{
+    submittedBy: currentUser,
+    examId: props.examId
+})
 const exam = $ref(await getExamById(props.examId))
 const questions = $ref<Question[]>(exam.questions?.questions ? shuffle(exam.questions?.questions) : [])
-const answers = $ref<Answer[]>(questions.map(quest => {
-          if (isChoiceQuestion(quest)) {
-            return <ChoiceQuestionAnswer>{questionUUID: quest.questionUUID, points: 0, questionAnswers: []}
-          } else {
-            return <OpenQuestionAnswer>{questionUUID: quest.questionUUID, points: 0}
-          }
+const answers = $ref<Answer[]>(examAnswer?.answers?.answers ? questions.map(quest =>
+        examAnswer?.answers?.answers?.find(answer => answer.questionUUID == quest.questionUUID)!!
+) : questions.map(quest => {
+            if (isChoiceQuestion(quest)) {
+                return <ChoiceQuestionAnswer>{questionUUID: quest.questionUUID, points: 0, questionAnswers: []}
+            } else {
+                return <OpenQuestionAnswer>{questionUUID: quest.questionUUID, points: 0}
+            }
         }
 ))
 
+
+const goBack = async () => {
+    if (!examAnswer?.submitted) {
+        await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите преди да сте предали изпита?")
+    }
+    await router.go(-1)
+}
+
 const examPoints = $computed(() => {
-  let sum = 0
-  questions.forEach(questions => sum = sum + (questions.points ? Number(questions.points) : 0))
-  return sum
+    let sum = 0
+    questions.forEach(questions => sum = sum + (questions.points ? Number(questions.points) : 0))
+    return sum
+})
+
+const currentTakeExamPoints = $computed(() => {
+    let sum = 0
+    examAnswer.answers?.answers?.forEach(answer => sum = sum + (answer.points ? Number(answer.points) : 0))
+    return sum
 })
 
 
 const submitExam = async () => {
     await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
     await mergeExamAnswers({
-        ...newExamAnswer,
-        answers: {answers: answers}
+        ...examAnswer,
+        answers: {answers: answers},
+        submitted: true
     }, props.schoolId, props.periodId, props.examId)
             .then(r => {
                 examAnswer = r
@@ -126,13 +154,13 @@ const submitExam = async () => {
 
 const saveExamProgress = async () => {
     await mergeExamAnswers({
-        ...newExamAnswer,
+        ...examAnswer,
         answers: {answers: answers}
     }, props.schoolId, props.periodId, props.examId)
-            .then(r => newExamAnswer = r)
+            .then(r => examAnswer = r)
 }
 const interval = setInterval(saveExamProgress, 60000)
-if (examAnswer) {
+if (examAnswer?.submitted) {
     clearInterval(interval)
 }
 const transferToOptionsList = (possibleAnswersToIfCorrect: PossibleAnswersToIfCorrect[]) => {
@@ -145,9 +173,9 @@ const transferToOptionsList = (possibleAnswersToIfCorrect: PossibleAnswersToIfCo
 const handleOneOption = (questionAnswers: string[], possibleAnswersToIfCorrect: PossibleAnswersToIfCorrect[], index: number) => {
     const answersLength = possibleAnswersToIfCorrect.filter((opt) => opt.correct).length
     debugger
-  if (questionAnswers.length > answersLength) {
-    answers[index].questionAnswers = answers[index].questionAnswers.slice(1, questionAnswers.length)
-  }
+    if (questionAnswers.length > answersLength) {
+        answers[index].questionAnswers = answers[index].questionAnswers.slice(1, questionAnswers.length)
+    }
 }
 
 function shuffle<T>(array: T[]): T[] {

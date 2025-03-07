@@ -4,8 +4,11 @@ import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.requests.RequestService
 import com.nevexis.backend.schoolManagement.requests.RequestStatus
 import com.nevexis.backend.schoolManagement.users.roles.SchoolUserRole
+import com.nevexis.backend.schoolManagement.users.user_security.UserPreferences
 import com.nevexis.`demo-project`.jooq.tables.records.UserRecord
 import com.nevexis.`demo-project`.jooq.tables.references.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.jooq.DSLContext
 import org.jooq.Record
 import org.jooq.impl.DSL
@@ -372,5 +375,10 @@ class UserService : UserBaseService() {
                 mapToUserView(it, listOf(SchoolRole.PARENT))
             }.distinctBy { it.id }
     }
+
+    fun updateUserPreferences(userPreferences: UserPreferences, userId: BigDecimal) =
+        db.update(USER).set(USER.PREFERENCES, Json.encodeToString(userPreferences)).where(USER.ID.eq(userId))
+            .execute()
+
 
 }

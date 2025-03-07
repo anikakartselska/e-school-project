@@ -11,16 +11,17 @@ import com.nevexis.backend.serializers.BigDecimalSerializer
 import com.nevexis.backend.serializers.LocalDateTimeSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
-import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Serializable
 data class ExamAnswers(
-    val id: BigDecimal? = null,
+    val id: Int? = null,
     val submittedBy: UserView,
     val submittedOn: LocalDateTime? = null,
     val answers: Answers? = null,
     val graded: Boolean = false,
-    val grade: BigDecimal? = null,
+    val grade: Int? = null,
     val inputtedGrade: Boolean = false,
+    val examId: Int,
+    val submitted: Boolean = false
 )

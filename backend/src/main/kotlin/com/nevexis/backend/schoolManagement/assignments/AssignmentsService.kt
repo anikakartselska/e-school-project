@@ -1,5 +1,6 @@
 package com.nevexis.backend.schoolManagement.assignments
 
+import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.file_management.SmsFileService
 import com.nevexis.backend.schoolManagement.school_period.Semester
@@ -103,6 +104,7 @@ class AssignmentsService : BaseService() {
         ASSIGNMENTS.SCHOOL_CLASS_ID.eq(schoolClassId)
     )
 
+
     fun getAssignmentsCountForPeriodAndSchool(
         schoolId: BigDecimal,
         periodId: BigDecimal,
@@ -137,6 +139,24 @@ class AssignmentsService : BaseService() {
         ).fetch().map {
             mapToAssignmentModel(it)
         }
+
+    fun getAssignmentsForExam(
+        schoolId: BigDecimal,
+        periodId: BigDecimal,
+        examId: BigDecimal
+    ): Assignments = selectOnConditionStep()
+        .where(
+            ASSIGNMENTS.SCHOOL_PERIOD_ID.eq(periodId)
+                .and(ASSIGNMENTS.SCHOOL_ID.eq(schoolId))
+                .and(
+                    ASSIGNMENTS.ASSIGNMENT_VALUE.like("%\"exam\":${examId}%")
+                        .and(ASSIGNMENTS.ASSIGNMENT_TYPE.eq(AssignmentType.EXAMINATION.name))
+                )
+
+
+        ).fetchAny()?.let {
+            mapToAssignmentModel(it)
+        } ?: throw SMSError("Невалидни данни", "Несъществуващ изпит")
 
     private fun selectOnConditionStep() = db.select(
         ASSIGNMENTS.asterisk(),

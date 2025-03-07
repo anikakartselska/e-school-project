@@ -1,5 +1,6 @@
 package com.nevexis.backend.schoolManagement.users
 
+import com.nevexis.backend.schoolManagement.users.user_security.UserPreferences
 import com.nevexis.backend.schoolManagement.users.user_security.UserSecurityService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ByteArrayResource
@@ -26,6 +27,10 @@ class UsersController {
     @PostMapping("/update-user")
     suspend fun updateUser(@RequestBody user: User, @RequestParam loggedUserId: BigDecimal) =
         userService.updateUser(user, loggedUserId)
+
+    @PostMapping("/update-current-user-preferences")
+    fun updateCurrentUserPreferences(@RequestBody userPreferences: UserPreferences, principal: Principal) =
+        userService.updateUserPreferences(userPreferences, principal.name.toBigDecimal())
 
     @GetMapping("/get-all-users-by-school-id-and-period-id")
     suspend fun getAllUsersBySchoolIdAndPeriodId(
@@ -102,6 +107,4 @@ class UsersController {
         @RequestParam schoolId: BigDecimal,
         @RequestParam periodId: BigDecimal
     ) = userService.getAllApprovedTeachersFromSchool(schoolId, periodId)
-
-
 }

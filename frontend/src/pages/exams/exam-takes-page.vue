@@ -1,6 +1,7 @@
 <template>
   <q-page class="q-pa-sm bg-sms">
     <q-card>
+      <q-btn class="text-primary" dense flat icon="chevron_left" @click="goBack">Назад</q-btn>
       <q-table
               :columns="columns"
               :pagination="{rowsPerPage:20}"
@@ -13,32 +14,32 @@
               title="Учебни предмети, седмичен и годишен брой на учебните часове"
       >
         <template v-slot:top-left>
-          <div class="text-h6">Оптити за изпитването</div>
+            <div class="text-h6">Опити за изпитването</div>
           <div class="text-h6">
             <span class="text-primary">
                 {{ exam.examNote }}
             </span>
           </div>
         </template>
-        <template v-slot:top-right>
-          <!--          <div class="q-pr-xs">-->
-          <!--            <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN])" color="secondary" icon="add"-->
-          <!--                   label="Добави нов предмет"-->
-          <!--                   outline rounded @click="addNewSubjectAndClassesCount()">-->
-          <!--            </q-btn>-->
-          <!--          </div>-->
-          <!--          <div class="q-pr-xs">-->
-          <!--            <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN])" color="primary" icon="save" label="Запази промените"-->
-          <!--                   outline rounded @click="save()">-->
-          <!--            </q-btn>-->
-          <!--          </div>-->
-          <!--          <div>-->
-          <!--            <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN])" color="negative" icon="restart_alt"-->
-          <!--                   label="Върни промените"-->
-          <!--                   outline rounded @click="reset()">-->
-          <!--            </q-btn>-->
-          <!--          </div>-->
-        </template>
+          <template v-slot:top-right>
+              <div class="q-pr-xs">
+                  <q-btn v-if="takes.find(it=> it.inputtedGrade === false)" color="negative"
+                         label="Нанеси липсващи оценки"
+                         outline rounded @click="inputGrades">
+                  </q-btn>
+                  <!--          </div>-->
+                  <!--          <div class="q-pr-xs">-->
+                  <!--            <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN])" color="primary" icon="save" label="Запази промените"-->
+                  <!--                   outline rounded @click="save()">-->
+                  <!--            </q-btn>-->
+                  <!--          </div>-->
+                  <!--          <div>-->
+                  <!--            <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN])" color="negative" icon="restart_alt"-->
+                  <!--                   label="Върни промените"-->
+                  <!--                   outline rounded @click="reset()">-->
+                  <!--            </q-btn>-->
+              </div>
+          </template>
         <template v-slot:body-cell-edit="props">
           <q-td>
             <q-btn dense flat icon="open_in_new" @click="openExamGradePage(props.row)">
@@ -72,7 +73,12 @@
 <script lang="ts" setup>
 import {useRouter} from "vue-router";
 import {useQuasar} from "quasar";
-import {getAllStudentsFromSchoolClass, getExamAnswersForExamId, getExamById} from "../../services/RequestService";
+import {
+    getAllStudentsFromSchoolClass,
+    getExamAnswersForExamId,
+    getExamById,
+    inputGradesOnExamAnswers
+} from "../../services/RequestService";
 import {$computed, $ref} from "vue/macros";
 import {ExamAnswers} from "../../model/ExamAnswers";
 import {dateTimeToBulgarianLocaleString} from "../../utils";
@@ -89,13 +95,22 @@ const props = defineProps<{
 const exam = await getExamById(props.examId)
 const router = useRouter()
 const quasar = useQuasar()
-const takes = $ref(await getExamAnswersForExamId(props.examId))
+let takes = $ref(await getExamAnswersForExamId(props.examId))
 const studentsFromSchoolClass = await getAllStudentsFromSchoolClass(props.schoolClassId, props.periodId)
 const studentsThatDidnTakeExam = studentsFromSchoolClass.filter(student => takes.find(take => take.submittedBy.id == student.id) == null)
 const openExamGradePage = async (examAnswer: ExamAnswers) => {
   await router.push(`/exam-grade-page/${props.periodId}/${props.schoolId}/${props.examId}/${examAnswer.id}`)
 }
 
+const inputGrades = async () => {
+    await inputGradesOnExamAnswers(takes, props.schoolId, props.periodId).then(r =>
+            takes = takes.map(take => {
+                        const foundUpdatedTake = r.find(updatedTake => updatedTake.id == take.id)
+                        return foundUpdatedTake ? foundUpdatedTake : take
+                    }
+            )
+    )
+}
 
 const sumPoints = (answers: Answer[]) => {
   let sum = 0
@@ -110,16 +125,19 @@ const examPoints = $computed(() => {
   return sum
 })
 
+const goBack = async () => {
+    await router.go(-1)
+}
 const columns = $computed(() => [
-  {
-    name: 'edit',
-    headerClasses: 'q-table--col-auto-width'
-  },
-  {
-    name: "submittedBy",
-    label: "Предадено от",
-    align: "left",
-    field: (row: ExamAnswers) => row.submittedBy.firstName + ' ' + row.submittedBy.lastName,
+    {
+        name: 'edit',
+        headerClasses: 'q-table--col-auto-width'
+    },
+    {
+        name: "submittedBy",
+        label: "Предадено от",
+        align: "left",
+        field: (row: ExamAnswers) => row.submittedBy.firstName + ' ' + row.submittedBy.lastName,
     sortable: true
   },
   {
@@ -234,11 +252,19 @@ const studentColumns = [
 
 
 
+
+
+
+
   &.q-table--loading thead tr:last-child th
     /* height of all previous header rows */
     top: 48px
 
   /* prevent scrolling behind sticky top row on focus */
+
+
+
+
 
 
 

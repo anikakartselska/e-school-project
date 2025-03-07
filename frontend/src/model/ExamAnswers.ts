@@ -9,4 +9,7 @@ export interface ExamAnswers {
     graded: boolean | false,
     grade: number | null
     inputtedGrade: boolean | false
+    examId: number
+
+    submitted: boolean | false
 }

@@ -23,6 +23,16 @@ class ExamAnswersController {
     ): ExamAnswers =
         examAnswersService.saveUpdateExamAnswers(examAnswers, schoolId, periodId, examId, user.name.toBigDecimal())
 
+
+    @PostMapping("/input-grades-on-exam-answers")
+    fun inputGradesOnExamAnswers(
+        @RequestBody listOfExamAnswers: List<ExamAnswers>,
+        schoolId: BigDecimal,
+        periodId: BigDecimal,
+        user: Principal
+    ): List<ExamAnswers> =
+        examAnswersService.inputGradesToExamAnswers(listOfExamAnswers, schoolId, periodId, user.name.toBigDecimal())
+
     @GetMapping("/get-exam-answers")
     fun getExamAnswers(examId: BigDecimal, submittedBy: BigDecimal) =
         examAnswersService.getExamAnswersByExamIdAndSubmittedById(examId, submittedBy)

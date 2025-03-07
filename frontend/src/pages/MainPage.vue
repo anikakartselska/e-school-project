@@ -53,11 +53,11 @@
           </q-menu>
         </q-btn>
         <q-btn
-                :icon="$q.dark.isActive ? 'nights_stay' : 'wb_sunny'"
+                :icon="$q.dark.mode ? 'nights_stay' : 'wb_sunny'"
                 class="q-mr-xs"
                 flat
                 round
-                @click="$q.dark.toggle()"
+                @click="$q.dark.toggle"
         />
         <q-btn dense flat icon="notifications" @click="getLastFiveNotifications()">
           <q-badge v-if="!notificationsChecked" align="bottom" color="primary" floating rounded/>
@@ -198,27 +198,28 @@
 import {useRouter} from "vue-router";
 import {$computed, $ref} from "vue/macros";
 import {
-  clearUserStorage,
-  currentUserHasAnyRole,
-  getCurrentUser,
-  updateUserInLocalStorage
+    clearUserStorage,
+    currentUserHasAnyRole,
+    getCurrentUser,
+    updateUserInLocalStorage
 } from "../services/LocalStorageService";
 import {
-  fetchAllSubjectsTaughtByTeacher,
-  getAllSchoolPeriods,
-  getAllUserRoles,
-  getLastFiveActionsForUser,
-  getUserProfilePicture,
-  loginAfterSelectedRole,
-  logout
+    fetchAllSubjectsTaughtByTeacher,
+    getAllSchoolPeriods,
+    getAllUserRoles,
+    getLastFiveActionsForUser,
+    getUserProfilePicture,
+    loginAfterSelectedRole,
+    logout,
+    updateCurrentUserPreferences
 } from "../services/RequestService";
 import {onBeforeMount, onBeforeUnmount, watch} from "vue";
 import {constructSchoolUserRoleMessage, SchoolUserRole} from "../model/SchoolUserRole";
 import {SchoolPeriod} from "../model/SchoolPeriod";
 import {
-  confirmActionPromiseDialog,
-  confirmActionPromiseDialogWithCancelButton,
-  dateTimeToBulgarianLocaleString
+    confirmActionPromiseDialog,
+    confirmActionPromiseDialogWithCancelButton,
+    dateTimeToBulgarianLocaleString
 } from "../utils";
 import {AuthenticationResponse, Success} from "../model/AuthenticationResponse";
 import {periodId, schoolId} from "../model/constants";
@@ -271,26 +272,39 @@ onBeforeMount(async () => {
       message: newAction.action,
       color: 'primary',
     })
-    notificationsChecked = false;
-    notifications.unshift(newAction)
-    // }
+      notificationsChecked = false;
+      notifications.unshift(newAction)
+      // }
   }, false)
-  console.log(actionsEventSource)
+    console.log(actionsEventSource)
 })
 
 onBeforeUnmount(() => {
-  actionsEventSource.close();
+    actionsEventSource.close();
 })
 
+watch(() => quasar.dark.isActive,
+        async () => {
+            if (
+                    quasar.dark.isActive !== currentUser.preferences?.enableDarkMode
+            ) {
+                currentUser.preferences = {
+                    enableDarkMode: quasar.dark.isActive
+                }
+                await updateCurrentUserPreferences(currentUser.preferences)
+            }
+        }
+)
+
 const getLastFiveNotifications = async () => {
-  if (notifications.length == 0) {
-    notifications = await getLastFiveActionsForUser()
-  }
-  notificationsChecked = true;
+    if (notifications.length == 0) {
+        notifications = await getLastFiveActionsForUser()
+    }
+    notificationsChecked = true;
 };
 
 const load = async () => {
-  userRoles = await getAllUserRoles(currentUser.id)
+    userRoles = await getAllUserRoles(currentUser.id)
   schoolPeriods = await getAllSchoolPeriods()
   userRolesFilteredBySelectedPeriod = userRoles.filter(role => role.period.id == selectedPeriod?.id)
   currentUserFile = await getUserProfilePicture(currentUser.id)
@@ -331,11 +345,17 @@ const changeUserRole = async () => {
   )
 }
 const resetUserPassword = () => {
-  quasar.dialog({
-    component: PasswordChangeDialog,
-  }).onOk(async (payload) => {
+    quasar.dialog({
+        component: PasswordChangeDialog,
+    }).onOk(async (payload) => {
 
-  })
+    })
+}
+console.log(getCurrentUser())
+
+if (getCurrentUser()?.preferences) {
+    console.log("here")
+    quasar.dark.set(getCurrentUser().preferences?.enableDarkMode)
 }
 
 const left = $ref(true)
@@ -344,9 +364,9 @@ const expansionItemsList = $computed(() =>
         [{label: 'Предмети', icon: "reorder", items: subjectWithSchoolClassInformation}]
 )
 const pages = $computed(() => [
-  {
-    to: `/user/${currentUser.id}/${periodId.value}/${schoolId.value}`,
-    label: "Лична информация",
+    {
+        to: `/user/${currentUser.id}/${periodId.value}/${schoolId.value}`,
+        label: "Лична информация",
     show: true,
     icon: 'person'
   },
