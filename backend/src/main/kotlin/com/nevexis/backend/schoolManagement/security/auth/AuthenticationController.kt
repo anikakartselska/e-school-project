@@ -156,6 +156,11 @@ class AuthenticationController {
         @RequestParam phoneNumber: String
     ) = userSecurityService.findUserWithAllApprovedRolesByPhoneNumber(phoneNumber)
 
+    @GetMapping("/find-if-user-with-all-its-roles-by-phone-number")
+    fun findIfUserWithAllItsRolesByPhoneNumber(
+        @RequestParam phoneNumber: String
+    ) = userSecurityService.findIfThereIsAUserWithAllApprovedRolesByPhoneNumber(phoneNumber)
+
     @PostMapping("/create-requests")
     fun createRequests(
         @RequestBody user: User,

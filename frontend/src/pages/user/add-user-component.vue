@@ -13,8 +13,10 @@
     >
       <q-card-section>
         <div class="q-gutter-md">
-          <q-input v-model="user.phoneNumber" filled label="Мобилен телефон" mask="##########"/>
+            <q-input v-model="user.phoneNumber" filled label="Мобилен телефон" mask="##########"
+                     @update:model-value="existingUserByPhoneNumber = false"/>
         </div>
+          <span v-if="!inDialog && existingUserByPhoneNumber" class="text-negative">Потребител с посочения телефонен номер вече съществува</span>
       </q-card-section>
       <q-stepper-navigation>
         <q-btn :disable="enableGoingToPersonalInformationStep" color="primary" label="Напред"
@@ -114,14 +116,15 @@ import {useQuasar} from "quasar";
 import {useRouter} from "vue-router";
 import {$computed, $ref} from "vue/macros";
 import {
-  createRequestFromUser,
-  createUser,
-  findStudentByPhoneNumberPeriodAndSchoolClass,
-  findUserWithAllItsRolesByPhoneNumber,
-  getAllSchoolClasses,
-  getAllSchoolPeriodsWithTheSchoolsTheyAreStarted,
-  getAllSchools,
-  getAllSubjects
+    createRequestFromUser,
+    createUser,
+    findIfThereIsAnExistingUserByPhoneNumber,
+    findStudentByPhoneNumberPeriodAndSchoolClass,
+    findUserWithAllItsRolesByPhoneNumber,
+    getAllSchoolClasses,
+    getAllSchoolPeriodsWithTheSchoolsTheyAreStarted,
+    getAllSchools,
+    getAllSubjects
 } from "../../services/RequestService";
 import AddRoleDialog from "../add-role-dialog.vue";
 import {confirmActionPromiseDialogWithCancelButton, translationOfGender} from "../../utils";
@@ -223,33 +226,43 @@ const updateRole = async (role) => {
         }
       })
     } else {
-      user.roles = user.roles?.map((role, index) => {
-        if (index == roleIndex) {
-          return payload.item
-        } else {
-          return role
-        }
-      })
+        user.roles = user.roles?.map((role, index) => {
+            if (index == roleIndex) {
+                return payload.item
+            } else {
+                return role
+            }
+        })
     }
   })
 }
+let existingUserByPhoneNumber = $ref(false)
+
 const continuingToPersonalInformationStep = async () => {
-  const userFetchedFromDatabase = await findUserWithAllItsRolesByPhoneNumber(user!!.phoneNumber)
-  if (userFetchedFromDatabase?.id) {
-    user = userFetchedFromDatabase
-  }
-  step = 2
+    if (!props.inDialog) {
+        existingUserByPhoneNumber = await findIfThereIsAnExistingUserByPhoneNumber(user!!.phoneNumber)
+        if (!existingUserByPhoneNumber) {
+            step = 2
+        }
+    } else {
+        const userFetchedFromDatabase = await findUserWithAllItsRolesByPhoneNumber(user!!.phoneNumber)
+        if (userFetchedFromDatabase?.id) {
+            user = userFetchedFromDatabase
+        }
+        step = 2
+    }
+
 }
 
 const sendRegistrationRequest = async () => {
-  if (props.inDialog) {
-    await createUser(user, getCurrentUser().id).then(async response => {
-      await confirmActionPromiseDialogWithCancelButton("Заявките за регистрация/нова роля са изпратени",
-              "Друг админ трябва да одобри създадените от вас заявки")
-      emits("update:submitted", true)
-      emits("update:newUser", <User>response)
-    })
-  } else {
+    if (props.inDialog) {
+        await createUser(user, getCurrentUser().id).then(async response => {
+            await confirmActionPromiseDialogWithCancelButton("Заявките за регистрация/нова роля са изпратени",
+                    "Друг админ трябва да одобри създадените от вас заявки")
+            emits("update:submitted", true)
+            emits("update:newUser", <User>response)
+        })
+    } else {
     await createRequestFromUser(user).then(
             async () => {
               await confirmActionPromiseDialogWithCancelButton("Заявките за регистрация/нова роля са изпратени",

@@ -10,6 +10,6 @@ export interface ExamAnswers {
     grade: number | null
     inputtedGrade: boolean | false
     examId: number
-
     submitted: boolean | false
+    cancelled: boolean | false
 }

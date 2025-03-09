@@ -55,6 +55,11 @@ class UserSecurityService : UserBaseService() {
             mapUserRecordToUserModel(userRecord, allUserRoles)
         }
 
+    fun findIfThereIsAUserWithAllApprovedRolesByPhoneNumber(
+        phoneNumber: String
+    ) = recordSelectOnConditionStep(db).where(USER.PHONE_NUMBER.eq(phoneNumber))
+        .fetchAny() != null
+
     fun findUserWithAllRolesByPhoneNumberForSchoolAndPeriod(
         phoneNumber: String,
         schoolId: BigDecimal,

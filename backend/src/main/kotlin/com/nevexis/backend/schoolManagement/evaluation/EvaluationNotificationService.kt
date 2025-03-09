@@ -42,9 +42,9 @@ class EvaluationNotificationService {
             userService.getParentEmailsFromListOfStudentIds(studentIds, periodId, schoolId)
         newEvaluationsGroupedByStudentId.forEach { (_, evaluations) ->
             evaluations.forEach { evaluation ->
-                studentIdToParentInformation[evaluation.student.id.toBigDecimal()]?.let { (id, email) ->
+                studentIdToParentInformation[evaluation.student.id.toBigDecimal()].let { idToEmail ->
                     notificationService.sendNotification(
-                        listOf(email!!, evaluation.student.email),
+                        listOfNotNull(idToEmail?.second, evaluation.student.email),
                         "НОВО оценяване",
                         TemplateType.EVALUATION_CREATE,
                         getContextForEvaluationCreation(evaluation)
@@ -54,7 +54,7 @@ class EvaluationNotificationService {
                         periodId = periodId,
                         schoolId = schoolId,
                         userId = evaluation.createdBy.id.toBigDecimal(),
-                        forUserIds = listOf(id!!, evaluation.student.id.toBigDecimal()),
+                        forUserIds = listOfNotNull(idToEmail?.first, evaluation.student.id.toBigDecimal()),
                         action = actionsContentService.constructActionsMessage(
                             ActionType.EVALUATION_CREATE,
                             actionsContentService.getContextForEvaluationCreation(evaluation)

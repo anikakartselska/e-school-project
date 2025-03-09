@@ -1,5 +1,6 @@
 package com.nevexis.backend.schoolManagement.assignments.examination
 
+import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.BaseService
 import com.nevexis.backend.schoolManagement.evaluation.EvaluationService
 import com.nevexis.backend.schoolManagement.users.UserService
@@ -13,6 +14,7 @@ import kotlinx.serialization.json.Json
 import org.jooq.Record
 import org.jooq.impl.DSL
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -26,6 +28,9 @@ class ExamAnswersService : BaseService() {
     @Autowired
     private lateinit var evaluationService: EvaluationService
 
+    @Autowired
+    @Lazy
+    private lateinit var examService: ExamService
     fun saveUpdateExamAnswers(
         examAnswers: ExamAnswers,
         schoolId: BigDecimal,
@@ -62,6 +67,11 @@ class ExamAnswersService : BaseService() {
                 } else {
                     "N"
                 }
+                this.cancelled = if (examAnswers.cancelled) {
+                    "Y"
+                } else {
+                    "N"
+                }
             }.also {
                 it.store()
                 if (examAnswers.graded && examAnswers.inputtedGrade) {
@@ -92,6 +102,85 @@ class ExamAnswersService : BaseService() {
                 .also { records ->
                     db.batchUpdate(records).execute()
                     evaluationService.createEvaluationOnExamAnswers(answers, schoolId, periodId, userId)
+                }
+        }
+    }
+
+    fun cancelExamAnswers(
+        listExamAnswers: List<ExamAnswers>,
+        schoolId: BigDecimal,
+        periodId: BigDecimal,
+        input2: Boolean,
+        userId: BigDecimal
+    ): List<ExamAnswers> {
+        val examAnswersForInput = listExamAnswers.filter { !it.graded }
+
+        if (examAnswersForInput.isEmpty()) {
+            return emptyList()
+        }
+
+        return examAnswersForInput.map {
+            if (input2) {
+                it.copy(cancelled = true, inputtedGrade = true, graded = true, grade = 2)
+            } else {
+                it.copy(
+                    cancelled = true
+                )
+            }
+        }
+            .also { answers ->
+                answers.map { it.mapToRecord(schoolId, periodId) }
+                    .also { records ->
+                        db.batchUpdate(records).execute()
+                        if (input2) {
+                            evaluationService.createEvaluationOnExamAnswers(answers, schoolId, periodId, userId)
+                        }
+                    }
+            }
+    }
+
+    fun gradeExamAnswers(
+        listExamAnswers: List<ExamAnswers>,
+        examId: BigDecimal,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ): List<ExamAnswers> {
+        val examAnswersForInput = listExamAnswers.filter { !it.graded }
+
+        if (examAnswersForInput.isEmpty()) {
+            return emptyList()
+        }
+        val exam = examService.getExam(examId)!!
+        if (exam.gradingScale == null) {
+            throw SMSError("Невалидна скала за оценяване", "Скала за оценяване не съществува")
+        }
+        if (exam.questions?.questions?.sumOf { it.points } != exam.gradingScale.interval6.endingPoints.toInt()) {
+            throw SMSError("Грешка при завършване на проверката", "Скалата за оценяване е невалидна")
+        }
+        return examAnswersForInput.map {
+            val currentTakeExamPoints = (it.answers?.answers?.sumOf { it.points ?: 0 } ?: 0).toBigDecimal()
+            val grade = when {
+                exam.gradingScale.interval3.startingPoints <= currentTakeExamPoints &&
+                        exam.gradingScale.interval3.endingPoints >= currentTakeExamPoints -> 3
+
+                exam.gradingScale.interval4.startingPoints <= currentTakeExamPoints &&
+                        exam.gradingScale.interval4.endingPoints >= currentTakeExamPoints -> 4
+
+                exam.gradingScale.interval5.startingPoints <= currentTakeExamPoints &&
+                        exam.gradingScale.interval5.endingPoints >= currentTakeExamPoints -> 5
+
+                exam.gradingScale.interval6.startingPoints <= currentTakeExamPoints &&
+                        exam.gradingScale.interval6.endingPoints >= currentTakeExamPoints -> 6
+
+                else -> 2
+            }
+
+            it.copy(graded = true, grade = grade)
+        }.also { answers ->
+            answers.map { it.mapToRecord(schoolId, periodId) }
+                .also { records ->
+                    db.batchUpdate(records).execute()
+//                        evaluationService.createEvaluationOnExamAnswers(answers, schoolId, periodId, userId)
                 }
         }
     }
@@ -131,6 +220,7 @@ class ExamAnswersService : BaseService() {
             inputtedGrade = examAnswersRecord.inputtedGrade == "Y",
             examId = examAnswersRecord.examId?.toInt()!!,
             submitted = examAnswersRecord.submitted == "Y",
+            cancelled = examAnswersRecord.cancelled == "Y"
         )
     }
 
@@ -155,6 +245,11 @@ class ExamAnswersService : BaseService() {
                 "N"
             }
             this.submitted = if (this@mapToRecord.submitted) {
+                "Y"
+            } else {
+                "N"
+            }
+            this.cancelled = if (this@mapToRecord.cancelled) {
                 "Y"
             } else {
                 "N"

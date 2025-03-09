@@ -63,9 +63,10 @@
           <q-badge v-if="!notificationsChecked" align="bottom" color="primary" floating rounded/>
           <q-menu>
             <div class="text-h6 q-my-sm q-mx-md">Известия
-              <q-btn class="float-right" color="primary" flat to="/rvm/activity-stream">
-                Виж всички
-              </q-btn>
+                <q-btn :to="`/activity-stream/${currentUser.role.school.id}/${currentUser.role.period.id}`" class="float-right" color="primary"
+                       flat>
+                    Виж всички
+                </q-btn>
             </div>
             <q-separator/>
             <q-scroll-area v-if="notifications.length>0"
@@ -262,16 +263,16 @@ onBeforeMount(async () => {
   actionsEventSource.addEventListener('message', (actionMessage: MessageEvent) => {
     console.log("hereeee¶")
     const newAction = <Actions>JSON.parse(actionMessage.data)
-    // if (newAction.executedBy.id !== getCurrentUser().id) {
-    quasar.notify({
-      position: "top-right",
-      progress: true,
-      timeout: 5000,
-      icon: 'notifications',
-      iconColor: 'white',
-      message: newAction.action,
-      color: 'primary',
-    })
+      // if (newAction.executedBy.id !== getCurrentUser().id) {
+      quasar.notify({
+          position: "top-right",
+          progress: true,
+          timeout: 5000,
+          icon: 'notifications',
+          iconColor: 'white',
+          message: newAction.action,
+          color: 'primary',
+      })
       notificationsChecked = false;
       notifications.unshift(newAction)
       // }
@@ -305,7 +306,7 @@ const getLastFiveNotifications = async () => {
 
 const load = async () => {
     userRoles = await getAllUserRoles(currentUser.id)
-  schoolPeriods = await getAllSchoolPeriods()
+    schoolPeriods = await getAllSchoolPeriods()
   userRolesFilteredBySelectedPeriod = userRoles.filter(role => role.period.id == selectedPeriod?.id)
   currentUserFile = await getUserProfilePicture(currentUser.id)
   school = currentUser.role.school
@@ -367,16 +368,16 @@ const pages = $computed(() => [
     {
         to: `/user/${currentUser.id}/${periodId.value}/${schoolId.value}`,
         label: "Лична информация",
-    show: true,
-    icon: 'person'
-  },
-  {
-    to: `/student-diary/${((currentUser.role.detailsForUser as DetailsForParent)?.child?.role.detailsForUser as DetailsForStudent)?.schoolClass?.id}/${(currentUser.role.detailsForUser as DetailsForParent)?.child?.id}/${periodId.value}/${schoolId.value}/grades`,
-    label: "Дневник",
-    show: currentUserHasAnyRole([SchoolRole.PARENT]),
-    icon: 'menu_book'
-  },
-  {
+        show: true,
+        icon: 'person'
+    },
+    {
+        to: `/student-diary/${((currentUser.role.detailsForUser as DetailsForParent)?.child?.role.detailsForUser as DetailsForStudent)?.schoolClass?.id}/${(currentUser.role.detailsForUser as DetailsForParent)?.child?.id}/${periodId.value}/${schoolId.value}/grades`,
+        label: "Дневник",
+        show: currentUserHasAnyRole([SchoolRole.PARENT]),
+        icon: 'menu_book'
+    },
+    {
     to: `/teacher-lessons/${periodId.value}/${schoolId.value}/${currentUser.id}`,
     label: "Моята програма",
     show: currentUserHasAnyRole([SchoolRole.TEACHER]),

@@ -33,6 +33,26 @@ class ExamAnswersController {
     ): List<ExamAnswers> =
         examAnswersService.inputGradesToExamAnswers(listOfExamAnswers, schoolId, periodId, user.name.toBigDecimal())
 
+    @PostMapping("/cancel-exam-answers")
+    fun cancelExamAnswersList(
+        @RequestBody listOfExamAnswers: List<ExamAnswers>,
+        schoolId: BigDecimal,
+        periodId: BigDecimal,
+        input2: Boolean,
+        user: Principal
+    ): List<ExamAnswers> =
+        examAnswersService.cancelExamAnswers(listOfExamAnswers, schoolId, periodId, input2, user.name.toBigDecimal())
+
+    @PostMapping("/grade-exam-answers")
+    fun gradeExamAnswersList(
+        @RequestBody listOfExamAnswers: List<ExamAnswers>,
+        schoolId: BigDecimal,
+        periodId: BigDecimal,
+        examId: BigDecimal
+    ): List<ExamAnswers> =
+        examAnswersService.gradeExamAnswers(listOfExamAnswers, examId, schoolId, periodId)
+
+
     @GetMapping("/get-exam-answers")
     fun getExamAnswers(examId: BigDecimal, submittedBy: BigDecimal) =
         examAnswersService.getExamAnswersByExamIdAndSubmittedById(examId, submittedBy)

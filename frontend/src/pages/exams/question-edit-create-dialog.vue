@@ -67,6 +67,34 @@
               </div>
             </div>
           </div>
+          <div>
+            <q-avatar v-if="updatedQuestion.picture" class="q-ma-sm" font-size="400px" size="400px"
+                      square text-color="white">
+              <q-img
+                      :src="imageUrl(file)"
+                      fit="contain"
+                      ratio="1"
+                      spinner-color="white"
+              ></q-img>
+            </q-avatar>
+          </div>
+          <div class="row">
+            <q-file v-model="file" :display-value="updatedQuestion.picture ? 'Смени снимка' : 'Добави снимка'"
+                    accept="image/*"
+                    class="col"
+                    dense
+                    outlined
+                    @update:model-value="value => handleUpdate(value)"
+            >
+              <template v-slot:prepend>
+                <q-icon name="attach_file"/>
+              </template>
+            </q-file>
+            <q-btn v-if="updatedQuestion.picture" class="col-1 bg-negative text-white" icon="remove"
+                   @click="value => handleDelete(value)">
+              <q-tooltip>Премахни снимката</q-tooltip>
+            </q-btn>
+          </div>
           <q-card-actions align="right">
             <q-btn color="primary" label="Готово" @click="submit"/>
             <q-btn class="q-ml-sm" color="primary" flat label="Отказ" @click="onDialogCancel"/>
@@ -108,18 +136,55 @@ let updatedQuestion = $ref<Question>(props.question ? cloneDeep(props.question) 
   questionTitle: null,
   questionDescription: null
 })
-
+let file = $ref(updatedQuestion?.picture ? base64ToImageFile(updatedQuestion?.picture, updatedQuestion.questionUUID) : null)
 const questionType = $ref<QuestionType | null>(updatedQuestion ? defineQuestionType(updatedQuestion) : null)
 
+function imageFileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string); // Base64 Data URL
+    reader.onerror = reject;
+    reader.readAsDataURL(file); // Read file as Base64
+  });
+}
+
+const imageUrl = (file: File) => {
+  return file ? window.URL.createObjectURL(file) : ''
+}
+
+const handleUpdate = async (value: File) => {
+  const picture = await imageFileToBase64(value)
+  updatedQuestion = {...updatedQuestion, picture: picture}
+}
+
+const handleDelete = async (value: File) => {
+  file = null
+  updatedQuestion = {...updatedQuestion, picture: null}
+}
+
+function base64ToImageFile(base64String: string, fileName: string): File {
+  const arr = base64String.split(",");
+  const mimeType = arr[0].match(/:(.*?);/)?.[1] || "image/png";
+  const byteCharacters = atob(arr[1]); // Decode Base64
+  const byteNumbers = new Uint8Array(byteCharacters.length);
+
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+
+  const blob = new Blob([byteNumbers], {type: mimeType});
+  return new File([blob], fileName, {type: mimeType});
+}
+
 watch(() => questionType, () => {
-          switch (questionType) {
-            case QuestionType.CHOICE_QUESTION: {
-              updatedQuestion = <ChoiceQuestion><unknown>{
-                questionTitle: null,
-                questionDescription: null,
-                possibleAnswersToIfCorrect: []
-              }
-              break;
+  switch (questionType) {
+    case QuestionType.CHOICE_QUESTION: {
+      updatedQuestion = <ChoiceQuestion><unknown>{
+        questionTitle: null,
+        questionDescription: null,
+        possibleAnswersToIfCorrect: []
+      }
+      break;
             }
             case QuestionType.OPEN_QUESTION: {
               updatedQuestion = <OpenQuestion><unknown>{

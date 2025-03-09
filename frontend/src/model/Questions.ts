@@ -12,18 +12,21 @@ export class ChoiceQuestion {
     points: number | null
     possibleAnswersToIfCorrect: PossibleAnswersToIfCorrect[]
 
+    picture: string | null
+
     constructor(questionUUID: string,
                 questionTitle: string,
                 questionDescription: string | null,
                 points: number | null,
-                possibleAnswersToIfCorrect: PossibleAnswersToIfCorrect[]
+                possibleAnswersToIfCorrect: PossibleAnswersToIfCorrect[],
+                picture: string | null
     ) {
         this.questionUUID = questionUUID
         this.questionTitle = questionTitle
         this.questionDescription = questionDescription
         this.points = points
         this.possibleAnswersToIfCorrect = possibleAnswersToIfCorrect
-
+        this.picture = picture
     }
 }
 
@@ -38,16 +41,19 @@ export class OpenQuestion {
     questionTitle: string
     questionDescription: string | null
     points: number | null
+    picture: string | null
 
     constructor(questionUUID: string,
                 questionTitle: string,
                 questionDescription: string | null,
-                points: number | null
+                points: number | null,
+                picture: string | null
     ) {
         this.questionUUID = questionUUID
         this.questionTitle = questionTitle
         this.questionDescription = questionDescription
         this.points = points
+        this.picture = picture
     }
 }
 

@@ -958,6 +958,46 @@
         <column>
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>EXAM</table_name>
+            <column_name>LOOK_AT_EXAM_AFFTER_GRADING</column_name>
+            <data_type>char</data_type>
+            <character_maximum_length>1</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>9</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <column_default>'''N'''</column_default>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>EXAM</table_name>
+            <column_name>START_TIME_OF_EXAM</column_name>
+            <data_type>timestamp</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>6</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>10</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>EXAM</table_name>
+            <column_name>END_TIME_OF_EXAM</column_name>
+            <data_type>timestamp</data_type>
+            <character_maximum_length>0</character_maximum_length>
+            <numeric_precision>6</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>11</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
             <table_name>EXAM_ANSWERS</table_name>
             <column_name>ID</column_name>
             <data_type>numeric</data_type>
@@ -1099,6 +1139,20 @@
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
             <ordinal_position>11</ordinal_position>
+            <is_nullable>true</is_nullable>
+            <column_default>'''N'''</column_default>
+            <comment></comment>
+        </column>
+        <column>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>EXAM_ANSWERS</table_name>
+            <column_name>CANCELLED</column_name>
+            <data_type>char</data_type>
+            <character_maximum_length>1</character_maximum_length>
+            <numeric_precision>0</numeric_precision>
+            <numeric_scale>0</numeric_scale>
+            <ordinal_position>12</ordinal_position>
             <is_nullable>true</is_nullable>
             <column_default>'''N'''</column_default>
             <comment></comment>

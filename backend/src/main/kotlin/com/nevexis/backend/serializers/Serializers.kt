@@ -12,6 +12,7 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializer(forClass = BigDecimal::class)
@@ -25,6 +26,19 @@ class BigDecimalSerializer : KSerializer<BigDecimal> {
 
     override fun deserialize(decoder: Decoder): BigDecimal {
         return BigDecimal(decoder.decodeString())
+    }
+}
+
+object ByteArrayBase64Serializer : KSerializer<ByteArray> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("ByteArray", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: ByteArray) {
+        val base64String = Base64.getEncoder().encodeToString(value)
+        encoder.encodeString(base64String)
+    }
+
+    override fun deserialize(decoder: Decoder): ByteArray {
+        return Base64.getDecoder().decode(decoder.decodeString())
     }
 }
 

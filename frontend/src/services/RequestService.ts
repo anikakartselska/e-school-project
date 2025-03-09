@@ -170,6 +170,13 @@ export const findUserWithAllItsRolesByPhoneNumber = async (phoneNumber): Promise
             }
         }).then(p => p.data)
 
+export const findIfThereIsAnExistingUserByPhoneNumber = async (phoneNumber): Promise<boolean> =>
+        await auth.get<boolean>('/find-if-user-with-all-its-roles-by-phone-number', {
+            params: {
+                phoneNumber
+            }
+        }).then(p => p.data)
+
 export const createRequestFromUser = async (user): Promise<any> =>
         await auth.post<string>(`/create-requests`, user)
 
@@ -916,6 +923,31 @@ export const inputGradesOnExamAnswers = async (listOfExamAnswers: ExamAnswers[],
             params: {
                 schoolId: schoolId,
                 periodId: periodId,
+            },
+            headers: {'Content-Type': 'application/json'},
+        }).then(p => p.data)
+
+
+export const cancelExamAnswers = async (listOfExamAnswers: ExamAnswers[],
+                                        schoolId,
+                                        periodId, input2): Promise<ExamAnswers[]> =>
+        await api.post<ExamAnswers[]>('/cancel-exam-answers', listOfExamAnswers, {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId,
+                input2: input2
+            },
+            headers: {'Content-Type': 'application/json'},
+        }).then(p => p.data)
+
+export const gradeExamAnswers = async (listOfExamAnswers: ExamAnswers[],
+                                       schoolId,
+                                       periodId, examId): Promise<ExamAnswers[]> =>
+        await api.post<ExamAnswers[]>('/grade-exam-answers', listOfExamAnswers, {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId,
+                examId: examId
             },
             headers: {'Content-Type': 'application/json'},
         }).then(p => p.data)

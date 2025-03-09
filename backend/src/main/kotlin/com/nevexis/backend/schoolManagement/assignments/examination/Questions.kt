@@ -17,6 +17,7 @@ sealed class Question {
     abstract val questionTitle: String
     abstract val questionDescription: String?
     abstract val points: Int
+    abstract val picture: String?
 
     @Serializable
     data class ChoiceQuestion(
@@ -24,7 +25,8 @@ sealed class Question {
         val possibleAnswersToIfCorrect: List<PossibleAnswersToIfCorrect>,
         override val questionTitle: String,
         override val questionDescription: String?,
-        override val points: Int
+        override val points: Int,
+        override val picture: String? = null
     ) : Question()
 
     @Serializable
@@ -32,7 +34,8 @@ sealed class Question {
         override val questionUUID: String,
         override val questionTitle: String,
         override val questionDescription: String?,
-        override val points: Int
+        override val points: Int,
+        override val picture: String? = null
     ) : Question()
 
 }

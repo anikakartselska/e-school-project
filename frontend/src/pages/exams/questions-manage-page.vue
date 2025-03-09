@@ -36,36 +36,60 @@
               </div>
               <div>
                 <div v-if="defineQuestionType(question) === QuestionType.OPEN_QUESTION">
-                  <q-input v-model="question.questionTitle" :label="`${index+1}.Въпрос`" autogrow readonly stack-label>
-                  </q-input>
-                  <q-input v-model="question.questionDescription" autogrow label="Описание" readonly stack-label>
-                  </q-input>
-                  <q-input v-model="question.points" autogrow label="Точки" readonly stack-label>
-                  </q-input>
-                  <div class="q-pt-sm" style="max-width: 300px">
-                    <q-input
-                            filled
-                            label="Отговор"
-                            readonly
-                            type="textarea"
-                    />
-                  </div>
+                    <q-input v-model="question.questionTitle" :label="`${index+1}.Въпрос`" autogrow readonly
+                             stack-label>
+                    </q-input>
+                    <q-input v-model="question.questionDescription" autogrow label="Описание" readonly
+                             stack-label>
+                    </q-input>
+                    <q-input v-model="question.points" autogrow label="Точки" readonly stack-label>
+                    </q-input>
+                    <div class="q-pt-sm" style="max-width: 500px">
+                        <q-input
+                                filled
+                                label="Отговор"
+                                readonly
+                                type="textarea"
+                        />
+                    </div>
+                    <div>
+                        <q-avatar v-if="question.picture" class="q-ma-sm" font-size="400px" size="400px"
+                                  square text-color="white">
+                            <q-img
+                                    :src="imageUrl(questionUUIDToFile[question.questionUUID])"
+                                    fit="contain"
+                                    ratio="1"
+                                    spinner-color="white"
+                            ></q-img>
+                        </q-avatar>
+                    </div>
                 </div>
                 <div v-if="defineQuestionType(question)  === QuestionType.CHOICE_QUESTION">
                   <q-input v-model="question.questionTitle" autogrow label="Въпрос" readonly stack-label>
                   </q-input>
                   <q-input v-model="question.questionDescription" autogrow label="Описание" readonly stack-label>
                   </q-input>
-                  <q-input v-model="question.points" autogrow label="Точки" readonly stack-label>
-                  </q-input>
-                  <div v-for="(choice,index) in question.possibleAnswersToIfCorrect">
-                    <div class="row">
-                      <q-checkbox v-model="question.possibleAnswersToIfCorrect[index].correct"
-                                  disable></q-checkbox>
-                      <q-input v-model="question.possibleAnswersToIfCorrect[index].text" autogrow dense
-                               readonly></q-input>
+                    <q-input v-model="question.points" autogrow label="Точки" readonly stack-label>
+                    </q-input>
+                    <div v-for="(choice,index) in question.possibleAnswersToIfCorrect">
+                        <div class="row">
+                            <q-checkbox v-model="question.possibleAnswersToIfCorrect[index].correct"
+                                        disable></q-checkbox>
+                            <q-input v-model="question.possibleAnswersToIfCorrect[index].text" autogrow dense
+                                     readonly></q-input>
+                        </div>
                     </div>
-                  </div>
+                    <div>
+                        <q-avatar v-if="question.picture" class="q-ma-sm" font-size="400px" size="400px"
+                                  square text-color="white">
+                            <q-img
+                                    :src="imageUrl(questionUUIDToFile[question.questionUUID])"
+                                    fit="contain"
+                                    ratio="1"
+                                    spinner-color="white"
+                            ></q-img>
+                        </q-avatar>
+                    </div>
                 </div>
               </div>
             </div>
@@ -96,25 +120,50 @@ const quasar = useQuasar()
 
 
 const props = defineProps<{
-  periodId: number
-  schoolId: number,
-  examId: number,
-  schoolClassId: number
+    periodId: number
+    schoolId: number,
+    examId: number,
+    schoolClassId: number
 }>()
 
 let exam = $ref(await getExamById(props.examId))
-const questions = $ref<Question[]>(exam.questions?.questions ? exam.questions?.questions : [])
+let questions = $ref<Question[]>(exam.questions?.questions ? exam.questions?.questions : [])
+const questionUUIDToFile = $ref({})
+questions.forEach(question =>
+        questionUUIDToFile[question.questionUUID] = question.picture ? base64ToImageFile(question.picture, question.questionUUID) : null
+)
+
+const imageUrl = (file: File) => {
+    return file ? window.URL.createObjectURL(file) : ''
+}
+
+function base64ToImageFile(base64String: string, fileName: string): File {
+    const arr = base64String.split(",");
+    const mimeType = arr[0].match(/:(.*?);/)?.[1] || "image/png";
+    const byteCharacters = atob(arr[1]); // Decode Base64
+    const byteNumbers = new Uint8Array(byteCharacters.length);
+
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+
+    const blob = new Blob([byteNumbers], {type: mimeType});
+    return new File([blob], fileName, {type: mimeType});
+}
+
 const questionCreate = () => {
-  quasar.dialog({
-    component: QuestionEditCreateDialog,
-    componentProps: {
-      title: "Добави нов въпрос"
-    },
-  }).onOk(async (payload) => {
-    const newQuestion = payload.item as Question
-    questions.push(newQuestion)
+    quasar.dialog({
+        component: QuestionEditCreateDialog,
+        componentProps: {
+            title: "Добави нов въпрос"
+        },
+    }).onOk(async (payload) => {
+        const newQuestion = payload.item as Question
+        questions.push(newQuestion)
+        questionUUIDToFile[newQuestion.questionUUID] = newQuestion.picture ? base64ToImageFile(newQuestion.picture, newQuestion.questionUUID) : null
   })
 }
+
 const openGradingScalePage = () => {
   quasar.dialog({
     component: GradingScaleCreateEdit,
@@ -144,7 +193,8 @@ const questionUpdate = (question: Question, questionIndex: number) => {
       question: question
     },
   }).onOk(async (payload) => {
-    questions[questionIndex] = payload.item as Question
+      questions[questionIndex] = payload.item as Question
+      questionUUIDToFile[payload.item.questionUUID] = payload.item.picture ? base64ToImageFile(payload.item.picture, payload.item.questionUUID) : null
   })
 }
 

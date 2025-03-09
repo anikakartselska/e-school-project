@@ -23,5 +23,6 @@ data class ExamAnswers(
     val grade: Int? = null,
     val inputtedGrade: Boolean = false,
     val examId: Int,
-    val submitted: Boolean = false
+    val submitted: Boolean = false,
+    val cancelled: Boolean = false
 )
