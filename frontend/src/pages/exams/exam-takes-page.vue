@@ -149,17 +149,17 @@ const cancelExamAnswersList = async () => {
             option = true
         }
 
-        await cancelExamAnswers(takes, props.schoolId, props.periodId, option).then(r => {
-                    takes = takes.map(take => {
-                                const foundUpdatedTake = r.find(updatedTake => updatedTake.id == take.id)
-                                return foundUpdatedTake ? foundUpdatedTake : take
-                            }
-                    )
-                    selected = selected.map(take => {
-                                const foundUpdatedTake = r.find(updatedTake => updatedTake.id == take.id)
-                                return foundUpdatedTake ? foundUpdatedTake : take
-                            }
-                    )
+        await cancelExamAnswers(takes, props.schoolId, props.periodId, option, props.examId).then(r => {
+            takes = takes.map(take => {
+                        const foundUpdatedTake = r.find(updatedTake => updatedTake.id == take.id)
+                        return foundUpdatedTake ? foundUpdatedTake : take
+                    }
+            )
+            selected = selected.map(take => {
+                        const foundUpdatedTake = r.find(updatedTake => updatedTake.id == take.id)
+                        return foundUpdatedTake ? foundUpdatedTake : take
+                    }
+            )
                 }
         )
     })

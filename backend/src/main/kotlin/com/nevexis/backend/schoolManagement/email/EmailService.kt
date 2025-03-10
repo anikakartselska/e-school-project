@@ -96,6 +96,7 @@ class NotificationServiceMailServerImpl(private var mailServerConfig: MailServer
             TemplateType.ASSIGNMENT_CREATE -> javaClass.getResource("/mail/add-assignment-template.html")
             TemplateType.ASSIGNMENT_UPDATE -> javaClass.getResource("/mail/update-assignment-template.html")
             TemplateType.ASSIGNMENT_DELETE -> javaClass.getResource("/mail/delete-assignment-template.html")
+            TemplateType.EXAM_CANCEL -> javaClass.getResource("/mail/cancel-exam-template.html")
         }?.readText() ?: ""
 
         return context?.toList()?.fold(htmlContent) { html, (key, value) ->

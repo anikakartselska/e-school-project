@@ -193,6 +193,7 @@ class AssignmentNotificationService {
         )
     }
 
+
     private fun getContextForAssignmentDelete(
         assignment: Assignments
     ): Map<String, String> {

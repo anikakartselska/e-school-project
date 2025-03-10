@@ -2,6 +2,14 @@ package com.nevexis.backend.schoolManagement.assignments.examination
 
 import com.nevexis.backend.error_handling.SMSError
 import com.nevexis.backend.schoolManagement.BaseService
+import com.nevexis.backend.schoolManagement.actions.ActionType
+import com.nevexis.backend.schoolManagement.actions.ActionsContentService
+import com.nevexis.backend.schoolManagement.actions.ActivityStreamService
+import com.nevexis.backend.schoolManagement.assignments.AssignmentValue
+import com.nevexis.backend.schoolManagement.assignments.Assignments
+import com.nevexis.backend.schoolManagement.assignments.AssignmentsService
+import com.nevexis.backend.schoolManagement.email.NotificationService
+import com.nevexis.backend.schoolManagement.email.TemplateType
 import com.nevexis.backend.schoolManagement.evaluation.EvaluationService
 import com.nevexis.backend.schoolManagement.users.UserService
 import com.nevexis.`demo-project`.jooq.tables.records.ExamAnswersRecord
@@ -31,6 +39,20 @@ class ExamAnswersService : BaseService() {
     @Autowired
     @Lazy
     private lateinit var examService: ExamService
+
+    @Autowired
+    @Lazy
+    private lateinit var notificationService: NotificationService
+
+    @Autowired
+    @Lazy
+    private lateinit var activityStreamService: ActivityStreamService
+
+    @Autowired
+    private lateinit var assignmentsService: AssignmentsService
+
+    @Autowired
+    private lateinit var actionsContentService: ActionsContentService
     fun saveUpdateExamAnswers(
         examAnswers: ExamAnswers,
         schoolId: BigDecimal,
@@ -111,7 +133,8 @@ class ExamAnswersService : BaseService() {
         schoolId: BigDecimal,
         periodId: BigDecimal,
         input2: Boolean,
-        userId: BigDecimal
+        userId: BigDecimal,
+        examId: BigDecimal
     ): List<ExamAnswers> {
         val examAnswersForInput = listExamAnswers.filter { !it.graded }
 
@@ -132,11 +155,65 @@ class ExamAnswersService : BaseService() {
                 answers.map { it.mapToRecord(schoolId, periodId) }
                     .also { records ->
                         db.batchUpdate(records).execute()
+                        sendEmailForExamCancellation(answers, schoolId, periodId, examId)
                         if (input2) {
                             evaluationService.createEvaluationOnExamAnswers(answers, schoolId, periodId, userId)
                         }
+
                     }
             }
+    }
+
+    fun sendEmailForExamCancellation(
+        listExamAnswers: List<ExamAnswers>,
+        periodId: BigDecimal,
+        schoolId: BigDecimal,
+        examId: BigDecimal
+    ) {
+        val listExamAnswersGroupedByStudentId = listExamAnswers.groupBy { it.submittedBy.id.toBigDecimal() }
+        val exam = examService.getExam(examId)!!
+        val assignment = assignmentsService.getAssignmentsForExam(schoolId, periodId, examId)
+        val studentIds = listExamAnswersGroupedByStudentId.keys.toList()
+
+        val studentIdToParentInformation =
+            userService.getParentEmailsFromListOfStudentIds(studentIds, periodId, schoolId)
+
+        listExamAnswersGroupedByStudentId.forEach { (_, examAnswers) ->
+            examAnswers.forEach { examAnswer ->
+                studentIdToParentInformation[examAnswer.submittedBy.id.toBigDecimal()].let { idToEmail ->
+                    notificationService.sendNotification(
+                        listOfNotNull(idToEmail?.second, examAnswer.submittedBy.email),
+                        "Анулиране на изпит",
+                        TemplateType.EXAM_CANCEL,
+                        getContextForExamCancel(exam, assignment, examAnswer)
+                    )
+
+                    activityStreamService.createAction(
+                        periodId = periodId,
+                        schoolId = schoolId,
+                        userId = examAnswer.submittedBy.id.toBigDecimal(),
+                        forUserIds = listOfNotNull(idToEmail?.first, examAnswer.submittedBy.id.toBigDecimal()),
+                        action = actionsContentService.constructActionsMessage(
+                            ActionType.EXAM_CANCEL,
+                            getContextForExamCancel(exam, assignment, examAnswer)
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    private fun getContextForExamCancel(
+        exam: Exam,
+        assignment: Assignments,
+        examAnswers: ExamAnswers
+    ): Map<String, String> {
+        return mapOf(
+            "examNote" to exam.examNote!!,
+            "studentName" to "${examAnswers.submittedBy.firstName} ${examAnswers.submittedBy.lastName}",
+            "subjectName" to (assignment.assignmentValue as AssignmentValue.ExaminationValue).lesson.subject.name,
+            "createdBy" to "${exam.createdBy.firstName} ${exam.createdBy.lastName}",
+        )
     }
 
     fun gradeExamAnswers(

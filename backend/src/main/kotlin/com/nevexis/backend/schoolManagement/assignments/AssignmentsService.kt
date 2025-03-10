@@ -152,8 +152,6 @@ class AssignmentsService : BaseService() {
                     ASSIGNMENTS.ASSIGNMENT_VALUE.like("%\"exam\":${examId}%")
                         .and(ASSIGNMENTS.ASSIGNMENT_TYPE.eq(AssignmentType.EXAMINATION.name))
                 )
-
-
         ).fetchAny()?.let {
             mapToAssignmentModel(it)
         } ?: throw SMSError("Невалидни данни", "Несъществуващ изпит")

@@ -8,5 +8,8 @@ export interface Exam {
     createdOn: Date | null
     examNote: string,
     questions: Questions,
-    gradingScale: GradingScale | null
+    gradingScale: GradingScale | null,
+    lookAtExamAfterGrading: boolean | false,
+    startTimeOfExam: Date,
+    endTimeOfExam: Date,
 }

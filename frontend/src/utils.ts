@@ -111,24 +111,28 @@ export const dateTimeToGermanLocaleString = (date) => {
     })
 }
 
-export const dateTimeToBulgarianLocaleString = (date) => {
-    if (!date) return ''
+export const dateTimeToBulgarianLocaleString = (date: string | Date): string => {
+    if (!date) return '';
 
-    let dateToConvert: Date = date
+    let dateToConvert: Date;
 
     if (typeof date === 'string') {
-        dateToConvert = new Date(date)
+        dateToConvert = new Date(date + 'Z'); // Ensure it's treated as UTC
+    } else {
+        dateToConvert = date;
     }
 
-    return dateToConvert.toLocaleDateString('en-US', {
+    return dateToConvert.toLocaleString('bg-BG', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
         hour: '2-digit',
         minute: '2-digit',
-        second: '2-digit'
-    }).slice(0, 20)
-}
+        second: '2-digit',
+        hour12: false,  // Ensure 24-hour format
+        timeZone: 'UTC' // Force UTC to prevent unwanted local timezone shifts
+    });
+};
 export const formatWithDash = (dateToFormat: string | null) => {
     if (dateToFormat == null || dateToFormat == '') {
         return null

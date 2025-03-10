@@ -930,12 +930,13 @@ export const inputGradesOnExamAnswers = async (listOfExamAnswers: ExamAnswers[],
 
 export const cancelExamAnswers = async (listOfExamAnswers: ExamAnswers[],
                                         schoolId,
-                                        periodId, input2): Promise<ExamAnswers[]> =>
+                                        periodId, input2, examId): Promise<ExamAnswers[]> =>
         await api.post<ExamAnswers[]>('/cancel-exam-answers', listOfExamAnswers, {
             params: {
                 schoolId: schoolId,
                 periodId: periodId,
-                input2: input2
+                input2: input2,
+                examId: examId
             },
             headers: {'Content-Type': 'application/json'},
         }).then(p => p.data)
@@ -972,6 +973,18 @@ export const getExamAnswersById = async (id): Promise<ExamAnswers> =>
         await api.get<ExamAnswers>('/get-exam-answers-by-id', {
             params: {
                 id: id
+            }
+        }).then(p => p.data)
+
+
+export const getAssignmentForExam = async (schoolId,
+                                           periodId,
+                                           examId): Promise<Assignments> =>
+        await api.get<Assignments>('/get-assignment-for-exam', {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId,
+                examId: examId
             }
         }).then(p => p.data)
 

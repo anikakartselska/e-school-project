@@ -42,6 +42,13 @@ class ExamService : BaseService() {
                 this.examNote = exam.examNote
                 this.questions = exam.questions?.let { Json.encodeToString(it) }
                 this.gradingScale = exam.gradingScale?.let { Json.encodeToString(it) }
+                this.lookAtExamAfterGrading = if (exam.lookAtExamAfterGrading) {
+                    "Y"
+                } else {
+                    "N"
+                }
+                this.startTimeOfExam = exam.startTimeOfExam
+                this.endTimeOfExam = exam.endTimeOfExam
             }.also {
                 it.store()
             }
@@ -77,7 +84,13 @@ class ExamService : BaseService() {
             createdOn = examRecord.createdOn,
             examNote = examRecord.examNote,
             questions = examRecord.questions?.let { Json.decodeFromString(it) },
-            gradingScale = examRecord.gradingScale?.let { Json.decodeFromString(it) }
+            gradingScale = examRecord.gradingScale?.let {
+                Json.decodeFromString(it)
+            },
+            lookAtExamAfterGrading = examRecord.lookAtExamAfterGrading == "Y",
+            startTimeOfExam = examRecord.startTimeOfExam,
+            endTimeOfExam = examRecord.endTimeOfExam
+
         )
     }
 

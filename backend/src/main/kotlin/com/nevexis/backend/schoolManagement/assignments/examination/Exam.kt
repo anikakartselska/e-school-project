@@ -20,7 +20,10 @@ data class Exam(
     val createdOn: LocalDateTime? = null,
     val examNote: String? = null,
     val questions: Questions? = null,
-    val gradingScale: GradingScale? = null
+    val gradingScale: GradingScale? = null,
+    val lookAtExamAfterGrading: Boolean = false,
+    val startTimeOfExam: LocalDateTime? = null,
+    val endTimeOfExam: LocalDateTime? = null,
 )
 
 

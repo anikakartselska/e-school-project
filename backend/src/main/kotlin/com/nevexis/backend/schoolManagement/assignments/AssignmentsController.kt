@@ -45,4 +45,15 @@ class AssignmentsController {
         schoolClassId,
         schoolLessonId
     )
+
+    @GetMapping("/get-assignment-for-exam")
+    fun fetchAssignmentForExam(
+        @RequestParam schoolId: BigDecimal,
+        @RequestParam periodId: BigDecimal,
+        @RequestParam examId: BigDecimal,
+    ) = assignmentsService.getAssignmentsForExam(
+        schoolId,
+        periodId,
+        examId
+    )
 }

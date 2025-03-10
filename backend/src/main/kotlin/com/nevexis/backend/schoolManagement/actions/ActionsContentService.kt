@@ -23,6 +23,7 @@ class ActionsContentService {
             ActionType.ASSIGNMENT_CREATE -> Actions.assignmentCreateNotificationText()
             ActionType.ASSIGNMENT_UPDATE -> Actions.assignmentUpdateNotificationText()
             ActionType.ASSIGNMENT_DELETE -> Actions.assignmentDeleteNotificationText()
+            ActionType.EXAM_CANCEL -> Actions.examCancelNotificationText()
         }
 
         return context?.toList()?.fold(content) { html, (key, value) ->

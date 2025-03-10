@@ -39,9 +39,17 @@ class ExamAnswersController {
         schoolId: BigDecimal,
         periodId: BigDecimal,
         input2: Boolean,
+        examId: BigDecimal,
         user: Principal
     ): List<ExamAnswers> =
-        examAnswersService.cancelExamAnswers(listOfExamAnswers, schoolId, periodId, input2, user.name.toBigDecimal())
+        examAnswersService.cancelExamAnswers(
+            listOfExamAnswers,
+            schoolId,
+            periodId,
+            input2,
+            user.name.toBigDecimal(),
+            examId
+        )
 
     @PostMapping("/grade-exam-answers")
     fun gradeExamAnswersList(

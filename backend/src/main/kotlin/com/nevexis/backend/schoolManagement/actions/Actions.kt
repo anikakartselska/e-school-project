@@ -31,6 +31,9 @@ data class Actions(
             " ##assignment2## бе променено/а от ##assignmentValue## на ##newAssignmentValue##."
 
         fun assignmentDeleteNotificationText() = "##assignment2## - ##assignmentValue## бе изтрит/а."
+
+        fun examCancelNotificationText() =
+            "Изпитът на ученика на тема ##examNote## ##studentName## по предмет ##subjectName## бе анулиран от ##createdBy##."
     }
 }
 
