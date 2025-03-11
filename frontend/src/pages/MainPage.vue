@@ -261,7 +261,6 @@ onBeforeMount(async () => {
   setupActionsEventSource()
   console.log(actionsEventSource)
   actionsEventSource.addEventListener('message', (actionMessage: MessageEvent) => {
-    console.log("hereeee¶")
     const newAction = <Actions>JSON.parse(actionMessage.data)
       // if (newAction.executedBy.id !== getCurrentUser().id) {
       quasar.notify({

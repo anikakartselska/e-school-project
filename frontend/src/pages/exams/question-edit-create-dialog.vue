@@ -71,7 +71,7 @@
             <q-avatar v-if="updatedQuestion.picture" class="q-ma-sm" font-size="400px" size="400px"
                       square text-color="white">
               <q-img
-                      :src="imageUrl(file)"
+                      :src="imageUrl(file,updatedQuestion.questionUUID)"
                       fit="contain"
                       ratio="1"
                       spinner-color="white"
@@ -148,9 +148,14 @@ function imageFileToBase64(file: File): Promise<string> {
   });
 }
 
-const imageUrl = (file: File) => {
-  return file ? window.URL.createObjectURL(file) : ''
-}
+const cachedImageUrls = new Map<string, string>();
+const imageUrl = (file: File, uuid: string) => {
+  if (!file) return '';
+  if (!cachedImageUrls.has(uuid)) {
+    cachedImageUrls.set(uuid, window.URL.createObjectURL(file));
+  }
+  return cachedImageUrls.get(uuid);
+};
 
 const handleUpdate = async (value: File) => {
   const picture = await imageFileToBase64(value)
@@ -185,16 +190,16 @@ watch(() => questionType, () => {
         possibleAnswersToIfCorrect: []
       }
       break;
-            }
-            case QuestionType.OPEN_QUESTION: {
-              updatedQuestion = <OpenQuestion><unknown>{
-                questionTitle: null,
-                questionDescription: null
-              }
-              break;
-            }
-            default: {
-              updatedQuestion = <OpenQuestion><unknown>{
+    }
+    case QuestionType.OPEN_QUESTION: {
+      updatedQuestion = <OpenQuestion><unknown>{
+        questionTitle: null,
+        questionDescription: null
+      }
+      break;
+    }
+    default: {
+      updatedQuestion = <OpenQuestion><unknown>{
                 questionTitle: null,
                 questionDescription: null
               }

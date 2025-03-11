@@ -26,90 +26,97 @@
             </div>
             <div class="q-pl-sm">
                 <q-btn class="q-mt-lg q-mr-xs" color="primary" label="Запази промените" size="sm"
+                       :disable="disableEditing"
                        @click="saveUpdateExam()"></q-btn>
                 <q-btn class="q-mt-lg q-mr-xs" color="secondary" label="Добави нов въпрос" size="sm"
+                       :disable="disableEditing"
                        @click="questionCreate()"></q-btn>
                 <q-btn class="q-mt-lg q-mr-xs" color="negative" label="Премахни изпита" size="sm"
+                       :disable="disableEditing"
                        @click="deleteExam()"></q-btn>
                 <q-btn class="q-mt-lg q-mr-xs" color="teal" label="Опити" size="sm"
                        @click="openTakesPage()"></q-btn>
                 <q-btn class="q-mt-lg q-mr-xs" color="accent" label="Скала за оценяване" size="sm"
-                   @click="openGradingScalePage()"></q-btn>
-          </div>
+                       @click="openGradingScalePage()"></q-btn>
+            </div>
             <q-separator class="q-mt-sm"></q-separator>
-          <span class="q-pa-md text-negative">
+            <span class="q-pa-md text-negative">
             Общ брой точки на теста: {{ examPoints }}
                 </span>
-          <q-list v-for="(question,index) in questions">
-            <div class="q-px-sm q-mt-sm row">
-              <div class="col-3">
-                <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])" color="primary" dense flat
-                       icon="edit"
-                       @click="questionUpdate(question,index)">
+            <q-list v-for="(question,index) in questions">
+                <div class="q-px-sm q-mt-sm row">
+                    <div class="col-3">
+                        <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])" :disable="disableEditing" color="primary"
+                               dense
+                               flat
+                               icon="edit"
+                               @click="questionUpdate(question,index)">
                 </q-btn>
                 <q-btn v-if="currentUserHasAnyRole([SchoolRole.ADMIN,SchoolRole.TEACHER])" color="negative" dense flat
                        icon="delete"
+                       :disable="disableEditing"
                        @click="questionDelete(question,index)">
                 </q-btn>
               </div>
-              <div>
-                  <div v-if="defineQuestionType(question) === QuestionType.OPEN_QUESTION">
-                      <q-input v-model="question.questionTitle" :label="`${index+1}.Въпрос`" autogrow readonly
-                               stack-label>
-                      </q-input>
-                      <q-input v-model="question.questionDescription" autogrow label="Описание" readonly
-                               stack-label>
-                      </q-input>
-                      <q-input v-model="question.points" autogrow label="Точки" readonly stack-label>
-                      </q-input>
-                      <div class="q-pt-sm" style="max-width: 500px">
-                          <q-input
-                                  filled
-                                  label="Отговор"
-                                  readonly
-                                  type="textarea"
-                          />
-                      </div>
-                      <div>
-                          <q-avatar v-if="question.picture" class="q-ma-sm" font-size="400px" size="400px"
-                                    square text-color="white">
-                              <q-img
-                                      :src="imageUrl(questionUUIDToFile[question.questionUUID])"
-                                      fit="contain"
-                                      ratio="1"
-                                      spinner-color="white"
-                              ></q-img>
-                          </q-avatar>
-                      </div>
-                  </div>
-                  <div v-if="defineQuestionType(question)  === QuestionType.CHOICE_QUESTION">
-                      <q-input v-model="question.questionTitle" autogrow label="Въпрос" readonly stack-label>
-                      </q-input>
-                      <q-input v-model="question.questionDescription" autogrow label="Описание" readonly stack-label>
-                      </q-input>
-                      <q-input v-model="question.points" autogrow label="Точки" readonly stack-label>
-                      </q-input>
-                      <div v-for="(choice,index) in question.possibleAnswersToIfCorrect">
-                          <div class="row">
-                              <q-checkbox v-model="question.possibleAnswersToIfCorrect[index].correct"
-                                          disable></q-checkbox>
-                              <q-input v-model="question.possibleAnswersToIfCorrect[index].text" autogrow dense
-                                       readonly></q-input>
-                          </div>
-                      </div>
-                      <div>
-                          <q-avatar v-if="question.picture" class="q-ma-sm" font-size="400px" size="400px"
-                                    square text-color="white">
-                              <q-img
-                                      :src="imageUrl(questionUUIDToFile[question.questionUUID])"
-                                      fit="contain"
-                                      ratio="1"
-                                      spinner-color="white"
-                              ></q-img>
-                          </q-avatar>
-                      </div>
-                  </div>
-              </div>
+                    <div>
+                        <div v-if="defineQuestionType(question) === QuestionType.OPEN_QUESTION">
+                            <q-input v-model="question.questionTitle" :label="`${index+1}.Въпрос`" autogrow readonly
+                                     stack-label>
+                            </q-input>
+                            <q-input v-model="question.questionDescription" autogrow label="Описание" readonly
+                                     stack-label>
+                            </q-input>
+                            <q-input v-model="question.points" autogrow label="Точки" readonly stack-label>
+                            </q-input>
+                            <div class="q-pt-sm" style="max-width: 500px">
+                                <q-input
+                                        filled
+                                        label="Отговор"
+                                        readonly
+                                        type="textarea"
+                                />
+                            </div>
+                            <div>
+                                <q-avatar v-if="question.picture" class="q-ma-sm" font-size="400px" size="400px"
+                                          square text-color="white">
+                                    <q-img
+                                            :src="imageUrl(questionUUIDToFile[question.questionUUID],question.questionUUID)"
+                                            fit="contain"
+                                            ratio="1"
+                                            spinner-color="white"
+                                    ></q-img>
+                                </q-avatar>
+                            </div>
+                        </div>
+                        <div v-if="defineQuestionType(question)  === QuestionType.CHOICE_QUESTION">
+                            <q-input v-model="question.questionTitle" autogrow label="Въпрос" readonly stack-label>
+                            </q-input>
+                            <q-input v-model="question.questionDescription" autogrow label="Описание" readonly
+                                     stack-label>
+                            </q-input>
+                            <q-input v-model="question.points" autogrow label="Точки" readonly stack-label>
+                            </q-input>
+                            <div v-for="(choice,index) in question.possibleAnswersToIfCorrect">
+                                <div class="row">
+                                    <q-checkbox v-model="question.possibleAnswersToIfCorrect[index].correct"
+                                                disable></q-checkbox>
+                                    <q-input v-model="question.possibleAnswersToIfCorrect[index].text" autogrow dense
+                                             readonly></q-input>
+                                </div>
+                            </div>
+                            <div>
+                                <q-avatar v-if="question.picture" class="q-ma-sm" font-size="400px" size="400px"
+                                          square text-color="white">
+                                    <q-img
+                                            :src="imageUrl(questionUUIDToFile[question.questionUUID],question.questionUUID)"
+                                            fit="contain"
+                                            ratio="1"
+                                            spinner-color="white"
+                                    ></q-img>
+                                </q-avatar>
+                            </div>
+                        </div>
+                    </div>
             </div>
             <q-separator/>
           </q-list>
@@ -146,6 +153,13 @@ const props = defineProps<{
 }>()
 
 let exam = $ref(await getExamById(props.examId))
+
+const currentDate = new Date();
+const startTimeOfExam = new Date(exam.startTimeOfExam)
+
+const disableEditing = currentDate > startTimeOfExam
+
+
 let assignment = $ref(await getAssignmentForExam(props.schoolId, props.periodId, props.examId))
 let questions = $ref<Question[]>(exam.questions?.questions ? exam.questions?.questions : [])
 const questionUUIDToFile = $ref({})
@@ -153,9 +167,14 @@ questions.forEach(question =>
         questionUUIDToFile[question.questionUUID] = question.picture ? base64ToImageFile(question.picture, question.questionUUID) : null
 )
 
-const imageUrl = (file: File) => {
-    return file ? window.URL.createObjectURL(file) : ''
-}
+const cachedImageUrls = new Map<string, string>();
+const imageUrl = (file: File, uuid: string) => {
+    if (!file) return '';
+    if (!cachedImageUrls.has(uuid)) {
+        cachedImageUrls.set(uuid, window.URL.createObjectURL(file));
+    }
+    return cachedImageUrls.get(uuid);
+};
 
 function base64ToImageFile(base64String: string, fileName: string): File {
     const arr = base64String.split(",");

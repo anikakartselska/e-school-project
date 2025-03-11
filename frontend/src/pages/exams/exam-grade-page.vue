@@ -74,7 +74,7 @@
                       <q-avatar v-if="question.picture" class="q-ma-sm" font-size="400px" size="400px"
                                 square text-color="white">
                         <q-img
-                                :src="imageUrl(questionUUIDToFile[question.questionUUID])"
+                                :src="imageUrl(questionUUIDToFile[question.questionUUID],question.questionUUID)"
                                 fit="contain"
                                 ratio="1"
                                 spinner-color="white"
@@ -106,7 +106,7 @@
                       <q-avatar v-if="question.picture" class="q-ma-sm" font-size="400px" size="400px"
                                 square text-color="white">
                         <q-img
-                                :src="imageUrl(questionUUIDToFile[question.questionUUID])"
+                                :src="imageUrl(questionUUIDToFile[question.questionUUID],question.questionUUID)"
                                 fit="contain"
                                 ratio="1"
                                 spinner-color="white"
@@ -154,20 +154,24 @@ const questionUUIDToFile = $ref({})
 questions.forEach(question =>
         questionUUIDToFile[question.questionUUID] = question.picture ? base64ToImageFile(question.picture, question.questionUUID) : null
 )
-
-const imageUrl = (file: File) => {
-  return file ? window.URL.createObjectURL(file) : ''
-}
+const cachedImageUrls = new Map<string, string>();
+const imageUrl = (file: File, uuid: string) => {
+    if (!file) return '';
+    if (!cachedImageUrls.has(uuid)) {
+        cachedImageUrls.set(uuid, window.URL.createObjectURL(file));
+    }
+    return cachedImageUrls.get(uuid);
+};
 
 function base64ToImageFile(base64String: string, fileName: string): File {
-  const arr = base64String.split(",");
-  const mimeType = arr[0].match(/:(.*?);/)?.[1] || "image/png";
-  const byteCharacters = atob(arr[1]); // Decode Base64
-  const byteNumbers = new Uint8Array(byteCharacters.length);
+    const arr = base64String.split(",");
+    const mimeType = arr[0].match(/:(.*?);/)?.[1] || "image/png";
+    const byteCharacters = atob(arr[1]); // Decode Base64
+    const byteNumbers = new Uint8Array(byteCharacters.length);
 
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
-  }
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
 
   const blob = new Blob([byteNumbers], {type: mimeType});
   return new File([blob], fileName, {type: mimeType});

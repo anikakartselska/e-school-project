@@ -13,7 +13,7 @@ function getTimeRemaining(endtime) {
     };
 }
 
-function initializeClock(id, endtime) {
+export const initializeClock = (id, endtime) => {
     var clock = document.getElementById(id);
     var daysSpan = clock.querySelector('.days');
     var hoursSpan = clock.querySelector('.hours');
