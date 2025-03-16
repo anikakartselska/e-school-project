@@ -1,4 +1,4 @@
-export let messagesEventSource;
+export let chatMessagesEventSource;
 
 const isFunction = (functionToCheck) => functionToCheck && {}.toString.call(functionToCheck) === '[object Function]'
 
@@ -28,7 +28,7 @@ const debounce = (func, wait) => {
 let reconnectFrequencySeconds = 2;
 
 const reconnectFunc = debounce(() => {
-    setupMessageEventSource();
+    setupChatMessageEventSource();
     // Double every attempt to avoid overwhelming server
     reconnectFrequencySeconds *= 2;
     // Max out at ~1 minute as a compromise between user experience and server load
@@ -37,17 +37,17 @@ const reconnectFunc = debounce(() => {
     }
 }, () => reconnectFrequencySeconds * 1000);
 
-export const setupMessageEventSource = () => {
-    console.log("Subscribing to messages")
-    messagesEventSource = new EventSource("/api/messages/subscribe-messages")
-    messagesEventSource.onopen = (e) => {
+export const setupChatMessageEventSource = () => {
+    console.log("Subscribing to chat messages")
+    chatMessagesEventSource = new EventSource("/api/messages/subscribe-messages")
+    chatMessagesEventSource.onopen = (e) => {
         console.log("Connection opened")
         // Reset reconnect frequency upon successful connection
         reconnectFrequencySeconds = 2;
     };
-    messagesEventSource.onerror = (e) => {
+    chatMessagesEventSource.onerror = (e) => {
         console.log("Stream Error: ", e)
-        messagesEventSource.close();
+        chatMessagesEventSource.close();
         reconnectFunc();
     };
 }

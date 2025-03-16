@@ -55,6 +55,7 @@ import ExamEditPage from "./pages/exams/questions-manage-page.vue";
 import ExamTakePage from "./pages/exams/exam-take-page.vue";
 import ExamTakesPage from "./pages/exams/exam-takes-page.vue";
 import ExamGradePage from "./pages/exams/exam-grade-page.vue";
+import MessagesPage from "./pages/messages/messages-page.vue";
 
 const routes = [
     {
@@ -189,6 +190,16 @@ const routes = [
                 path: '/activity-stream/:schoolId(\\d+)/:periodId(\\d+)',
                 name: 'activity-stream',
                 component: ActivityStreamPage,
+                props: true,
+                beforeEnter: (to, from, next) => {
+                    if (!userHasLoggedInSchoolAndPeriod(to.params)) return next('/unauthorized')
+                    return next()
+                },
+            },
+            {
+                path: '/messages-page/:schoolId(\\d+)/:periodId(\\d+)',
+                name: 'messages-page',
+                component: MessagesPage,
                 props: true,
                 beforeEnter: (to, from, next) => {
                     if (!userHasLoggedInSchoolAndPeriod(to.params)) return next('/unauthorized')

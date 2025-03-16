@@ -26,6 +26,8 @@ import {Actions, ActionsFetchingInformationDTO} from "../model/Actions";
 import {Exam} from "../model/Exam";
 import {ExamAnswers} from "../model/ExamAnswers";
 import {NotificationMessages} from "../model/NotificationMessages";
+import {Message} from "../model/Message";
+import {Chat} from "../model/Chat";
 
 export const unzipFile = (fileData: any): Promise<File[]> => {
     return JSZip.loadAsync(fileData).then((zip: JSZip) => {
@@ -992,3 +994,54 @@ export const updateCurrentUserPreferences = async (userPreferences: UserPreferen
         await api.post<UserPreferences>(`/update-current-user-preferences`, userPreferences, {
             headers: {'Content-Type': 'application/json'},
         }).then(r => r.data)
+
+export const getLastChatsForUser = async (): Promise<Pair<Chat, Message>[]> =>
+        await api.get<Pair<Chat, Message>[]>('/messages/get-last-chats-of-user-with-last-message').then(p => p.data)
+
+export const getMessagesFromChat = async (chatId: number): Promise<Message[]> =>
+        await api.get<Message[]>('/messages/get-messages-from-chat', {
+            params: {
+                chatId: chatId
+            }
+        }).then(p => p.data)
+
+export const getMessagesWithFiltersAndPagination = async (messagesFetchingInformationDTO: ActionsFetchingInformationDTO): Promise<Pair<Chat, Message>[] | Awaited<any>> =>
+        await api.post<Pair<Chat, Message>[]>("/messages/get-messages-with-filters-and-pagination", messagesFetchingInformationDTO, {
+            params: {},
+            headers: {'Content-Type': 'application/json'},
+            // @ts-ignore
+            notificationMessages: <NotificationMessages>{
+                progressMessage: "Message",
+                successMessage: "Message",
+                errorMessage: "Message"
+            }
+        }).then(r => r.data)
+
+export const getChatMessagesWithFiltersAndPagination = async (chatMessagesFetchingInformationDTO: ActionsFetchingInformationDTO, chatId: number): Promise<Message[] | Awaited<any>> =>
+        await api.post<Message[]>("/messages/get-chat-messages-with-filters-and-pagination", chatMessagesFetchingInformationDTO, {
+            params: {chatId: chatId},
+            headers: {'Content-Type': 'application/json'},
+            // @ts-ignore
+            notificationMessages: <NotificationMessages>{
+                progressMessage: "Message",
+                successMessage: "Message",
+                errorMessage: "Message"
+            }
+        }).then(r => r.data)
+
+export const sendCreateMessage = async (message: Message): Promise<Message | Awaited<any>> =>
+        await api.post<Message>("/messages/send-message", message, {
+            params: {},
+            headers: {'Content-Type': 'application/json'},
+            // @ts-ignore
+            notificationMessages: <NotificationMessages>{
+                progressMessage: "Message",
+                successMessage: "Message",
+                errorMessage: "Message"
+            }
+        }).then(r => r.data)
+
+// @PostMapping("/send-message")
+// fun sendMessage(
+//         @RequestBody message: Message
+// ) = messagesService.createMessage(message)

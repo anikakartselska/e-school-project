@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="lHh LpR lFf">
+    <q-layout view="lHh LpR lFf">
     <q-ajax-bar
             ref="bar"
             color="bg-red-6"
@@ -52,22 +52,67 @@
             </div>
           </q-menu>
         </q-btn>
-        <q-btn
-                :icon="$q.dark.mode ? 'nights_stay' : 'wb_sunny'"
-                class="q-mr-xs"
-                flat
-                round
-                @click="$q.dark.toggle"
-        />
-        <q-btn dense flat icon="notifications" @click="getLastFiveNotifications()">
-          <q-badge v-if="!notificationsChecked" align="bottom" color="primary" floating rounded/>
-          <q-menu>
-            <div class="text-h6 q-my-sm q-mx-md">Известия
-                <q-btn :to="`/activity-stream/${currentUser.role.school.id}/${currentUser.role.period.id}`" class="float-right" color="primary"
-                       flat>
-                    Виж всички
-                </q-btn>
-            </div>
+          <q-btn
+                  :icon="$q.dark.mode ? 'nights_stay' : 'wb_sunny'"
+                  class="q-mr-xs"
+                  flat
+                  round
+                  @click="$q.dark.toggle"
+          />
+          <q-btn dense flat icon="question_answer" @click="getLastChats()">
+              <q-badge v-if="!messagesChecked" align="bottom" color="primary" floating rounded/>
+              <q-menu>
+                  <div class="text-h6 q-my-sm q-mx-md">Чатове
+                      <q-btn :to="`/messages-page/${currentUser.role.school.id}/${currentUser.role.period.id}`"
+                             class="float-right" color="primary"
+                             flat>
+                          Виж всички
+                      </q-btn>
+                  </div>
+                  <q-separator/>
+                  <q-scroll-area v-if="chatToMessage.length>0"
+                                 :style="{'width':'49vh','max-height':'50vh','height':`${chatToMessage.length*9}vh`}">
+                      <q-list separator style="width: 49vh">
+                          <q-item v-for="chatToMess in chatToMessage" v-ripple>
+                              <q-item-section>
+                                  <q-item-label>
+                                      {{ chatToMess.first.chatName }}
+                                  </q-item-label>
+                                  <q-item-label caption>
+                                      <b>{{ chatToMess.second.user.firstName }} {{
+                                          chatToMess.second.user.lastName
+                                          }}:</b>
+                                      {{ chatToMess.second.content.text }}
+                                  </q-item-label>
+                              </q-item-section>
+                              <q-item-section side top>
+                                  <q-item-label caption>
+                                      {{
+                                      dateTimeToBulgarianLocaleString(chatToMess.second.sendOn)
+                                      }}
+                                  </q-item-label>
+                                  <q-icon color="primary" name="icon"/>
+                              </q-item-section>
+                          </q-item>
+                      </q-list>
+                  </q-scroll-area>
+                  <div v-else style="width: 40vh">
+                      <div class="q-ma-sm" style="text-align: center;color: #727272;font-size: 2vh">
+                          Няма съобщения
+                      </div>
+                  </div>
+              </q-menu>
+          </q-btn>
+          <q-btn dense flat icon="notifications" @click="getLastFiveNotifications()">
+              <q-badge v-if="!notificationsChecked" align="bottom" color="primary" floating rounded/>
+              <q-menu>
+                  <div class="text-h6 q-my-sm q-mx-md">Известия
+                      <q-btn :to="`/activity-stream/${currentUser.role.school.id}/${currentUser.role.period.id}`"
+                             class="float-right" color="primary"
+                             flat>
+                          Виж всички
+                      </q-btn>
+                  </div>
             <q-separator/>
             <q-scroll-area v-if="notifications.length>0"
                            :style="{'width':'49vh','max-height':'50vh','height':`${notifications.length*9}vh`}">
@@ -208,6 +253,7 @@ import {
     fetchAllSubjectsTaughtByTeacher,
     getAllSchoolPeriods,
     getAllUserRoles,
+    getLastChatsForUser,
     getLastFiveActionsForUser,
     getUserProfilePicture,
     loginAfterSelectedRole,
@@ -231,15 +277,19 @@ import {DetailsForParent, DetailsForStudent, SchoolRole} from "../model/User";
 import {SubjectWithSchoolClassInformation} from "../model/Subject";
 import {actionsEventSource, setupActionsEventSource} from "../services/EventSourceService";
 import {Actions} from "../model/Actions";
+import {messagesEventSource, setupMessageEventSource} from "../services/MessageService";
+import {Message} from "../model/Message";
+import {Pair} from "../model/Pair";
+import {Chat} from "../model/Chat";
 
 const router = useRouter();
 const quasar = useQuasar()
 const onLogoutClick = async () => {
-  await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
-  await logout().then(async r => {
-    clearUserStorage()
-    await router.push('/login')
-  })
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+    await logout().then(async r => {
+        clearUserStorage()
+        await router.push('/login')
+    })
 }
 
 let currentUser = $ref(getCurrentUser());
@@ -250,37 +300,58 @@ let userRoles = $ref(<SchoolUserRole[]>[]);
 let schoolPeriods = $ref(<SchoolPeriod[]>[]);
 let subjectWithSchoolClassInformation = $ref(<SubjectWithSchoolClassInformation[]>[])
 let notificationsChecked = $ref(true)
+let messagesChecked = $ref(true)
 let notifications = $ref<Actions[]>([])
+let messages = $ref<Message[]>([])
+let chatToMessage = $ref<Pair<Chat, Message>[]>([])
 
 onBeforeMount(async () => {
-  currentUser = getCurrentUser()
-  await load()
-  imageUrl = currentUserFile ? window.URL.createObjectURL(currentUserFile) : ''
+    currentUser = getCurrentUser()
+    await load()
+    imageUrl = currentUserFile ? window.URL.createObjectURL(currentUserFile) : ''
 
 
-  setupActionsEventSource()
-  console.log(actionsEventSource)
-  actionsEventSource.addEventListener('message', (actionMessage: MessageEvent) => {
-    const newAction = <Actions>JSON.parse(actionMessage.data)
-      // if (newAction.executedBy.id !== getCurrentUser().id) {
-      quasar.notify({
-          position: "top-right",
-          progress: true,
-          timeout: 5000,
-          icon: 'notifications',
-          iconColor: 'white',
-          message: newAction.action,
-          color: 'primary',
-      })
-      notificationsChecked = false;
-      notifications.unshift(newAction)
-      // }
-  }, false)
+    setupActionsEventSource()
+    setupMessageEventSource()
+    actionsEventSource.addEventListener('message', (actionMessage: MessageEvent) => {
+        const newAction = <Actions>JSON.parse(actionMessage.data)
+        // if (newAction.executedBy.id !== getCurrentUser().id) {
+        quasar.notify({
+            position: "top-right",
+            progress: true,
+            timeout: 5000,
+            icon: 'notifications',
+            iconColor: 'white',
+            message: newAction.action,
+            color: 'primary',
+        })
+        notificationsChecked = false;
+        notifications.unshift(newAction)
+        // }
+    }, false)
+
+    messagesEventSource.addEventListener('message', (actionMessage: MessageEvent) => {
+        const newMessage = <Message>JSON.parse(actionMessage.data)
+        // if (newAction.executedBy.id !== getCurrentUser().id) {
+        quasar.notify({
+            position: "top-right",
+            progress: true,
+            timeout: 5000,
+            icon: 'notifications',
+            iconColor: 'white',
+            message: newMessage.content.text || (newMessage.content.image ? 'Изпрати снимка' : ''),
+            color: 'secondary',
+        })
+        notificationsChecked = false;
+        messages.unshift(newMessage)
+        // }
+    }, false)
     console.log(actionsEventSource)
 })
 
 onBeforeUnmount(() => {
     actionsEventSource.close();
+    messagesEventSource.close();
 })
 
 watch(() => quasar.dark.isActive,
@@ -303,15 +374,19 @@ const getLastFiveNotifications = async () => {
     notificationsChecked = true;
 };
 
+const getLastChats = async () => {
+    chatToMessage = await getLastChatsForUser()
+    console.log(chatToMessage)
+}
 const load = async () => {
     userRoles = await getAllUserRoles(currentUser.id)
     schoolPeriods = await getAllSchoolPeriods()
-  userRolesFilteredBySelectedPeriod = userRoles.filter(role => role.period.id == selectedPeriod?.id)
-  currentUserFile = await getUserProfilePicture(currentUser.id)
-  school = currentUser.role.school
-  if (currentUser.role.role === SchoolRole.TEACHER) {
-    subjectWithSchoolClassInformation = await fetchAllSubjectsTaughtByTeacher(currentUser.id, periodId.value, schoolId.value)
-  }
+    userRolesFilteredBySelectedPeriod = userRoles.filter(role => role.period.id == selectedPeriod?.id)
+    currentUserFile = await getUserProfilePicture(currentUser.id)
+    school = currentUser.role.school
+    if (currentUser.role.role === SchoolRole.TEACHER) {
+        subjectWithSchoolClassInformation = await fetchAllSubjectsTaughtByTeacher(currentUser.id, periodId.value, schoolId.value)
+    }
 }
 const getSchoolPeriods = async () => {
   userRoles = await getAllUserRoles(currentUser.id)
@@ -377,16 +452,16 @@ const pages = $computed(() => [
         icon: 'menu_book'
     },
     {
-    to: `/teacher-lessons/${periodId.value}/${schoolId.value}/${currentUser.id}`,
-    label: "Моята програма",
-    show: currentUserHasAnyRole([SchoolRole.TEACHER]),
-    icon: 'event_note'
-  },
-  {
-    to: `/student-diary/${(currentUser.role.detailsForUser as DetailsForStudent)?.schoolClass?.id}/${currentUser.id}/${periodId.value}/${schoolId.value}/grades`,
-    label: "Дневник",
-    show: currentUserHasAnyRole([SchoolRole.STUDENT]),
-    icon: 'menu_book'
+        to: `/teacher-lessons/${periodId.value}/${schoolId.value}/${currentUser.id}`,
+        label: "Моята програма",
+        show: currentUserHasAnyRole([SchoolRole.TEACHER]),
+        icon: 'event_note'
+    },
+    {
+        to: `/student-diary/${(currentUser.role.detailsForUser as DetailsForStudent)?.schoolClass?.id}/${currentUser.id}/${periodId.value}/${schoolId.value}/grades`,
+        label: "Дневник",
+        show: currentUserHasAnyRole([SchoolRole.STUDENT]),
+        icon: 'menu_book'
   },
   {
     to: `/administration-page/${periodId.value}/${schoolId.value}`,
