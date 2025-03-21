@@ -47,6 +47,7 @@ data class UserView(
     val username: String,
     val roles: List<SchoolRole>,
     val status: RequestStatus? = null,
+    val profilePicture: String? = null
 )
 
 @Serializable

@@ -1,5 +1,5 @@
 <template>
-    <div class="row q-col-gutter-lg">
+    <div class="row q-col-gutter-lg bg-sms">
         <div class="col-1"></div>
         <div class="col-10">
             <q-page class="page-content" padding>
@@ -8,17 +8,39 @@
                     <q-separator/>
                     <div class="row">
                         <div class="col-3">
-                            <q-input v-model="text" label="Потърсете чат">
+                            <q-select v-model="text" :option-label="user => user.firstName + ' ' + user.lastName + ' ('+ getUserRoles(user)+')'" :options="users" label="Потърсете чат" use-input
+                                      @filter="filterFn"
+                                      @update:model-value="value => checkExistingChat(value)">
                                 <template v-slot:append>
-                                    <q-icon v-if="text === ''" name="search"/>
-                                    <q-icon v-else class="cursor-pointer" name="clear" @click="text = ''"/>
+                                    <q-icon name="search"/>
                                 </template>
-                            </q-input>
+                                <template v-slot:before>
+                                    <q-btn color="primary" icon="groups" size="sm" square @click="groupCreateDialog">
+                                        <q-tooltip>Създай група</q-tooltip>
+                                    </q-btn>
+                                </template>
+                            </q-select>
                             <q-scroll-area style="height: 80vh">
                                 <q-infinite-scroll ref="infiniteScroll" :offset="250" @load="onLoad">
                                     <q-list v-if="chatToMessages.length > 0" separator>
                                         <q-item v-for="chatToMess in chatToMessages" v-ripple
-                                                clickable @click="selectChat(chatToMess)">
+                                                :class="!chatToMess.second.readFromUserIds.includes(currentUser.id)
+    ? `bg-blue-1`
+    : (chatToMess.first.id === selectedChat.first.id ? `bg-blue-2` : ``)" clickable
+                                                @click="selectChat(chatToMess)">
+                                            <q-item-section avatar>
+                                                <q-avatar v-if="chatToMess.second.user.profilePicture!=null"
+                                                          text-color="white">
+                                                    <q-img
+                                                            :src="imageUrl(userIdToFile[chatToMess.second.user.id],chatToMess.second.user.id)"
+                                                    ></q-img>
+                                                </q-avatar>
+                                                <q-avatar v-else color="cyan-2" text-color="white">
+                                                    {{
+                                                    chatToMess.second.user.firstName[0]
+                                                    }}{{ chatToMess.second.user.lastName[0] }}
+                                                </q-avatar>
+                                            </q-item-section>
                                             <q-item-section>
                                                 <q-item-label>
                                                     {{ chatToMess.first.chatName }}
@@ -26,7 +48,9 @@
                                                 <q-item-label caption>
                                                     <b>{{ chatToMess.second.user.firstName }}
                                                         {{ chatToMess.second.user.lastName }}:</b>
-                                                    {{ chatToMess.second.content.text }}
+                                                    {{
+                                                    chatToMess.second.content.text ? chatToMess.second.content.text : 'Изпрати прикачен файл'
+                                                    }}
                                                 </q-item-label>
                                             </q-item-section>
                                             <q-item-section side top>
@@ -34,6 +58,10 @@
                                                     {{
                                                     dateTimeToBulgarianLocaleString(chatToMess.second.sendOn)
                                                     }}
+                                                    <q-badge
+                                                            v-if="!chatToMess.second.readFromUserIds.includes(currentUser.id)"
+                                                            color="primary"
+                                                            rounded/>
                                                 </q-item-label>
                                                 <q-icon color="primary" name="icon"/>
                                             </q-item-section>
@@ -57,23 +85,64 @@
                                     <q-infinite-scroll v-if="selectedChat" ref="messagesInfiniteScroll"
                                                        :offset="250" reverse
                                                        @load="onMessagesLoad">
-                                        <q-chat-message v-for="message in messages"
-                                                        :name="message.user.firstName"
-                                                        :sent="currentUser.id === message.user.id"
-                                                        :stamp="[message.sendOn]"
-                                                        :text="[message.content.text]"
-                                                        avatar="https://cdn.quasar.dev/img/avatar3.jpg"
-                                                        bg-color="amber-7"
-                                        />
+                                        <q-chat-message
+                                                v-for="message in messages"
+                                                v-if="messages.length > 0"
+                                                :key="message.id"
+                                                :name="message.user.firstName"
+                                                :sent="currentUser.id === message.user.id"
+                                                :stamp="dateTimeToBulgarianLocaleString(message.sendOn)"
+                                                bg-color="amber-7">
+                                            <template v-slot:avatar>
+                                                <q-avatar v-if="message.user.profilePicture != null" text-color="white">
+                                                    <q-img :src="imageUrl(userIdToFile[message.user.id], message.user.id)"></q-img>
+                                                </q-avatar>
+                                                <q-avatar v-else color="cyan-2" text-color="white">
+                                                    {{ message.user.firstName[0] }}{{ message.user.lastName[0] }}
+                                                </q-avatar>
+                                            </template>
+                                            <template v-if="message.content.files?.length > 0">
+                                                <div v-for="file in message.content.files">
+                                                    <div v-if="!isBase64Image(file.base64)">
+                                                        <q-btn :key="file"
+                                                               color="primary"
+                                                               icon="attach_file"
+                                                               label="Download File"
+                                                               target="_blank"
+                                                               @click="downloadFile(dataURLtoFile(file.base64,file.name))"
+                                                        >
+                                                        </q-btn>
+                                                    </div>
+                                                    <div v-else>
+                                                        <q-img :src="imageUrlForMessage(base64ToImageFile(file.base64,file.name), message.id)"></q-img>
+                                                    </div>
+                                                </div>
+
+                                            </template>
+                                            <template v-else>
+                                                <div>
+                                                    {{ message.content.text }}
+                                                </div>
+                                            </template>
+                                        </q-chat-message>
+                                        <span v-if="messages.length === 0" class="text-primary">
+                          Все още не сте започнали разговор с {{ selectedChat.first.chatName }}. Изпратете първото си съобщение и започнете комуникацията!
+                    </span>
                                     </q-infinite-scroll>
                                 </q-scroll-area>
                             </div>
                             <div class="row">
                                 <q-input v-model="newMessage.text" autogrow class="col-11"
                                          label="Напиши съобщение"></q-input>
-                                <q-btn class="col" color="primary" dense flat icon="photo_library" rounded></q-btn>
                                 <q-btn class="col" color="primary" dense flat icon="send" rounded
-                                       @click="sendMessage"></q-btn>
+                                       :disable="!newMessage.text && files.length === 0 " @click="sendMessage"></q-btn>
+                            </div>
+                            <div class="row">
+                                <q-file v-model="files" class="col-12" multiple outlined square use-chips>
+                                    <template v-slot:prepend>
+                                        <q-icon name="attach_file"/>
+                                    </template>
+                                </q-file>
                             </div>
                         </div>
                     </div>
@@ -87,19 +156,33 @@
 import {$ref} from "vue/macros";
 import {useRouter} from "vue-router";
 import {QInfiniteScroll, QScrollArea, useQuasar} from "quasar";
-import {ActionsFetchingInformationDTO} from "../../model/Actions";
+import {PaginatedFetchingInformationDTO} from "../../model/Actions";
 import {getCurrentUser, getCurrentUserAsUserView} from "../../services/LocalStorageService";
 import {
+    fetchDirectChatWithUser,
+    get10UserViewsBySchoolMatchingSearchText,
+    getChatMembers,
     getChatMessagesWithFiltersAndPagination,
     getMessagesWithFiltersAndPagination,
+    saveUpdateChat,
     sendCreateMessage
 } from "../../services/RequestService";
-import {Chat} from "../../model/Chat";
-import {Message, MessageContent} from "../../model/Message";
+import {Chat, ChatType} from "../../model/Chat";
+import {FileWithBase64, Message, MessageContent} from "../../model/Message";
 import {Pair} from "../../model/Pair";
-import {dateTimeToBulgarianLocaleString} from "../../utils";
+import {
+    dataURLtoFile,
+    dateTimeToBulgarianLocaleString,
+    downloadFile,
+    fileToBase64,
+    isBase64Image,
+    translationOfRoles
+} from "../../utils";
 import {onBeforeMount, onBeforeUnmount, watch} from "vue";
 import {chatMessagesEventSource, setupChatMessageEventSource} from "../../services/ChatMessagesService";
+import {UserView} from "../../model/User";
+import GroupChatCreateEditDialog from "./group-chat-create-edit-dialog.vue";
+import {periodId, schoolId} from "../../model/constants";
 
 
 const props = defineProps<{
@@ -113,40 +196,102 @@ let infiniteScroll = $ref<InstanceType<typeof QInfiniteScroll>>()
 let messagesInfiniteScroll = $ref<InstanceType<typeof QInfiniteScroll>>()
 let messagesScroll = $ref<InstanceType<typeof QScrollArea>>()
 const currentUser = getCurrentUser()
-const newMessage = $ref<MessageContent>({text: null, picture: null})
+const newMessage = $ref<MessageContent>({text: null, files: null})
+const files = $ref<File[]>([])
 const LOADED_ROWS_COUNT = 20
 const LOADED_MESSAGES_COUNT = 20
-const text = $ref("")
+const text = $ref<UserView | null>(null)
+let users = $ref<UserView[]>([])
+let userIdToFile = $ref({})
+let messageIdToFiles = $ref({})
+let selectedChat = $ref<Pair<Chat, Message | null> | null>(null)
+let messages = $ref<Message[]>([])
 
+const filterFn = (val, update) => {
+    if (val === '') {
+        update(() => {
+            users = []
+
+            // here you have access to "ref" which
+            // is the Vue reference of the QSelect
+        })
+        return
+    }
+
+    update(async () => {
+        users = await get10UserViewsBySchoolMatchingSearchText(props.schoolId, props.periodId, val)
+    })
+}
 const getAllChatWithPaginationAndFilters = async (loadingIndex): Promise<Pair<Chat, Message>[]> => {
-    const messagesFetchingInformationDTO: ActionsFetchingInformationDTO = {
+    const messagesFetchingInformationDTO: PaginatedFetchingInformationDTO = {
         startRange: (loadingIndex * LOADED_ROWS_COUNT) - LOADED_ROWS_COUNT,
         endRange: loadingIndex * LOADED_ROWS_COUNT,
         forUserId: currentUser.id,
-        periodId: props.periodId,
-        schoolId: props.schoolId,
+        periodId: +props.periodId,
+        schoolId: +props.schoolId,
     }
     return await getMessagesWithFiltersAndPagination(messagesFetchingInformationDTO)
 
 }
 
+
+const groupCreateDialog = () => {
+    quasar.dialog({
+        component: GroupChatCreateEditDialog,
+        componentProps: {}
+    }).onOk(async (payload) => {
+        await saveUpdateChat(payload.item.chat).then(r => {
+            selectedChat = {...selectedChat, first: r}
+        })
+    })
+}
 const sendMessage = async () => {
-    const message = <Message>{
-        user: getCurrentUserAsUserView(),
-
-        content: newMessage,
-
-        sendOn: new Date(),
-
-        chatId: selectedChat?.first.id,
-
-        read: false
+    if (selectedChat?.first.id == null) {
+        await saveUpdateChat(selectedChat?.first!!).then(r => {
+            selectedChat = {...selectedChat, first: r}
+        })
     }
-    await sendCreateMessage(message)
+    const base64Files = await Promise.all(files.map(file => fileToBase64(file)));
+
+    const messageContentWithFiles: MessageContent = {
+        ...newMessage,
+        files: files.map((file, ind) => <FileWithBase64>{name: file.name, base64: base64Files[ind]}), // Ensure this contains resolved Base64 strings, not promises
+    };
+    let message = <Message>{
+        id: null,
+        user: getCurrentUserAsUserView(),
+        content: messageContentWithFiles,
+        sendOn: new Date(),
+        chatId: selectedChat?.first.id,
+        readFromUserIds: []
+    }
+    await sendCreateMessage(message).then(mess =>
+            message = mess
+    )
+    const chatToMessagesIndex = chatToMessages.findIndex(chatToMessages => chatToMessages.first.id == selectedChat?.first.id)
+    if (chatToMessagesIndex != -1) {
+        chatToMessages.splice(chatToMessagesIndex, 1)
+    }
+    chatToMessages.unshift({...selectedChat, second: message})
 }
 
+const checkExistingChat = async (userView: UserView) => {
+    await fetchDirectChatWithUser(userView.id).then(r => {
+                if (r) {
+                    selectedChat = r
+                } else {
+                    const newChat = <Chat>{
+                        chatName: userView.firstName + ' ' + userView.lastName,
+                        chatType: ChatType.DIRECT_MESSAGES,
+                        chatMembers: [userView, getCurrentUserAsUserView()]
+                    }
+                    selectedChat = <Pair<Chat, Message | null>>{first: newChat, second: null}
+                }
+            }
+    )
+}
 const getAllMessagesWithPaginationAndFilters = async (loadingIndex): Promise<Message[]> => {
-    const messagesFetchingInformationDTO: ActionsFetchingInformationDTO = {
+    const messagesFetchingInformationDTO: PaginatedFetchingInformationDTO = {
         startRange: (loadingIndex * LOADED_MESSAGES_COUNT) - LOADED_MESSAGES_COUNT,
         endRange: loadingIndex * LOADED_MESSAGES_COUNT,
         forUserId: currentUser.id,
@@ -167,44 +312,106 @@ const onLoad = async (index: number, done: () => void) => {
     done()
 }
 
+watch(() => chatToMessages, (curr, prior) => {
+            if (chatToMessages.length > 0 && prior.length == 0) {
+                selectedChat = chatToMessages[0]
+            }
+        }
+)
+
 const onMessagesLoad = async (index: number, done: () => void) => {
     const fetched = await getAllMessagesWithPaginationAndFilters(index)
     if (fetched.length < LOADED_MESSAGES_COUNT) {
         messagesInfiniteScroll.stop()
     }
     messages = fetched.concat(messages)
+    fetched.forEach(fetch => {
+                messageIdToFiles[fetch.id!!] = fetch.content.files?.map(file =>
+                        base64ToImageFile(file.base64, file.name)
+                )
+            }
+    )
     done()
 }
 
-
-let selectedChat = $ref<Pair<Chat, Message> | null>(null)
-let messages = $ref<Message[]>([])
-watch(() => selectedChat, async () => {
+watch(() => selectedChat?.first, async () => {
     if (selectedChat) {
+        userIdToFile = {}
+        const chatMembers = await getChatMembers(selectedChat.first.id, schoolId.value, periodId.value)
+        chatMembers?.forEach(member =>
+                userIdToFile[member.id] = member.profilePicture ? base64ToImageFile(member.profilePicture, member.id!!.toString()) : null
+        )
         messages = []
+        messagesInfiniteScroll?.reset()
+        messagesInfiniteScroll?.resume()
         messagesScroll.setScrollPercentage("vertical", 100)
-        messagesInfiniteScroll.reset()
-        messagesInfiniteScroll.resume()
+        chatToMessages = chatToMessages.map(chatToMess => {
+                    if (selectedChat.first.id == chatToMess.first.id) {
+                        return {
+                            ...selectedChat, second: {
+                                ...selectedChat?.second,
+                                readFromUserIds: selectedChat?.second?.readFromUserIds.concat(currentUser.id)
+                            }
+                        }
+                    } else {
+                        return chatToMess
+                    }
+                }
+        )
     }
 
 })
 
 const selectChat = (chatToMess: Pair<Chat, Message>) => {
-    console.log("test")
-    console.log(chatToMess)
     selectedChat = chatToMess
 }
 const quasar = useQuasar()
-// onBeforeMount(async () => {
-//   messagesEventSource.addEventListener('message', (actionMessage: MessageEvent) => {
-//     const newMessage = <Message>JSON.parse(actionMessage.data)
-//     console.log("hckzmkdc")
-//     if (newMessage.chatId == selectedChat?.first.id) {
-//       messages.push(newMessage)
-//     }
-//     // }
-//   }, false)
-// })
+
+const cachedImageUrls = new Map<string, string>();
+const imageUrl = (file: File, uuid: string) => {
+    if (!file) return '';
+    if (!cachedImageUrls.has(uuid)) {
+        cachedImageUrls.set(uuid, window.URL.createObjectURL(file));
+    }
+    return cachedImageUrls.get(uuid);
+};
+
+const cachedMessageFiles = new Map<string, Pair<string, string>[]>();
+const imageUrlForMessage = (file: File | null, uuid: string) => {
+    if (!file || !(file instanceof File)) {
+        console.error("Invalid file object", file);
+        return '';
+    }
+
+    if (!cachedMessageFiles.has(uuid)) {
+        cachedMessageFiles.set(uuid, [<Pair<string, string>>{
+            first: window.URL.createObjectURL(file),
+            second: file.name
+        }]);
+    } else {
+        cachedMessageFiles.set(uuid, [...cachedMessageFiles.get(uuid)!, <Pair<string, string>>{
+            first: window.URL.createObjectURL(file),
+            second: file.name
+        }]);
+    }
+    console.log(cachedMessageFiles.get(uuid))
+    return cachedMessageFiles.get(uuid)?.find(url => url.second.includes(file.name))?.first;
+};
+
+function base64ToImageFile(base64String: string, fileName: string): File {
+    const arr = base64String.split(",");
+    const mimeType = arr[0].match(/:(.*?);/)?.[1] || "image/png";
+    const byteCharacters = atob(arr[1]); // Decode Base64
+    const byteNumbers = new Uint8Array(byteCharacters.length);
+
+
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+
+    const blob = new Blob([byteNumbers], {type: mimeType});
+    return new File([blob], fileName, {type: mimeType});
+}
 
 onBeforeMount(async () => {
     setupChatMessageEventSource()
@@ -214,25 +421,21 @@ onBeforeMount(async () => {
     }, false)
     console.log(chatMessagesEventSource)
 })
-watch(() => messages, () => {
-    messagesScroll.setScrollPercentage("vertical", 100)
-})
+// watch(() => messages, (beforeMessages,afterMessages) => {
+//   messagesScroll.setScrollPercentage("vertical", 100)
+// })
 
 onBeforeUnmount(() => {
     chatMessagesEventSource.close();
 })
 
-// function formatDateToBulgarian(date: Date | string): string {
-//   const bgFormatter = new Intl.DateTimeFormat("bg-BG", {day: "2-digit", month: "long"});
-//
-//   const validDate = new Date(date);
-//   if (isNaN(validDate.getTime())) return "Invalid Date"; // Handle invalid dates
-//
-//   console.log(validDate.getDate())
-//   console.log(currentDate.getDate())
-//   return !(validDate.getDate() == currentDate.getDate() && validDate.getMonth() == currentDate.getMonth() && validDate.getFullYear() == currentDate.getFullYear()) ?
-//           bgFormatter.format(validDate) : 'Днес';
-// }
+const getUserRoles = (userView: UserView) => {
+    if (userView.roles.length == 0) {
+        return "НЯМА АКТИВНИ РОЛИ"
+    } else {
+        return [...new Set(userView.roles.map(it => translationOfRoles[it]))].join(",")
+    }
+}
 </script>
 <style scoped>
 .page-content {

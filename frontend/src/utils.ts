@@ -262,3 +262,54 @@ export const generateUUID = (): string => {
         return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
     });
 }
+
+
+export function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string); // Base64 Data URL
+        reader.onerror = reject;
+        reader.readAsDataURL(file); // Read file as Base64
+    });
+}
+
+export const isBase64Image = (base64: string): boolean => {
+    return base64.includes("data:image/");
+};
+
+export function base64ToImageFile(base64String: string, fileName: string): File {
+    const arr = base64String.split(",");
+    const mimeType = arr[0].match(/:(.*?);/)?.[1] || "image/png";
+    const byteCharacters = atob(arr[1]); // Decode Base64
+    const byteNumbers = new Uint8Array(byteCharacters.length);
+
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+
+    const blob = new Blob([byteNumbers], {type: mimeType});
+    return new File([blob], fileName, {type: mimeType});
+}
+
+export function dataURLtoFile(dataurl, filename) {
+    var arr = dataurl.split(','),
+            mime = arr[0].match(/:(.*?);/)[1],
+            bstr = atob(arr[arr.length - 1]),
+            n = bstr.length,
+            u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, {type: mime});
+}
+
+export const downloadFile = async (file: File): Promise<any> => {
+    const link = document.createElement('a')
+    // @ts-ignore
+    link.href = window.URL.createObjectURL(new Blob([file]))
+    link.download = file.name
+    link.click()
+    link.remove()
+
+
+}

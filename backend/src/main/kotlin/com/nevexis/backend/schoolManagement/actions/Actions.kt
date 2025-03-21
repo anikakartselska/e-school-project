@@ -37,7 +37,7 @@ data class Actions(
     }
 }
 
-data class ActionsFetchingInformationDTO(
+data class PaginatedFetchingInformationDTO(
     val startRange: Int,
     val endRange: Int,
     val forUserId: BigDecimal,

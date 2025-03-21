@@ -1442,14 +1442,13 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>MESSAGE</table_name>
-            <column_name>READ</column_name>
-            <data_type>char</data_type>
-            <character_maximum_length>1</character_maximum_length>
+            <column_name>READ_FROM_USER_IDS</column_name>
+            <data_type>varchar</data_type>
+            <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
             <ordinal_position>6</ordinal_position>
             <is_nullable>true</is_nullable>
-            <column_default>'''N'''</column_default>
             <comment></comment>
         </column>
         <column>
@@ -2823,8 +2822,8 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>USER</table_name>
-            <column_name>PROFILE_IMAGE</column_name>
-            <data_type>blob</data_type>
+            <column_name>PREFERENCES</column_name>
+            <data_type>varchar</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
@@ -2836,8 +2835,8 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>USER</table_name>
-            <column_name>PREFERENCES</column_name>
-            <data_type>varchar</data_type>
+            <column_name>PROFILE_IMAGE</column_name>
+            <data_type>clob</data_type>
             <character_maximum_length>0</character_maximum_length>
             <numeric_precision>0</numeric_precision>
             <numeric_scale>0</numeric_scale>
@@ -2885,6 +2884,16 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>CHAT</table_name>
+            <enforced>true</enforced>
+        </table_constraint>
+        <table_constraint>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>PK_CHAT_MEMBERS</constraint_name>
+            <constraint_type>PRIMARY KEY</constraint_type>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>CHAT_MEMBERS</table_name>
             <enforced>true</enforced>
         </table_constraint>
         <table_constraint>
@@ -3278,6 +3287,26 @@
             <table_catalog></table_catalog>
             <table_schema>DEMO_PROJECT</table_schema>
             <table_name>CHAT</table_name>
+        </key_column_usage>
+        <key_column_usage>
+            <column_name>USER_ID</column_name>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>PK_CHAT_MEMBERS</constraint_name>
+            <ordinal_position>1</ordinal_position>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>CHAT_MEMBERS</table_name>
+        </key_column_usage>
+        <key_column_usage>
+            <column_name>CHAT_ID</column_name>
+            <constraint_catalog></constraint_catalog>
+            <constraint_schema>DEMO_PROJECT</constraint_schema>
+            <constraint_name>PK_CHAT_MEMBERS</constraint_name>
+            <ordinal_position>2</ordinal_position>
+            <table_catalog></table_catalog>
+            <table_schema>DEMO_PROJECT</table_schema>
+            <table_name>CHAT_MEMBERS</table_name>
         </key_column_usage>
         <key_column_usage>
             <column_name>ID</column_name>

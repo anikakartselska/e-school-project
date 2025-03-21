@@ -1,6 +1,6 @@
 package com.nevexis.backend.schoolManagement.messages
 
-import com.nevexis.backend.schoolManagement.actions.ActionsFetchingInformationDTO
+import com.nevexis.backend.schoolManagement.actions.PaginatedFetchingInformationDTO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.MediaType
@@ -45,12 +45,26 @@ class MessagesController {
 
     @PostMapping("/get-messages-with-filters-and-pagination")
     fun getMessagesWithFiltersAndPagination(
-        @RequestBody messagesFetchingInformationDTO: ActionsFetchingInformationDTO,
+        @RequestBody messagesFetchingInformationDTO: PaginatedFetchingInformationDTO,
     ) = chatService.fetchMessagesWithFiltersAndPagination(messagesFetchingInformationDTO)
 
 
     @PostMapping("/get-chat-messages-with-filters-and-pagination")
     fun getChatMessagesWithFiltersAndPagination(
-        @RequestBody messagesFetchingInformationDTO: ActionsFetchingInformationDTO, chatId: BigDecimal
-    ) = chatService.fetchChatMessagesWithFiltersAndPagination(messagesFetchingInformationDTO, chatId)
+        @RequestBody messagesFetchingInformationDTO: PaginatedFetchingInformationDTO,
+        chatId: BigDecimal,
+        principal: Principal
+    ) = chatService.fetchChatMessagesWithFiltersAndPagination(
+        messagesFetchingInformationDTO,
+        chatId,
+        principal.name.toBigDecimal()
+    )
+
+    @GetMapping("/get-chat-with-user")
+    fun getChatWithUser(userId: BigDecimal, principal: Principal) =
+        chatService.findDirectChatWithUser(userId, principal.name.toBigDecimal())
+
+    @PostMapping("/save-update-chat")
+    fun mergeChat(@RequestBody chat: Chat) = chatService.createUpdateChat(chat)
+
 }

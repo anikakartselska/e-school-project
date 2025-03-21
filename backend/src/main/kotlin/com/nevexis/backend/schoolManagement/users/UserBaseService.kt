@@ -56,6 +56,7 @@ class UserBaseService : BaseService() {
             lastName = userRecord.lastName!!,
             username = userRecord.username!!,
             roles = rolesForSchool,
+            profilePicture = userRecord.profileImage?.replace("\"", ""),
             status = schoolUserPeriodRecord?.status?.let { RequestStatus.valueOf(it) }
         )
 

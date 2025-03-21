@@ -24,7 +24,8 @@ export interface UserView {
     lastName: string,
     username: string,
     roles: SchoolRole[],
-    status: RequestStatus
+    status: RequestStatus,
+    profilePicture: string
 }
 
 export interface StudentView {

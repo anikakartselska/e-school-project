@@ -22,13 +22,13 @@ class ActionsService : BaseService() {
     private lateinit var userService: UserService
 
     fun fetchActionsWithFiltersAndPagination(
-        actionsFetchingInformationDTO: ActionsFetchingInformationDTO,
+        paginatedFetchingInformationDTO: PaginatedFetchingInformationDTO,
     ): List<Actions> {
         val (startRange,
             endRange,
             forUserId,
             periodId,
-            schoolId) = actionsFetchingInformationDTO
+            schoolId) = paginatedFetchingInformationDTO
         val ROWNUM = DSL.field("ROWNUM", Int::class.java)
         val RN = DSL.field("RN", Int::class.java)
         val EXECUTED_TIME = DSL.field("EXECUTED_TIME", LocalDateTime::class.java)

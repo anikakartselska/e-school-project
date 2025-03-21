@@ -43,7 +43,7 @@
 import {$ref} from "vue/macros";
 import {useRouter} from "vue-router";
 import {QInfiniteScroll} from "quasar";
-import {Actions, ActionsFetchingInformationDTO} from "../../model/Actions";
+import {Actions, PaginatedFetchingInformationDTO} from "../../model/Actions";
 import {getCurrentUser} from "../../services/LocalStorageService";
 import {getActionsWithFiltersAndPagination} from "../../services/RequestService";
 import {checkIfMaxDate, dateTimeToBulgarianLocaleString, getDistinctDates} from "../../utils";
@@ -63,7 +63,7 @@ const LOADED_ROWS_COUNT = 20
 
 
 const getAllActionsWithPaginationAndFilters = async (loadingIndex): Promise<Actions[]> => {
-  const actionsFetchingInformationDTO: ActionsFetchingInformationDTO = {
+  const actionsFetchingInformationDTO: PaginatedFetchingInformationDTO = {
     startRange: (loadingIndex * LOADED_ROWS_COUNT) - LOADED_ROWS_COUNT,
     endRange: loadingIndex * LOADED_ROWS_COUNT,
     forUserId: currentUser.id,

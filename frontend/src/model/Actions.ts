@@ -10,7 +10,7 @@ export interface Actions {
 }
 
 
-export interface ActionsFetchingInformationDTO {
+export interface PaginatedFetchingInformationDTO {
     startRange: number,
     endRange: number,
     forUserId: number,

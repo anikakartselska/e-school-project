@@ -3,11 +3,6 @@ package com.nevexis.backend.schoolManagement.users
 import com.nevexis.backend.schoolManagement.users.user_security.UserPreferences
 import com.nevexis.backend.schoolManagement.users.user_security.UserSecurityService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.core.io.ByteArrayResource
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
@@ -38,6 +33,22 @@ class UsersController {
         @RequestParam periodId: BigDecimal
     ): List<UserView> = userService.getAllUserViewsBySchool(schoolId, periodId)
 
+    @GetMapping("/get-10-user-views-by-school-matching-search-text")
+    fun getAllUserViewsBySchoolPaginated(
+        schoolId: BigDecimal,
+        periodId: BigDecimal,
+        searchText: String,
+        principal: Principal
+    ) = userService.getLast10UserViews(schoolId, periodId, searchText, principal.name.toBigDecimal())
+
+
+    @GetMapping("/get-chat-members")
+    fun getAllMembersFromChat(
+        chatId: BigDecimal,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ) = userService.getChatMembers(chatId, schoolId, periodId)
+
     @PreAuthorize("hasAnyAuthority('TEACHER','ADMIN')")
     @GetMapping("/get-all-teachers-that-do-not-have-school-class")
     suspend fun getAllTeachersWhichDoNotHaveSchoolClassForSchoolAndPeriod(
@@ -63,35 +74,17 @@ class UsersController {
 
     @PostMapping("/change-profile-picture")
     suspend fun changeProfilePicture(
-        @RequestPart profilePicture: ByteArray,
+        @RequestBody profilePicture: String,
         @RequestParam userId: BigDecimal
     ) {
         userService.changeUserProfilePicture(profilePicture, userId)
     }
 
     @PostMapping("/get-user-profile-picture")
-    suspend fun generateReportExcel(
+    suspend fun getProfilePicture(
         @RequestParam userId: BigDecimal
-    ): ResponseEntity<ByteArrayResource>? {
-
-        val resource = userService.getUserProfilePicture(userId)?.let {
-            ByteArrayResource(
-                it
-            )
-        }
-
-        return resource?.contentLength()?.let {
-            ResponseEntity.status(HttpStatus.OK).headers(
-                HttpHeaders().apply {
-                    set(
-                        HttpHeaders.CONTENT_DISPOSITION,
-                        """attachment; filename="profile-picture${userId}.jpeg""""
-                    )
-                }
-            ).contentLength(it)
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(resource)
-        }
+    ): String? {
+        return userService.getUserProfilePicture(userId)
     }
 
     @GetMapping("/get-student-by-id-school-and-period")

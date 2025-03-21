@@ -11,11 +11,17 @@ data class Message(
     val content: MessageContent,
     val sendOn: LocalDateTime,
     val chatId: BigDecimal,
-    val read: Boolean = false
+    val readFromUserIds: List<Int>
 )
 
 @Serializable
 data class MessageContent(
     val text: String? = null,
-    val picture: String? = null
+    val files: List<FileWithBase64>? = null
+)
+
+@Serializable
+data class FileWithBase64(
+    val name: String,
+    val base64: String,
 )

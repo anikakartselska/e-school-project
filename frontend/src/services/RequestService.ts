@@ -22,7 +22,7 @@ import {SmsFile} from "../model/SmsFile";
 import JSZip from "jszip";
 import {createZipFromFiles} from "./helper-services/ZipService";
 import {Pair} from "../model/Pair";
-import {Actions, ActionsFetchingInformationDTO} from "../model/Actions";
+import {Actions, PaginatedFetchingInformationDTO} from "../model/Actions";
 import {Exam} from "../model/Exam";
 import {ExamAnswers} from "../model/ExamAnswers";
 import {NotificationMessages} from "../model/NotificationMessages";
@@ -256,26 +256,22 @@ export const uploadUsersExcelFile = async (file, periodId,
     })
 }
 
-export const updateUserProfilePicture = async (profilePicture, userId) => {
-    const bodyFormData = new FormData()
-    bodyFormData.append('profilePicture', profilePicture)
-    return await api.post(`/change-profile-picture`, bodyFormData, {
+export const updateUserProfilePicture = async (profilePicture: string, userId) => {
+    return await api.post(`/change-profile-picture`, profilePicture, {
         params: {
             userId: userId,
         },
-        headers: {"Content-Type": "multipart/form-data"},
+        headers: {'Content-Type': 'application/json'}
     })
 }
 
-export const getUserProfilePicture = async (userId): Promise<File | null> =>
-        await api.post<BlobPart>(`/get-user-profile-picture`, null, {
+export const getUserProfilePicture = async (userId): Promise<AxiosResponse<string | null>> =>
+        await api.post<string | null>(`/get-user-profile-picture`, null, {
             params: {
                 userId
             },
-            responseType: 'blob'
-        }).then(async response =>
-                response.data?.size !== 0 ? new File([response.data], "profilePicture") : null
-        )
+            headers: {'Content-Type': 'application/json'}
+        })
 
 export const createUser = async (user, loggedInUserId): Promise<User> => {
     const response: AxiosResponse<number> = await api.post<number>(`/create-user`, user, {
@@ -863,7 +859,7 @@ export const deleteFileById = async (fileId: number): Promise<any> =>
             headers: {'Content-Type': 'application/json'}
         })
 
-export const getActionsWithFiltersAndPagination = async (actionsFetchingInformationDTO: ActionsFetchingInformationDTO): Promise<Actions[] | Awaited<any>> =>
+export const getActionsWithFiltersAndPagination = async (actionsFetchingInformationDTO: PaginatedFetchingInformationDTO): Promise<Actions[] | Awaited<any>> =>
         await api.post<Actions[]>("/stream/get-actions-with-filters-and-pagination", actionsFetchingInformationDTO, {
             params: {},
             headers: {'Content-Type': 'application/json'},
@@ -1005,7 +1001,7 @@ export const getMessagesFromChat = async (chatId: number): Promise<Message[]> =>
             }
         }).then(p => p.data)
 
-export const getMessagesWithFiltersAndPagination = async (messagesFetchingInformationDTO: ActionsFetchingInformationDTO): Promise<Pair<Chat, Message>[] | Awaited<any>> =>
+export const getMessagesWithFiltersAndPagination = async (messagesFetchingInformationDTO: PaginatedFetchingInformationDTO): Promise<Pair<Chat, Message>[] | Awaited<any>> =>
         await api.post<Pair<Chat, Message>[]>("/messages/get-messages-with-filters-and-pagination", messagesFetchingInformationDTO, {
             params: {},
             headers: {'Content-Type': 'application/json'},
@@ -1017,7 +1013,7 @@ export const getMessagesWithFiltersAndPagination = async (messagesFetchingInform
             }
         }).then(r => r.data)
 
-export const getChatMessagesWithFiltersAndPagination = async (chatMessagesFetchingInformationDTO: ActionsFetchingInformationDTO, chatId: number): Promise<Message[] | Awaited<any>> =>
+export const getChatMessagesWithFiltersAndPagination = async (chatMessagesFetchingInformationDTO: PaginatedFetchingInformationDTO, chatId: number): Promise<Message[] | Awaited<any>> =>
         await api.post<Message[]>("/messages/get-chat-messages-with-filters-and-pagination", chatMessagesFetchingInformationDTO, {
             params: {chatId: chatId},
             headers: {'Content-Type': 'application/json'},
@@ -1041,7 +1037,40 @@ export const sendCreateMessage = async (message: Message): Promise<Message | Awa
             }
         }).then(r => r.data)
 
-// @PostMapping("/send-message")
-// fun sendMessage(
-//         @RequestBody message: Message
-// ) = messagesService.createMessage(message)
+export const get10UserViewsBySchoolMatchingSearchText = async (schoolId, periodId,
+                                                               searchText: string): Promise<UserView[] | any> =>
+        await api.get<UserView[]>('/get-10-user-views-by-school-matching-search-text', {
+            params: {
+                schoolId: schoolId,
+                periodId: periodId,
+                searchText: searchText
+            }
+        }).then(p => p.data)
+
+export const getChatMembers = async (chatId, schoolId, periodId): Promise<UserView[] | any> =>
+        await api.get<UserView[]>('/get-chat-members', {
+            params: {
+                chatId: chatId,
+                schoolId: schoolId,
+                periodId: periodId
+            }
+        }).then(p => p.data)
+
+export const fetchDirectChatWithUser = async (userId): Promise<Pair<Chat, Message> | any> =>
+        await api.get<Pair<Chat, Message>>('/messages/get-chat-with-user', {
+            params: {
+                userId: userId
+            }
+        }).then(p => p.data)
+
+export const saveUpdateChat = async (chat: Chat): Promise<Chat | Awaited<any>> =>
+        await api.post<Chat>("/messages/save-update-chat", chat, {
+            params: {},
+            headers: {'Content-Type': 'application/json'},
+            // @ts-ignore
+            notificationMessages: <NotificationMessages>{
+                progressMessage: "Message",
+                successMessage: "Message",
+                errorMessage: "Message"
+            }
+        }).then(r => r.data)

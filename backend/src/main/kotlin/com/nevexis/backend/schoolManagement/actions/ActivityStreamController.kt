@@ -22,8 +22,8 @@ class ActivityStreamController {
 
     @PostMapping("/get-actions-with-filters-and-pagination")
     fun getActionsWithFiltersAndPagination(
-        @RequestBody actionsFetchingInformationDTO: ActionsFetchingInformationDTO,
-    ) = actionsService.fetchActionsWithFiltersAndPagination(actionsFetchingInformationDTO)
+        @RequestBody paginatedFetchingInformationDTO: PaginatedFetchingInformationDTO,
+    ) = actionsService.fetchActionsWithFiltersAndPagination(paginatedFetchingInformationDTO)
 
     @GetMapping("/get-last-five-actions-for-user")
     fun getLastFiveActionsOnlyGorUser(principal: Principal) =

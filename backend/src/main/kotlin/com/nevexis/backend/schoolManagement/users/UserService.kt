@@ -81,6 +81,51 @@ class UserService : UserBaseService() {
         }
     }
 
+    fun getLast10UserViews(
+        schoolId: BigDecimal,
+        periodId: BigDecimal,
+        searchText: String,
+        currentUserId: BigDecimal,
+        dsl: DSLContext = db
+    ): List<UserView> {
+        val rolesForSchoolGroupedByUserId =
+            schoolUserRolesService.getAllApprovedRolesFromSchoolForPeriod(schoolId, periodId)
+        return recordSelectOnConditionStep(dsl).where(
+            SCHOOL_USER.SCHOOL_ID.eq(schoolId).and(
+                SCHOOL_USER_PERIOD.PERIOD_ID.eq(periodId).and(!USER.ID.eq(currentUserId))
+            ).and(
+                DSL.upper(USER.FIRST_NAME).concat(DSL.upper(USER.LAST_NAME))
+                    .contains(searchText.replace(" ", "").uppercase())
+            )
+        ).maxRows(10)
+            .fetch()
+            .map {
+                val userId = it.get(USER.ID, BigDecimal::class.java)
+                mapToUserView(it, rolesForSchoolGroupedByUserId[userId] ?: emptyList())
+            }
+    }
+
+    fun getChatMembers(
+        chatId: BigDecimal,
+        schoolId: BigDecimal,
+        periodId: BigDecimal
+    ): List<UserView> {
+        val rolesForSchoolGroupedByUserId =
+            schoolUserRolesService.getAllApprovedRolesFromSchoolForPeriod(schoolId, periodId)
+        return recordSelectOnConditionStep(db).where(
+            SCHOOL_USER.SCHOOL_ID.eq(schoolId).and(
+                SCHOOL_USER_PERIOD.PERIOD_ID.eq(periodId)
+            ).and(
+                USER.ID.`in`(db.select(CHAT_MEMBERS.USER_ID).from(CHAT_MEMBERS).where(CHAT_MEMBERS.CHAT_ID.eq(chatId)))
+            )
+        )
+            .fetch()
+            .map {
+                val userId = it.get(USER.ID, BigDecimal::class.java)
+                mapToUserView(it, rolesForSchoolGroupedByUserId[userId] ?: emptyList())
+            }
+    }
+
     fun getUserViewsById(
         userId: BigDecimal,
         schoolId: BigDecimal,
@@ -311,14 +356,14 @@ class UserService : UserBaseService() {
         }
 
 
-    fun changeUserProfilePicture(profilePicture: ByteArray, userId: BigDecimal) {
+    fun changeUserProfilePicture(profilePicture: String, userId: BigDecimal) {
         db.selectFrom(USER).where(USER.ID.eq(userId))
             .fetchAny()?.apply {
                 this.profileImage = profilePicture
             }?.update()
     }
 
-    fun getUserProfilePicture(userId: BigDecimal): ByteArray? {
+    fun getUserProfilePicture(userId: BigDecimal): String? {
         return db.select(USER.PROFILE_IMAGE).from(USER).where(USER.ID.eq(userId))
             .fetchAny()?.getValue(USER.PROFILE_IMAGE)
 

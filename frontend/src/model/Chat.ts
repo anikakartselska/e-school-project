@@ -1,7 +1,7 @@
 import {UserView} from "./User";
 
 export interface Chat {
-    id: number
+    id: number | null
     chatName: string,
     chatType: ChatType,
     chatMembers: UserView[] | null

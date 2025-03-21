@@ -1,15 +1,15 @@
 <template>
-    <q-layout view="lHh LpR lFf">
-    <q-ajax-bar
-            ref="bar"
-            color="bg-red-6"
-            position="bottom"
-            size="5px"
+  <q-layout view="lHh LpR lFf">
+      <q-ajax-bar
+              ref="bar"
+              color="bg-red-6"
+              position="bottom"
+              size="5px"
 
-    />
-    <q-header
-            reveal
-            :class="$q.dark.isActive ? 'header_dark' : 'header_normal'"
+      />
+      <q-header
+              :class="$q.dark.isActive ? 'header_dark' : 'header_normal'"
+              reveal
     >
       <q-toolbar>
         <q-btn
@@ -42,12 +42,12 @@
                     <q-btn color="primary" dense flat label="Промени роля" @click="changeUserRole()"/>
                   </q-item-section>
                 </q-item>
-                <q-separator/>
-                <q-item>
-                  <q-item-section>
-                    <q-btn color="primary" dense flat label="Промени парола" @click="resetUserPassword()"/>
-                  </q-item-section>
-                </q-item>
+                  <q-separator/>
+                  <q-item>
+                      <q-item-section>
+                          <q-btn color="primary" dense flat label="Промени парола" @click="resetUserPassword()"/>
+                      </q-item-section>
+                  </q-item>
               </div>
             </div>
           </q-menu>
@@ -73,7 +73,19 @@
                   <q-scroll-area v-if="chatToMessage.length>0"
                                  :style="{'width':'49vh','max-height':'50vh','height':`${chatToMessage.length*9}vh`}">
                       <q-list separator style="width: 49vh">
-                          <q-item v-for="chatToMess in chatToMessage" v-ripple>
+                          <q-item v-for="chatToMess in chatToMessage" v-ripple
+                                  :class="!chatToMess.second.readFromUserIds.includes(currentUser.id) ? `bg-blue-1`: ``">
+                              <q-item-section avatar>
+                                  <q-avatar v-if="chatToMess.second.user.profilePicture!=null"
+                                            text-color="white">
+                                      <q-img
+                                              :src="imageUrlFunct(userIdToFile[chatToMess.second.user.id],chatToMess.second.user.id)"
+                                      ></q-img>
+                                  </q-avatar>
+                                  <q-avatar v-else color="cyan-2" text-color="white">
+                                      {{ chatToMess.second.user.firstName[0] }}{{ chatToMess.second.user.lastName[0] }}
+                                  </q-avatar>
+                              </q-item-section>
                               <q-item-section>
                                   <q-item-label>
                                       {{ chatToMess.first.chatName }}
@@ -90,6 +102,9 @@
                                       {{
                                       dateTimeToBulgarianLocaleString(chatToMess.second.sendOn)
                                       }}
+                                      <q-badge v-if="!chatToMess.second.readFromUserIds.includes(currentUser.id)"
+                                               color="primary"
+                                               rounded/>
                                   </q-item-label>
                                   <q-icon color="primary" name="icon"/>
                               </q-item-section>
@@ -113,16 +128,16 @@
                           Виж всички
                       </q-btn>
                   </div>
-            <q-separator/>
-            <q-scroll-area v-if="notifications.length>0"
-                           :style="{'width':'49vh','max-height':'50vh','height':`${notifications.length*9}vh`}">
-              <q-list separator style="width: 49vh">
-                <q-item v-for="notification in notifications" v-ripple>
-                  <q-item-section>
-                    <q-item-label>
-                      {{ notification.action }}
-                    </q-item-label>
-                  </q-item-section>
+                  <q-separator/>
+                  <q-scroll-area v-if="notifications.length>0"
+                                 :style="{'width':'49vh','max-height':'50vh','height':`${notifications.length*9}vh`}">
+                      <q-list separator style="width: 49vh">
+                          <q-item v-for="notification in notifications" v-ripple>
+                              <q-item-section>
+                                  <q-item-label>
+                                      {{ notification.action }}
+                                  </q-item-label>
+                              </q-item-section>
                   <q-item-section side top>
                     <q-item-label caption>
                       {{
@@ -339,7 +354,7 @@ onBeforeMount(async () => {
             timeout: 5000,
             icon: 'notifications',
             iconColor: 'white',
-            message: newMessage.content.text || (newMessage.content.image ? 'Изпрати снимка' : ''),
+            message: newMessage.content.text || (newMessage.content.files ? 'Изпрати прикачен файл' : ''),
             color: 'secondary',
         })
         notificationsChecked = false;
@@ -374,23 +389,52 @@ const getLastFiveNotifications = async () => {
     notificationsChecked = true;
 };
 
+const cachedImageUrls = new Map<string, string>();
+const imageUrlFunct = (file: File, uuid: string) => {
+    if (!file) return '';
+    if (!cachedImageUrls.has(uuid)) {
+        cachedImageUrls.set(uuid, window.URL.createObjectURL(file));
+    }
+    return cachedImageUrls.get(uuid);
+};
+let userIdToFile = $ref({})
+
 const getLastChats = async () => {
     chatToMessage = await getLastChatsForUser()
+    chatToMessage?.forEach(member =>
+            userIdToFile[member.second.user.id] = member.second.user.profilePicture ? base64ToImageFile(member.second.user.profilePicture, member.second.id!!.toString()) : null
+    )
     console.log(chatToMessage)
 }
 const load = async () => {
     userRoles = await getAllUserRoles(currentUser.id)
     schoolPeriods = await getAllSchoolPeriods()
     userRolesFilteredBySelectedPeriod = userRoles.filter(role => role.period.id == selectedPeriod?.id)
-    currentUserFile = await getUserProfilePicture(currentUser.id)
+    const currentUSerFileBase64 = await getUserProfilePicture(currentUser.id).then(e => e.data)
+    currentUserFile = currentUSerFileBase64 ? base64ToImageFile(currentUSerFileBase64, "profile") : null
     school = currentUser.role.school
     if (currentUser.role.role === SchoolRole.TEACHER) {
         subjectWithSchoolClassInformation = await fetchAllSubjectsTaughtByTeacher(currentUser.id, periodId.value, schoolId.value)
     }
 }
+
+function base64ToImageFile(base64String: string, fileName: string): File {
+    const arr = base64String.split(",");
+    const mimeType = arr[0].match(/:(.*?);/)?.[1] || "image/png";
+    const byteCharacters = atob(arr[1]); // Decode Base64
+    const byteNumbers = new Uint8Array(byteCharacters.length);
+
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+
+    const blob = new Blob([byteNumbers], {type: mimeType});
+    return new File([blob], fileName, {type: mimeType});
+}
+
 const getSchoolPeriods = async () => {
-  userRoles = await getAllUserRoles(currentUser.id)
-  schoolPeriods = await getAllSchoolPeriods()
+    userRoles = await getAllUserRoles(currentUser.id)
+    schoolPeriods = await getAllSchoolPeriods()
 }
 
 let userRolesFilteredBySelectedPeriod = $ref<SchoolUserRole[]>([])
@@ -462,16 +506,16 @@ const pages = $computed(() => [
         label: "Дневник",
         show: currentUserHasAnyRole([SchoolRole.STUDENT]),
         icon: 'menu_book'
-  },
-  {
-    to: `/administration-page/${periodId.value}/${schoolId.value}`,
-    label: "Администрация",
-    show: currentUserHasAnyRole([SchoolRole.ADMIN]),
-    icon: 'admin_panel_settings'
-  },
-  {to: `/school-page/${schoolId.value}`, label: "Училище", show: true, icon: 'account_balance'},
-  {to: `/users/${periodId.value}/${schoolId.value}/all`, label: "Потребители", show: true, icon: 'people'},
-  {
+    },
+    {
+        to: `/administration-page/${periodId.value}/${schoolId.value}`,
+        label: "Администрация",
+        show: currentUserHasAnyRole([SchoolRole.ADMIN]),
+        icon: 'admin_panel_settings'
+    },
+    {to: `/school-page/${schoolId.value}`, label: "Училище", show: true, icon: 'account_balance'},
+    {to: `/users/${periodId.value}/${schoolId.value}/all`, label: "Потребители", show: true, icon: 'people'},
+    {
     to: `/requests/${periodId.value}/${schoolId.value}/user-requests`,
     label: "Заявки",
     show: currentUserHasAnyRole([SchoolRole.ADMIN]),
