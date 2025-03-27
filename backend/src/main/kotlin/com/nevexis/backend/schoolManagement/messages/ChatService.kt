@@ -41,6 +41,31 @@ class ChatService : BaseService() {
             }
     }
 
+    fun getLast10GroupChats(
+        searchText: String,
+        currentUserId: BigDecimal
+    ): List<Chat> {
+        return db.selectFrom(CHAT).where(CHAT.CHAT_TYPE.eq(ChatType.GROUP_CHAT.name))
+            .and(
+                CHAT.ID.`in`(
+                    db.select(CHAT_MEMBERS.CHAT_ID)
+                        .from(CHAT_MEMBERS)
+                        .where(CHAT_MEMBERS.USER_ID.eq(currentUserId)).distinct()
+                )
+            ).and(
+                DSL.upper(CHAT.CHAT_NAME).contains(searchText.replace(" ", "").uppercase())
+            )
+            .maxRows(10)
+            .fetch().map { chatRecord ->
+                Chat(
+                    id = chatRecord.id!!,
+                    chatName = chatRecord.chatName!!,
+                    chatType = ChatType.valueOf(chatRecord.chatType!!)
+                )
+            }
+    }
+
+
     fun fetchChatMessagesWithFiltersAndPagination(
         messagesFetchingInformationDTO: PaginatedFetchingInformationDTO,
         chatId: BigDecimal,
@@ -282,7 +307,7 @@ class ChatService : BaseService() {
     fun createUpdateChat(chat: Chat): Chat {
         val chatId = chat.id ?: getChatSeqNextVal()
 
-        db.newRecord(CHAT).apply {
+        (db.selectFrom(CHAT).where(CHAT.ID.eq(chatId)).fetchAny() ?: db.newRecord(CHAT)).apply {
             id = chatId
             chatType = chat.chatType.name
             chatName = chat.chatName
@@ -326,7 +351,7 @@ class ChatService : BaseService() {
     fun MessageRecord.mapToInternalModel(userRecord: UserRecord) =
         Message(
             id = this.id,
-            user = userService.mapToUserView(userRecord, emptyList()),
+            user = userService.mapToUserView(userRecord, emptyList(), true),
             content = Json.decodeFromString(this.content!!),
             sendOn = this.sendOn!!,
             chatId = this.chatId!!,

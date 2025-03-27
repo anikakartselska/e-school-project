@@ -13,15 +13,33 @@
       </q-card-section>
       <q-card-section>
         <q-form class="q-gutter-md" @submit="submit">
-          <q-input v-model="newlyCreatedChat.chatName" class="q-pa-sm"
-                   label="Име на чата"/>
-          <q-select v-model="selectedUsers" :option-label="user => user.firstName + ' ' + user.lastName + ' ('+ getUserRoles(user)+')'" :options="users" label="Потърсете чат" multiple
+            <q-input v-model="newlyCreatedChat.chatName" class="q-pa-sm"
+                     label="Име на чата"/>
+            <q-select
+                    v-model="selectedUsers"
+                    :option-label="user => user.firstName + ' ' + user.lastName + ' ('+ getUserRoles(user)+')'"
+                    :options="users"
+                    label="Потърсере потребител"
+                    multiple
                     use-chips
-                    use-input @filter="filterFn">
-            <template v-slot:append>
-              <q-icon name="search"/>
-            </template>
-          </q-select>
+                    use-input
+                    @filter="filterFn"
+            >
+                <!-- Append slot for search icon -->
+                <template v-slot:append>
+                    <q-icon name="search"/>
+                </template>
+
+                <!-- Slot to customize the chips display -->
+                <template v-slot:selected-item="props">
+                    <q-chip
+                            :key="props.opt.value"
+                            :label="props.opt.firstName + ' ' + props.opt.lastName"
+                            :removable="props.opt.id !== getCurrentUserAsUserView().id"
+                            @remove="removeUserFromSelection(props.opt)"
+                    />
+                </template>
+            </q-select>
 
           <q-card-actions align="right">
             <q-btn color="primary" label="Готово" @click="submit"/>
@@ -41,6 +59,7 @@ import {translationOfRoles} from "../../utils";
 import {UserView} from "../../model/User";
 import {get10UserViewsBySchoolMatchingSearchText} from "../../services/RequestService";
 import {periodId, schoolId} from "../../model/constants";
+import {getCurrentUserAsUserView} from "../../services/LocalStorageService";
 
 const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
 const quasar = useQuasar()
@@ -52,7 +71,7 @@ const props = defineProps<{
 
 const newlyCreatedChat = $ref(props.chat ? {...props.chat} : <Chat>{chatType: ChatType.GROUP_CHAT})
 let users = $ref<UserView[]>([])
-const selectedUsers = $ref<UserView[]>([])
+let selectedUsers = $ref<UserView[]>(props.chat?.chatMembers ? [...props.chat.chatMembers] : [getCurrentUserAsUserView()])
 
 const filterFn = (val, update) => {
   if (val === '') {
@@ -87,6 +106,9 @@ const getUserRoles = (userView: UserView) => {
   }
 }
 
+const removeUserFromSelection = (userView: UserView) => {
+    selectedUsers = selectedUsers.filter(user => user.id !== userView.id)
+}
 </script>
 
 <style scoped>

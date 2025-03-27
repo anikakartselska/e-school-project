@@ -8,14 +8,16 @@
                     <q-separator/>
                     <div class="row">
                         <div class="col-3">
-                            <q-select v-model="text" :option-label="user => user.firstName + ' ' + user.lastName + ' ('+ getUserRoles(user)+')'" :options="users" label="Потърсете чат" use-input
+                            <q-select v-model="text"
+                                      :option-label="user => user.firstName + ' ' + user.lastName + ' ('+ getUserRoles(user)+')'"
+                                      :options="users" label="Потърсете чат" use-input
                                       @filter="filterFn"
                                       @update:model-value="value => checkExistingChat(value)">
                                 <template v-slot:append>
                                     <q-icon name="search"/>
                                 </template>
                                 <template v-slot:before>
-                                    <q-btn color="primary" icon="groups" size="sm" square @click="groupCreateDialog">
+                                    <q-btn color="primary" icon="group_add" size="sm" square @click="groupCreateDialog">
                                         <q-tooltip>Създай група</q-tooltip>
                                     </q-btn>
                                 </template>
@@ -24,7 +26,7 @@
                                 <q-infinite-scroll ref="infiniteScroll" :offset="250" @load="onLoad">
                                     <q-list v-if="chatToMessages.length > 0" separator>
                                         <q-item v-for="chatToMess in chatToMessages" v-ripple
-                                                :class="!chatToMess.second.readFromUserIds.includes(currentUser.id)
+                                                :class="!chatToMess.second.readFromUserIds.includes(currentUser.id) && currentUser.id!==chatToMess.second.user.id
     ? `bg-blue-1`
     : (chatToMess.first.id === selectedChat.first.id ? `bg-blue-2` : ``)" clickable
                                                 @click="selectChat(chatToMess)">
@@ -59,9 +61,18 @@
                                                     dateTimeToBulgarianLocaleString(chatToMess.second.sendOn)
                                                     }}
                                                     <q-badge
-                                                            v-if="!chatToMess.second.readFromUserIds.includes(currentUser.id)"
+                                                            v-if="!chatToMess.second.readFromUserIds.includes(currentUser.id) && currentUser.id!==chatToMess.second.user.id "
                                                             color="primary"
                                                             rounded/>
+                                                    <br>
+                                                    <q-btn v-if="chatToMess.first.chatType === ChatType.GROUP_CHAT"
+                                                           class="float-right"
+                                                           color="primary" dense flat icon="exit_to_app"
+                                                           @click="leaveGroupChat(chatToMess)"></q-btn>
+                                                    <q-btn v-if="chatToMess.first.chatType === ChatType.GROUP_CHAT"
+                                                           class="float-right"
+                                                           color="primary" dense flat icon="settings"
+                                                           @click="editChat(chatToMess)"></q-btn>
                                                 </q-item-label>
                                                 <q-icon color="primary" name="icon"/>
                                             </q-item-section>
@@ -107,7 +118,7 @@
                                                         <q-btn :key="file"
                                                                color="primary"
                                                                icon="attach_file"
-                                                               label="Download File"
+                                                               label="Изтегли файл"
                                                                target="_blank"
                                                                @click="downloadFile(dataURLtoFile(file.base64,file.name))"
                                                         >
@@ -163,6 +174,7 @@ import {
     get10UserViewsBySchoolMatchingSearchText,
     getChatMembers,
     getChatMessagesWithFiltersAndPagination,
+    getLast10GroupChats,
     getMessagesWithFiltersAndPagination,
     saveUpdateChat,
     sendCreateMessage
@@ -171,6 +183,7 @@ import {Chat, ChatType} from "../../model/Chat";
 import {FileWithBase64, Message, MessageContent} from "../../model/Message";
 import {Pair} from "../../model/Pair";
 import {
+    confirmActionPromiseDialog,
     dataURLtoFile,
     dateTimeToBulgarianLocaleString,
     downloadFile,
@@ -196,12 +209,13 @@ let infiniteScroll = $ref<InstanceType<typeof QInfiniteScroll>>()
 let messagesInfiniteScroll = $ref<InstanceType<typeof QInfiniteScroll>>()
 let messagesScroll = $ref<InstanceType<typeof QScrollArea>>()
 const currentUser = getCurrentUser()
-const newMessage = $ref<MessageContent>({text: null, files: null})
-const files = $ref<File[]>([])
+let newMessage = $ref<MessageContent>({text: null, files: null})
+let files = $ref<File[]>([])
 const LOADED_ROWS_COUNT = 20
 const LOADED_MESSAGES_COUNT = 20
 const text = $ref<UserView | null>(null)
 let users = $ref<UserView[]>([])
+let chats = $ref<Chat[]>([])
 let userIdToFile = $ref({})
 let messageIdToFiles = $ref({})
 let selectedChat = $ref<Pair<Chat, Message | null> | null>(null)
@@ -220,6 +234,7 @@ const filterFn = (val, update) => {
 
     update(async () => {
         users = await get10UserViewsBySchoolMatchingSearchText(props.schoolId, props.periodId, val)
+        chats = await getLast10GroupChats(val)
     })
 }
 const getAllChatWithPaginationAndFilters = async (loadingIndex): Promise<Pair<Chat, Message>[]> => {
@@ -240,10 +255,50 @@ const groupCreateDialog = () => {
         component: GroupChatCreateEditDialog,
         componentProps: {}
     }).onOk(async (payload) => {
+        debugger
         await saveUpdateChat(payload.item.chat).then(r => {
             selectedChat = {...selectedChat, first: r}
         })
     })
+}
+
+const editChat = async (chatToMessage: Pair<Chat, Message>) => {
+    quasar.dialog({
+        component: GroupChatCreateEditDialog,
+        componentProps: {
+            chat: {
+                ...chatToMessage.first,
+                chatMembers: await getChatMembers(chatToMessage.first.id, schoolId.value, periodId.value)
+            }
+        }
+    }).onOk(async (payload) => {
+        debugger
+        await saveUpdateChat(payload.item.chat).then(r => {
+            selectedChat = {...selectedChat, first: r}
+            chatToMessages = chatToMessages.map(chatToMess => {
+                        if (chatToMess.first.id === chatToMessage.first.id) {
+                            return selectedChat
+                        } else {
+                            return chatToMess
+                        }
+                    }
+            )
+        })
+    })
+}
+
+const leaveGroupChat = async (chatToMessage: Pair<Chat, Message>) => {
+    await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
+    let members = await getChatMembers(chatToMessage.first.id, schoolId.value, periodId.value)
+    members = members.filter(member => member.id !== currentUser.id)
+    await saveUpdateChat({...chatToMessage.first, chatMembers: members}).then(r => {
+
+        chatToMessages = chatToMessages.filter(chatToMess =>
+                chatToMess.first.id !== chatToMessage.first.id
+        )
+        selectedChat = chatToMessages[0]
+    })
+
 }
 const sendMessage = async () => {
     if (selectedChat?.first.id == null) {
@@ -259,7 +314,7 @@ const sendMessage = async () => {
     };
     let message = <Message>{
         id: null,
-        user: getCurrentUserAsUserView(),
+        user: chatMembers.find(it => it.id == currentUser.id)!!,
         content: messageContentWithFiles,
         sendOn: new Date(),
         chatId: selectedChat?.first.id,
@@ -273,6 +328,8 @@ const sendMessage = async () => {
         chatToMessages.splice(chatToMessagesIndex, 1)
     }
     chatToMessages.unshift({...selectedChat, second: message})
+    newMessage = {text: null, files: null}
+    files = []
 }
 
 const checkExistingChat = async (userView: UserView) => {
@@ -333,14 +390,16 @@ const onMessagesLoad = async (index: number, done: () => void) => {
     )
     done()
 }
+let chatMembers = $ref<UserView[]>([])
 
 watch(() => selectedChat?.first, async () => {
     if (selectedChat) {
         userIdToFile = {}
-        const chatMembers = await getChatMembers(selectedChat.first.id, schoolId.value, periodId.value)
+        chatMembers = await getChatMembers(selectedChat.first.id, schoolId.value, periodId.value)
         chatMembers?.forEach(member =>
                 userIdToFile[member.id] = member.profilePicture ? base64ToImageFile(member.profilePicture, member.id!!.toString()) : null
         )
+        console.log(userIdToFile)
         messages = []
         messagesInfiniteScroll?.reset()
         messagesInfiniteScroll?.resume()
@@ -394,7 +453,6 @@ const imageUrlForMessage = (file: File | null, uuid: string) => {
             second: file.name
         }]);
     }
-    console.log(cachedMessageFiles.get(uuid))
     return cachedMessageFiles.get(uuid)?.find(url => url.second.includes(file.name))?.first;
 };
 
@@ -416,14 +474,10 @@ function base64ToImageFile(base64String: string, fileName: string): File {
 onBeforeMount(async () => {
     setupChatMessageEventSource()
     chatMessagesEventSource.addEventListener('message', (actionMessage: MessageEvent) => {
-        const newMessage = <Message>JSON.parse(actionMessage.data)
-        messages.push(newMessage)
+        const newMessage2 = <Message>JSON.parse(actionMessage.data)
+        messages.push(newMessage2)
     }, false)
-    console.log(chatMessagesEventSource)
 })
-// watch(() => messages, (beforeMessages,afterMessages) => {
-//   messagesScroll.setScrollPercentage("vertical", 100)
-// })
 
 onBeforeUnmount(() => {
     chatMessagesEventSource.close();

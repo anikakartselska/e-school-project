@@ -122,7 +122,7 @@ class UserService : UserBaseService() {
             .fetch()
             .map {
                 val userId = it.get(USER.ID, BigDecimal::class.java)
-                mapToUserView(it, rolesForSchoolGroupedByUserId[userId] ?: emptyList())
+                mapToUserView(it, rolesForSchoolGroupedByUserId[userId] ?: emptyList(), true)
             }
     }
 

@@ -66,8 +66,11 @@ class ExamAnswersController {
         examAnswersService.getExamAnswersByExamIdAndSubmittedById(examId, submittedBy)
 
     @GetMapping("/get-exam-answers-by-exam")
-    fun getExamAnswersForExamId(examId: BigDecimal) =
-        examAnswersService.getExamAnswersForExam(examId)
+    fun getExamAnswersForExamId(examId: BigDecimal): List<ExamAnswers> {
+        examAnswersService.markExamAnswersAsSubmitted(examId)
+        return examAnswersService.getExamAnswersForExam(examId)
+    }
+
 
     @GetMapping("/get-exam-answers-by-id")
     fun getExamAnswersById(id: BigDecimal) =

@@ -103,7 +103,7 @@ const props = defineProps<{
   schoolClassId: number
 }>()
 const exam = await getExamById(props.examId)
-const examIsChoiceQuestionsOnly = exam.questions.questions.every(question => isChoiceQuestion(question))
+const examIsChoiceQuestionsOnly = exam.questions?.questions?.every(question => isChoiceQuestion(question))
 const router = useRouter()
 const quasar = useQuasar()
 let takes = $ref(await getExamAnswersForExamId(props.examId))
@@ -150,16 +150,16 @@ const cancelExamAnswersList = async () => {
         }
 
         await cancelExamAnswers(takes, props.schoolId, props.periodId, option, props.examId).then(r => {
-            takes = takes.map(take => {
-                        const foundUpdatedTake = r.find(updatedTake => updatedTake.id == take.id)
-                        return foundUpdatedTake ? foundUpdatedTake : take
-                    }
-            )
-            selected = selected.map(take => {
-                        const foundUpdatedTake = r.find(updatedTake => updatedTake.id == take.id)
-                        return foundUpdatedTake ? foundUpdatedTake : take
-                    }
-            )
+                    takes = takes.map(take => {
+                                const foundUpdatedTake = r.find(updatedTake => updatedTake.id == take.id)
+                                return foundUpdatedTake ? foundUpdatedTake : take
+                            }
+                    )
+                    selected = selected.map(take => {
+                                const foundUpdatedTake = r.find(updatedTake => updatedTake.id == take.id)
+                                return foundUpdatedTake ? foundUpdatedTake : take
+                            }
+                    )
                 }
         )
     })
@@ -191,7 +191,7 @@ const sumPoints = (answers: Answer[]) => {
 const examPoints = $computed(() => {
     let sum = 0
     exam.questions.questions.forEach(questions => sum = sum + (questions.points ? Number(questions.points) : 0))
-  return sum
+    return sum
 })
 
 const goBack = async () => {
@@ -241,16 +241,16 @@ const columns = $computed(() => [
     {
         name: "inputtedGrade",
         label: "Въведена оценка",
-    align: "left",
-    field: (row: ExamAnswers) => row.inputtedGrade ? 'ДА' : 'НЕ',
-    sortable: true
-  },
-  {
-    name: "grade",
-    label: "Оценка",
-    align: "left",
-    field: (row: ExamAnswers) => row.grade,
-    sortable: true
+        align: "left",
+        field: (row: ExamAnswers) => row.inputtedGrade ? 'ДА' : 'НЕ',
+        sortable: true
+    },
+    {
+        name: "grade",
+        label: "Оценка",
+        align: "left",
+        field: (row: ExamAnswers) => row.grade,
+        sortable: true
   },
 ])
 
@@ -357,11 +357,13 @@ const studentColumns = [
 
 
 
+
   &.q-table--loading thead tr:last-child th
     /* height of all previous header rows */
     top: 48px
 
   /* prevent scrolling behind sticky top row on focus */
+
 
 
 

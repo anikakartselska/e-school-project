@@ -40,7 +40,8 @@ class UserBaseService : BaseService() {
 
     fun mapToUserView(
         record: Record,
-        rolesForSchool: List<SchoolRole>
+        rolesForSchool: List<SchoolRole>,
+        withProfilePicture: Boolean = false
     ): UserView {
         val userRecord = record.into(UserRecord::class.java)
         val schoolUserPeriodRecord = try {
@@ -56,7 +57,11 @@ class UserBaseService : BaseService() {
             lastName = userRecord.lastName!!,
             username = userRecord.username!!,
             roles = rolesForSchool,
-            profilePicture = userRecord.profileImage?.replace("\"", ""),
+            profilePicture = if (withProfilePicture) {
+                userRecord.profileImage?.replace("\"", "")
+            } else {
+                null
+            },
             status = schoolUserPeriodRecord?.status?.let { RequestStatus.valueOf(it) }
         )
 

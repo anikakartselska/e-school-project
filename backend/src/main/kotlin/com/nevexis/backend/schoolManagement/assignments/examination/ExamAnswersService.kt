@@ -268,10 +268,11 @@ class ExamAnswersService : BaseService() {
             EXAM_ANSWERS.EXAM_ID.eq(examId).and(EXAM_ANSWERS.SUBMITTED_BY.eq(submittedBy))
         ).fetchAny()?.let { mapToInternalModel(it) }
 
-    fun getExamAnswersForExam(examId: BigDecimal) =
+    fun getExamAnswersForExam(examId: BigDecimal): List<ExamAnswers> =
         getExamAnswersSelectConditionStep().where(
             EXAM_ANSWERS.EXAM_ID.eq(examId).and(EXAM_ANSWERS.SUBMITTED.eq("Y"))
-        ).fetch().map { mapToInternalModel(it) }
+        ).fetch()
+            .map { mapToInternalModel(it) }
 
     fun deleteExamAnswersByExamId(examId: BigDecimal) =
         db.deleteFrom(EXAM_ANSWERS).where(EXAM_ANSWERS.EXAM_ID.eq(examId)).execute()
@@ -337,4 +338,20 @@ class ExamAnswersService : BaseService() {
     fun getExamAnswersSeq(): BigDecimal =
         db.select(DSL.field("EXAM_ANSWERS_SEQ.nextval")).from("DUAL")
             .fetchOne()!!.map { it.into(BigDecimal::class.java) }
+
+    fun markExamAnswersAsSubmitted(examId: BigDecimal) {
+        val exam = examService.getExam(examId)
+        if ((exam?.endTimeOfExam ?: LocalDateTime.now()) < LocalDateTime.now()) {
+            db.selectFrom(EXAM_ANSWERS)
+                .where(EXAM_ANSWERS.EXAM_ID.eq(examId))
+                .fetch()
+                .map {
+                    it.apply {
+                        submitted = "Y"
+                    }
+                }.also {
+                    db.batchUpdate(it).execute()
+                }
+        }
+    }
 }

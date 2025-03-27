@@ -1074,3 +1074,12 @@ export const saveUpdateChat = async (chat: Chat): Promise<Chat | Awaited<any>> =
                 errorMessage: "Message"
             }
         }).then(r => r.data)
+
+export const getLast10GroupChats = async (searchText): Promise<UserView[] | any> =>
+        await api.get<UserView[]>('/get-last-10-group-chats', {
+            params: {
+                searchText: searchText
+            }
+        }).then(p => p.data)
+
+

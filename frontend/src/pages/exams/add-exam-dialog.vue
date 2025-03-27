@@ -98,8 +98,8 @@ const submit = () => {
         item: {
             exam: {
                 ...newlyCreatedExam,
-                startTimeOfExam: new Date(dateFrom).toISOString().slice(0, 19),
-                endTimeOfExam: new Date(dateTo).toISOString().slice(0, 19),
+                startTimeOfExam: new Date(dateFrom + 'Z').toISOString().slice(0, 19),
+                endTimeOfExam: new Date(dateTo + 'Z').toISOString().slice(0, 19),
             }
         }
     })

@@ -29,6 +29,7 @@ const excludedUrlsFromNotifications = [
     '/fetch-available-teachers-for-school-lesson',
     '/fetch-statistics-for-student',
     '/check-started-school-year',
+    '/messages/get-chat-messages-with-filters-and-pagination'
 ]
 
 const onRequest = (quasar: QVueGlobals) => (config: AxiosRequestConfig): AxiosRequestConfig => {

@@ -137,12 +137,12 @@ const submit = async () => {
     await confirmActionPromiseDialog("Сигурни ли сте, че искате да продължите?")
     let assignmentValue;
     if (updatedAssignment.assignmentType == AssignmentType.HOMEWORK) {
-        assignmentValue = {...updatedAssignment.assignmentValue, to: new Date(dateTo).toISOString().slice(0, 19)}
+        assignmentValue = {...updatedAssignment.assignmentValue, to: new Date(dateTo + 'Z').toISOString().slice(0, 19)}
     } else if (updatedAssignment.assignmentType == AssignmentType.EVENT) {
         assignmentValue = {
             ...updatedAssignment.assignmentValue,
-            to: new Date(dateTo).toISOString().slice(0, 19),
-            from: new Date(dateFrom).toISOString().slice(0, 19)
+            to: new Date(dateTo + 'Z').toISOString().slice(0, 19),
+            from: new Date(dateFrom + 'Z').toISOString().slice(0, 19)
         }
     } else {
         assignmentValue = updatedAssignment.assignmentValue

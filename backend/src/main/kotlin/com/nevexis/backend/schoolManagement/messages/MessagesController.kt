@@ -39,9 +39,14 @@ class MessagesController {
     fun getLastChats(principal: Principal) =
         chatService.getLastChatsOfUserWithLastMessage(principal.name.toBigDecimal())
 
-    @GetMapping("get-messages-from-chat")
+    @GetMapping("/get-messages-from-chat")
     fun fetchMessagesFromChat(chatId: BigDecimal) =
         chatService.getMessagesFromChat(chatId)
+
+    @GetMapping("/get-last-10-group-chats")
+    fun last10Chats(searchText: String, principal: Principal) =
+        chatService.getLast10GroupChats(searchText, principal.name.toBigDecimal())
+
 
     @PostMapping("/get-messages-with-filters-and-pagination")
     fun getMessagesWithFiltersAndPagination(

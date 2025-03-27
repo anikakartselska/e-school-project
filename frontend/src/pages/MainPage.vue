@@ -10,16 +10,16 @@
       <q-header
               :class="$q.dark.isActive ? 'header_dark' : 'header_normal'"
               reveal
-    >
-      <q-toolbar>
-        <q-btn
-                class="q-mr-sm"
-                dense
-                flat
-                icon="menu"
-                round
-                @click="left = !left"
-        />
+      >
+          <q-toolbar>
+              <q-btn
+                      class="q-mr-sm"
+                      dense
+                      flat
+                      icon="menu"
+                      round
+                      @click="left = !left"
+              />
         <q-toolbar-title>{{ school?.schoolName }}</q-toolbar-title>
         <q-btn :label="`${currentUser.role.period.startYear}/${currentUser.role.period.endYear}`"
                dense flat
@@ -33,15 +33,15 @@
                           :option-label="(option:SchoolPeriod) => `${option.startYear}/${option.endYear}`"
                           :options="schoolPeriods"
                           label="Учебна година"/>
-                <q-select v-model="selectedRole" :disable="selectedPeriod==null"
-                          :option-label="option => constructSchoolUserRoleMessage(option)"
-                          :options="userRolesFilteredBySelectedPeriod"
-                          label="Роля"/>
-                <q-item>
-                  <q-item-section>
-                    <q-btn color="primary" dense flat label="Промени роля" @click="changeUserRole()"/>
-                  </q-item-section>
-                </q-item>
+                  <q-select v-model="selectedRole" :disable="selectedPeriod==null"
+                            :option-label="option => constructSchoolUserRoleMessage(option)"
+                            :options="userRolesFilteredBySelectedPeriod"
+                            label="Роля"/>
+                  <q-item>
+                      <q-item-section>
+                          <q-btn color="primary" dense flat label="Промени роля" @click="changeUserRole()"/>
+                      </q-item-section>
+                  </q-item>
                   <q-separator/>
                   <q-item>
                       <q-item-section>
@@ -52,102 +52,115 @@
             </div>
           </q-menu>
         </q-btn>
-          <q-btn
-                  :icon="$q.dark.mode ? 'nights_stay' : 'wb_sunny'"
-                  class="q-mr-xs"
-                  flat
-                  round
-                  @click="$q.dark.toggle"
-          />
-          <q-btn dense flat icon="question_answer" @click="getLastChats()">
-              <q-badge v-if="!messagesChecked" align="bottom" color="primary" floating rounded/>
-              <q-menu>
-                  <div class="text-h6 q-my-sm q-mx-md">Чатове
-                      <q-btn :to="`/messages-page/${currentUser.role.school.id}/${currentUser.role.period.id}`"
-                             class="float-right" color="primary"
-                             flat>
-                          Виж всички
-                      </q-btn>
-                  </div>
-                  <q-separator/>
-                  <q-scroll-area v-if="chatToMessage.length>0"
-                                 :style="{'width':'49vh','max-height':'50vh','height':`${chatToMessage.length*9}vh`}">
-                      <q-list separator style="width: 49vh">
-                          <q-item v-for="chatToMess in chatToMessage" v-ripple
-                                  :class="!chatToMess.second.readFromUserIds.includes(currentUser.id) ? `bg-blue-1`: ``">
-                              <q-item-section avatar>
-                                  <q-avatar v-if="chatToMess.second.user.profilePicture!=null"
-                                            text-color="white">
-                                      <q-img
-                                              :src="imageUrlFunct(userIdToFile[chatToMess.second.user.id],chatToMess.second.user.id)"
-                                      ></q-img>
-                                  </q-avatar>
-                                  <q-avatar v-else color="cyan-2" text-color="white">
-                                      {{ chatToMess.second.user.firstName[0] }}{{ chatToMess.second.user.lastName[0] }}
-                                  </q-avatar>
-                              </q-item-section>
-                              <q-item-section>
-                                  <q-item-label>
-                                      {{ chatToMess.first.chatName }}
-                                  </q-item-label>
-                                  <q-item-label caption>
-                                      <b>{{ chatToMess.second.user.firstName }} {{
-                                          chatToMess.second.user.lastName
-                                          }}:</b>
-                                      {{ chatToMess.second.content.text }}
-                                  </q-item-label>
-                              </q-item-section>
-                              <q-item-section side top>
-                                  <q-item-label caption>
-                                      {{
-                                      dateTimeToBulgarianLocaleString(chatToMess.second.sendOn)
-                                      }}
-                                      <q-badge v-if="!chatToMess.second.readFromUserIds.includes(currentUser.id)"
-                                               color="primary"
-                                               rounded/>
-                                  </q-item-label>
-                                  <q-icon color="primary" name="icon"/>
-                              </q-item-section>
-                          </q-item>
-                      </q-list>
-                  </q-scroll-area>
-                  <div v-else style="width: 40vh">
-                      <div class="q-ma-sm" style="text-align: center;color: #727272;font-size: 2vh">
-                          Няма съобщения
+              <q-btn
+                      :icon="$q.dark.mode ? 'nights_stay' : 'wb_sunny'"
+                      class="q-mr-xs"
+                      flat
+                      round
+                      @click="$q.dark.toggle"
+              />
+              <q-btn dense flat icon="question_answer" @click="getLastChats()">
+                  <q-badge v-if="!messagesChecked" align="bottom" color="primary" floating rounded/>
+                  <q-menu>
+                      <div class="text-h6 q-my-sm q-mx-md">Чатове
+                          <q-btn :to="`/messages-page/${currentUser.role.school.id}/${currentUser.role.period.id}`"
+                                 class="float-right" color="primary"
+                                 flat>
+                              Виж всички
+                          </q-btn>
                       </div>
-                  </div>
-              </q-menu>
-          </q-btn>
-          <q-btn dense flat icon="notifications" @click="getLastFiveNotifications()">
-              <q-badge v-if="!notificationsChecked" align="bottom" color="primary" floating rounded/>
-              <q-menu>
-                  <div class="text-h6 q-my-sm q-mx-md">Известия
-                      <q-btn :to="`/activity-stream/${currentUser.role.school.id}/${currentUser.role.period.id}`"
-                             class="float-right" color="primary"
-                             flat>
-                          Виж всички
-                      </q-btn>
-                  </div>
-                  <q-separator/>
-                  <q-scroll-area v-if="notifications.length>0"
-                                 :style="{'width':'49vh','max-height':'50vh','height':`${notifications.length*9}vh`}">
-                      <q-list separator style="width: 49vh">
-                          <q-item v-for="notification in notifications" v-ripple>
-                              <q-item-section>
-                                  <q-item-label>
-                                      {{ notification.action }}
-                                  </q-item-label>
-                              </q-item-section>
-                  <q-item-section side top>
-                    <q-item-label caption>
-                      {{
-                        dateTimeToBulgarianLocaleString(notification.executedTime)
-                      }}
-                    </q-item-label>
-                    <q-icon color="primary" name="icon"/>
-                  </q-item-section>
-                </q-item>
-              </q-list>
+                      <q-separator/>
+                      <q-scroll-area v-if="chatToMessage.length>0"
+                                     :style="{'width':'49vh','max-height':'50vh','height':`${chatToMessage.length*9}vh`}">
+                          <q-list separator style="width: 49vh">
+                              <q-item v-for="chatToMess in chatToMessage" v-ripple
+                                      :class="!chatToMess.second.readFromUserIds.includes(currentUser.id) && currentUser.id!==chatToMess.second.user.id ? `bg-blue-1`: ``">
+                                  <q-item-section avatar>
+                                      <div v-if="chatToMess.first.chatType=== ChatType.GROUP_CHAT">
+                                          <q-avatar icon="groups"
+                                                    size="xl"></q-avatar>
+                                      </div>
+                                      <div v-else>
+                                          <q-avatar v-if="chatToMess.second.user.profilePicture!=null"
+                                                    text-color="white">
+                                              <q-img
+                                                      :src="imageUrlFunct(userIdToFile[chatToMess.second.user.id],chatToMess.second.user.id)"
+                                              ></q-img>
+                                          </q-avatar>
+                                          <q-avatar v-else color="cyan-2" text-color="white">
+                                              {{
+                                              chatToMess.second.user.firstName[0]
+                                              }}{{ chatToMess.second.user.lastName[0] }}
+                                          </q-avatar>
+                                      </div>
+                                  </q-item-section>
+                                  <q-item-section>
+                                      <q-item-label>
+                                          {{ chatToMess.first.chatName }}
+                                      </q-item-label>
+                                      <q-item-label caption>
+                                          <b v-if="chatToMess.second.user.id !== currentUser.id">{{
+                                              chatToMess.second.user.firstName
+                                              }}
+                                              {{ chatToMess.second.user.lastName }}:</b>
+                                          <b v-else>Вие:</b>
+                                          {{
+                                          chatToMess.second.content.text ? chatToMess.second.content.text : 'Изпрати прикачен файл'
+                                          }}
+                                      </q-item-label>
+                                  </q-item-section>
+                                  <q-item-section side top>
+                                      <q-item-label caption>
+                                          {{
+                                          dateTimeToBulgarianLocaleString(chatToMess.second.sendOn)
+                                          }}
+                                          <q-badge
+                                                  v-if="!chatToMess.second.readFromUserIds.includes(currentUser.id) && currentUser.id!==chatToMess.second.user.id"
+                                                  color="primary"
+                                                  rounded/>
+                                      </q-item-label>
+                                      <q-icon color="primary" name="icon"/>
+                                  </q-item-section>
+                              </q-item>
+                          </q-list>
+                      </q-scroll-area>
+                      <div v-else style="width: 40vh">
+                          <div class="q-ma-sm" style="text-align: center;color: #727272;font-size: 2vh">
+                              Няма съобщения
+                          </div>
+                      </div>
+                  </q-menu>
+              </q-btn>
+              <q-btn dense flat icon="notifications" @click="getLastFiveNotifications()">
+                  <q-badge v-if="!notificationsChecked" align="bottom" color="primary" floating rounded/>
+                  <q-menu>
+                      <div class="text-h6 q-my-sm q-mx-md">Известия
+                          <q-btn :to="`/activity-stream/${currentUser.role.school.id}/${currentUser.role.period.id}`"
+                                 class="float-right" color="primary"
+                                 flat>
+                              Виж всички
+                          </q-btn>
+                      </div>
+                      <q-separator/>
+                      <q-scroll-area v-if="notifications.length>0"
+                                     :style="{'width':'49vh','max-height':'50vh','height':`${notifications.length*9}vh`}">
+                          <q-list separator style="width: 49vh">
+                              <q-item v-for="notification in notifications" v-ripple>
+                                  <q-item-section>
+                                      <q-item-label>
+                                          {{ notification.action }}
+                                      </q-item-label>
+                                  </q-item-section>
+                                  <q-item-section side top>
+                                      <q-item-label caption>
+                                          {{
+                                          dateTimeToBulgarianLocaleString(notification.executedTime)
+                                          }}
+                                      </q-item-label>
+                                      <q-icon color="primary" name="icon"/>
+                                  </q-item-section>
+                              </q-item>
+                          </q-list>
             </q-scroll-area>
             <div v-else style="width: 40vh">
               <div class="q-ma-sm" style="text-align: center;color: #727272;font-size: 2vh">
@@ -295,7 +308,7 @@ import {Actions} from "../model/Actions";
 import {messagesEventSource, setupMessageEventSource} from "../services/MessageService";
 import {Message} from "../model/Message";
 import {Pair} from "../model/Pair";
-import {Chat} from "../model/Chat";
+import {Chat, ChatType} from "../model/Chat";
 
 const router = useRouter();
 const quasar = useQuasar()
@@ -354,10 +367,10 @@ onBeforeMount(async () => {
             timeout: 5000,
             icon: 'notifications',
             iconColor: 'white',
-            message: newMessage.content.text || (newMessage.content.files ? 'Изпрати прикачен файл' : ''),
+            message: (newMessage.user.id === currentUser.id ? "Вие: " : `${newMessage.user.firstName} ${newMessage.user.lastName}: `) + (newMessage.content.text || (newMessage.content.files ? 'Изпрати прикачен файл' : '')),
             color: 'secondary',
         })
-        notificationsChecked = false;
+        messagesChecked = false;
         messages.unshift(newMessage)
         // }
     }, false)
@@ -378,6 +391,7 @@ watch(() => quasar.dark.isActive,
                     enableDarkMode: quasar.dark.isActive
                 }
                 await updateCurrentUserPreferences(currentUser.preferences)
+                updateUserInLocalStorage(currentUser)
             }
         }
 )
@@ -405,6 +419,7 @@ const getLastChats = async () => {
             userIdToFile[member.second.user.id] = member.second.user.profilePicture ? base64ToImageFile(member.second.user.profilePicture, member.second.id!!.toString()) : null
     )
     console.log(chatToMessage)
+    messagesChecked = true;
 }
 const load = async () => {
     userRoles = await getAllUserRoles(currentUser.id)
@@ -516,16 +531,16 @@ const pages = $computed(() => [
     {to: `/school-page/${schoolId.value}`, label: "Училище", show: true, icon: 'account_balance'},
     {to: `/users/${periodId.value}/${schoolId.value}/all`, label: "Потребители", show: true, icon: 'people'},
     {
-    to: `/requests/${periodId.value}/${schoolId.value}/user-requests`,
-    label: "Заявки",
-    show: currentUserHasAnyRole([SchoolRole.ADMIN]),
-    icon: 'checklist'
-  },
-  {
-    to: `/school-classes/${periodId.value}/${schoolId.value}`,
-    label: "Класове",
-    show: currentUserHasAnyRole([SchoolRole.ADMIN, SchoolRole.TEACHER]),
-    icon: 'school'
+        to: `/requests/${periodId.value}/${schoolId.value}/user-requests`,
+        label: "Заявки",
+        show: currentUserHasAnyRole([SchoolRole.ADMIN]),
+        icon: 'checklist'
+    },
+    {
+        to: `/school-classes/${periodId.value}/${schoolId.value}`,
+        label: "Класове",
+        show: currentUserHasAnyRole([SchoolRole.ADMIN, SchoolRole.TEACHER]),
+        icon: 'school'
   },
   {
     to: `/school-classes-plans/${schoolId.value}/${periodId.value}`,
